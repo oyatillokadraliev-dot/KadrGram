@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>KadrGram | Поиск людей</title>
+    <style>
+        body { background: #f0f2f5; font-family: sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .search-container { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .back-btn { text-decoration: none; color: #3390ec; font-weight: bold; font-size: 20px; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
+        button { background: #3390ec; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .user-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; }
+        .user-info b { display: block; color: #222; }
+        .user-info span { color: #888; font-size: 13px; }
+        .write-btn { background: #34a853; color: white; text-decoration: none; padding: 8px 15px; border-radius: 8px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="header">
+            <a href="/" class="back-btn">←</a>
+            <h2 style="margin: 0;">Поиск</h2>
+        </div>
+
+        <form action="/search" method="get" class="form-group">
+            <input name="query" placeholder="Введите имя или логин..." value="{{ request.args.get('query', '') }}" required>
+            <button type="submit">Найти</button>
+        </form>
+
+        <div class="results">
+            {% for r in results %}
+                <div class="user-card">
+                    <div class="user-info">
+                        <b>{{ r.name }}</b>
+                        <span>@{{ r.login }}</span>
+                    </div>
+                    <a href="/?chat_with={{ r.id }}" class="write-btn">Написать</a>
+                </div>
+            {% else %}
+                {% if request.args.get('query') %}
+                    <p style="text-align: center; color: #888; margin-top: 20px;">Никого не нашли...</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
