@@ -1,22 +1,20 @@
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
-
+import os  # Импорт должен быть САМЫМ ПЕРВЫМ
 from flask import Flask, render_template, request, session, redirect, jsonify, flash
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
-import os
 
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
-# ПОДКЛЮЧЕНИЕ К БАЗЕ
-# Когда будешь на Render, добавишь MONGO_URI в настройки. 
-# Пока сайта нет, программа будет просто ждать ссылку.
-MONGO_URI = os.environ.get("MONGO_URI", "ЗДЕСЬ_БУДЕТ_ТВОЯ_ССЫЛКА_ИЗ_MONGODB")
+# Оставляем только ОДНУ переменную MONGO_URI с твоей ссылкой
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
+
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
 users_table = db['users']
 messages_table = db['messages']
+
 
 @app.route('/')
 def home():
