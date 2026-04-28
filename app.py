@@ -1,3 +1,5 @@
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
+
 from flask import Flask, render_template, request, session, redirect, jsonify, flash
 from pymongo import MongoClient
 from bson.objectid import ObjectId
