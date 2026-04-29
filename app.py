@@ -1,101 +1,92 @@
-import eventlet
-eventlet.monkey_patch()
 
-from flask import Flask, render_template, request, redirect, session, jsonify
-from flask_socketio import SocketIO, emit, join_room
-from werkzeug.security import generate_password_hash, check_password_hash
+import os
+from flask import Flask, render_template, request, session, redirect, jsonify, flash
 from pymongo import MongoClient
+from bson.objectid import ObjectId
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = "kadrgram_ultra_2026"
 
-# Инициализируем SocketIO один раз
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Подключение к MongoDB Atlas
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
+client = MongoClient(MONGO_URI)
+db = client['kadrgram_database']
+users_table = db['users']
+messages_table = db['messages']
 
-# MongoDB
-client = MongoClient("mongodb://localhost:27017/")
-db = client['chat_db']
-users = db['users']
-messages = db['messages']
+@app.route('/')
+def home():
+    if 'user_id' not in session: return redirect('/login')
+    my_id = session['user_id']
+    user = users_table.find_one({"_id": ObjectId(my_id)})
+    if not user: return redirect('/login')
+    
+    # Список контактов (все кроме тебя)
+    all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
+    for u in all_users:
+        u['id'] = str(u['_id'])
+        u['unread'] = messages_table.count_documents({"sender": u['id'], "receiver": my_id, "read": False})
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        
-        if users.find_one({"username": username}):
-            return "User already exists"
-        
-        hashed = generate_password_hash(password)
-        users.insert_one({
-            "username": username,
-            "password": hashed
-        })
-        return redirect("/login")
-    return render_template("register.html")
+    chat_with_id = request.args.get('chat_with')
+    target_user = users_table.find_one({"_id": ObjectId(chat_with_id)}) if chat_with_id else None
+    if target_user: target_user['id'] = str(target_user['_id'])
+    
+    return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/get_messages')
+def get_messages():
+    chat_with = request.args.get('chat_with')
+    my_id = session.get('user_id')
+    msgs = list(messages_table.find({
+        "$or": [
+            {"sender": my_id, "receiver": chat_with},
+            {"sender": chat_with, "receiver": my_id}
+        ]
+    }))
+    for m in msgs:
+        m['id'] = str(m['_id'])
+        m['display_time'] = m['time'][11:16] if 'time' in m else ""
+    return jsonify({"messages": msgs, "my_id": my_id})
+
+@app.route('/send_simple', methods=['POST'])
+def send_simple():
+    data = request.get_json()
+    messages_table.insert_one({
+        "sender": str(session.get('user_id')),
+        "receiver": str(data['receiver_id']),
+        "text": data['text'],
+        "time": datetime.now().isoformat(),
+        "read": False
+    })
+    return jsonify({"status": "ok"})
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        user = users.find_one({"username": username})
-        
-        if user and check_password_hash(user["password"], password):
-            session["username"] = username
-            return redirect("/")
-        return "Invalid credentials"
-    return render_template("login.html")
+    if request.method == 'POST':
+        u_login = request.form.get('login')
+        u_pwd = request.form.get('pwd')
+        res = users_table.find_one({"login": u_login, "password": u_pwd})
+        if res:
+            session['user_id'] = str(res['_id'])
+            return redirect('/')
+    return render_template('login.html')
 
-@app.route("/logout")
+@app.route('/register', methods=['POST'])
+def register():
+    new_user = users_table.insert_one({
+        "login": request.form.get('login'), 
+        "password": request.form.get('pwd'), 
+        "name": request.form.get('name')
+    })
+    session['user_id'] = str(new_user.inserted_id)
+    return redirect('/')
+
+@app.route('/logout')
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect('/login')
 
-# ---------- HISTORY ----------
-@app.route("/get_messages/<user1>/<user2>")
-def get_messages(user1, user2):
-    msgs = list(messages.find({
-        "$or": [
-            {"sender": user1, "receiver": user2},
-            {"sender": user2, "receiver": user1}
-        ]
-    }, {"_id": 0}))
-    return jsonify({"messages": msgs})
-
-# ---------- SOCKET ----------
-@socketio.on("join")
-def on_join(data):
-    username = data["username"]
-    room = data["room"]
-    join_room(room)
-    print(f"{username} joined room: {room}")
-
-@socketio.on("send_message")
-def handle_message(data):
-    sender = data["sender"]
-    receiver = data["receiver"]
-    msg_content = data["message"]
-    room = data["room"]
-    
-    msg = {
-        "sender": sender,
-        "receiver": receiver,
-        "message": msg_content
-    }
-    messages.insert_one(msg.copy()) # Сохраняем в БД
-    
-    if "_id" in msg: del msg["_id"] # Удаляем ObjectId перед отправкой в JSON
-    emit("receive_message", msg, room=room)
-
-# ---------- RUN ----------
-if __name__ == "__main__":
-    # Запускаем один раз с нужными параметрами
-    socketio.run(
-        app, 
-        host="0.0.0.0", 
-        port=5000, 
-        debug=True, 
-        allow_unsafe_werkzeug=True
-    )
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
