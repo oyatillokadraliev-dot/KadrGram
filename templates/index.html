@@ -76,17 +76,19 @@
         }
 
         async function sendMsg() {
-            let inp = document.getElementById('textInp');
-            if (!inp.value) return;
-            await fetch('/send_simple', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({receiver_id:
-                  , text: inp.value})
-            });
-            inp.value = '';
-            loadMsgs();
-        }
+    let inp = document.getElementById('textInp');
+    if (!inp.value) return;
+    await fetch('/send_simple', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            receiver_id: targetId,
+            text: inp.value
+        })
+    });
+    inp.value = '';
+    loadMsgs();
+}
 
         if (targetId) {
             setInterval(loadMsgs, 3000);
