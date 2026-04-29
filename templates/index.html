@@ -1,130 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <title>KadrGram</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-
-  <style>
-    body { background:#0f172a; color:white; }
-
-    .sidebar {
-      height: 100vh;
-      background: #1e293b;
-      padding: 10px;
-    }
-
-    .chat-box {
-      height: 80vh;
-      overflow-y: auto;
-      padding: 10px;
-      background: #0f172a;
-    }
-
-    .msg {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 10px;
-      max-width: 60%;
-    }
-
-    .me { background:#3b82f6; margin-left:auto; }
-    .other { background:#334155; margin-right:auto; }
-
-    .user {
-      padding:10px;
-      cursor:pointer;
-    }
-
-    .user:hover {
-      background:#334155;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>KadrGram</title>
+    <style>
+        body { display: flex; height: 100vh; margin: 0; font-family: sans-serif; }
+        .sidebar { width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+        .search-box { padding: 10px; background: #f0f2f5; }
+        .search-box input { width: 100%; padding: 8px; border-radius: 20px; border: 1px solid #ddd; box-sizing: border-box; }
+        .user-list { flex: 1; overflow-y: auto; }
+        .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
+        .user-item:hover { background: #f9f9f9; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; }
+        .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
+        .msg { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; max-width: 70%; position: relative; }
+        .my-msg { align-self: flex-end; background: #dcf8c6; }
+        .input-area { padding: 20px; background: white; display: flex; }
+        .input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .unread-badge { background: #25d366; color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; }
+    </style>
 </head>
-
 <body>
+    <div class="sidebar">
+        <div class="search-box">
+            <input type="text" id="userSearch" placeholder="Поиск пользователей..." onkeyup="filterUsers()">
+        </div>
+        <div class="user-list" id="contacts">
+            {% for u in all_users %}
+            <div class="user-item" onclick="location.href='/?chat_with={{ u.id }}'">
+                <span>{{ u.name }}</span>
+                {% if u.unread > 0 %}<span class="unread-badge">{{ u.unread }}</span>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div style="padding: 10px; border-top: 1px solid #ddd;">
+            {{ user.name }} | <a href="/logout">Выйти</a>
+        </div>
+    </div>
 
-<div class="container-fluid">
-  <div class="row">
-
-    <!-- USERS -->
-    <div class="col-3 sidebar">
-      <h5>Пользователи</h5>
-
-      {% for u in users %}
-        {% if u.username != session["user"] %}
-          <div class="user" onclick="selectUser('{{u.username}}')">
-            {{u.username}}
-          </div>
+    <div class="chat-area">
+        {% if target_user %}
+            <div style="padding: 15px; background: white; border-bottom: 1px solid #ddd;">Чат с <b>{{ target_user.name }}</b></div>
+            <div class="messages" id="msgBox"></div>
+            <div class="input-area">
+                <input type="text" id="textInp" placeholder="Напишите сообщение...">
+                <button onclick="sendMsg()">Отправить</button>
+            </div>
+        {% else %}
+            <div style="display:flex; justify-content:center; align-items:center; height:100%;">Выберите чат</div>
         {% endif %}
-      {% endfor %}
     </div>
 
-    <!-- CHAT -->
-    <div class="col-9">
-      <h4 class="p-2">Ты: {{session["user"]}}</h4>
+    <script>
+        const targetId = "{{ target_user.id if target_user else '' }}";
 
-      <div id="chat" class="chat-box"></div>
+        function filterUsers() {
+            let val = document.getElementById('userSearch').value.toLowerCase();
+            let items = document.querySelectorAll('.user-item');
+            items.forEach(item => {
+                let name = item.querySelector('span').innerText.toLowerCase();
+                item.style.display = name.includes(val) ? 'flex' : 'none';
+            });
+        }
 
-      <div class="d-flex p-2">
-        <input id="msg" class="form-control me-2">
-        <button onclick="sendMessage()" class="btn btn-primary">Send</button>
-      </div>
-    </div>
+        async function loadMsgs() {
+            if (!targetId) return;
+            let res = await fetch(`/get_messages?chat_with=${targetId}`);
+            let data = await res.json();
+            let html = '';
+            data.messages.forEach(m => {
+                let cls = m.sender === data.my_id ? 'msg my-msg' : 'msg';
+                html += `<div class="${cls}">${m.text}<div style="font-size:10px; color:gray; text-align:right;">${m.display_time}</div></div>`;
+            });
+            document.getElementById('msgBox').innerHTML = html;
+        }
 
-  </div>
-</div>
+        async function sendMsg() {
+            let inp = document.getElementById('textInp');
+            if (!inp.value) return;
+            await fetch('/send_simple', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({receiver_id:
+                  , text: inp.value})
+            });
+            inp.value = '';
+            loadMsgs();
+        }
 
-<script>
-const socket = io();
-const me = "{{session['user']}}";
-let currentUser = null;
-
-function selectUser(user) {
-  currentUser = user;
-  document.getElementById("chat").innerHTML = "";
-
-  socket.emit("join", {
-    user1: me,
-    user2: user
-  });
-}
-
-function sendMessage() {
-  if (!currentUser) return alert("Выбери пользователя");
-
-  const text = document.getElementById("msg").value;
-
-  socket.emit("send_message", {
-    sender: me,
-    receiver: currentUser,
-    text: text
-  });
-
-  document.getElementById("msg").value = "";
-}
-
-socket.on("receive_message", (data) => {
-  if (!currentUser) return;
-
-  const chat = document.getElementById("chat");
-
-  const div = document.createElement("div");
-  div.classList.add("msg");
-
-  if (data.sender === me) {
-    div.classList.add("me");
-  } else {
-    div.classList.add("other");
-  }
-
-  div.innerText = data.text;
-
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-});
-</script>
-
+        if (targetId) {
+            setInterval(loadMsgs, 3000);
+            loadMsgs();
+        }
+    </script>
 </body>
-</html>
+</html> targetId
