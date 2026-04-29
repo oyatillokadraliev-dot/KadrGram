@@ -1,73 +1,104 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>KadrGram Chat</title>
+  <title>KadrGram</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 
   <style>
-    body {
-      background: #0f172a;
-      color: white;
+    body { background:#0f172a; color:white; }
+
+    .sidebar {
+      height: 100vh;
+      background: #1e293b;
+      padding: 10px;
     }
 
     .chat-box {
-      height: 400px;
+      height: 80vh;
       overflow-y: auto;
       padding: 10px;
-      background: #1e293b;
-      border-radius: 10px;
+      background: #0f172a;
     }
 
     .msg {
-      max-width: 60%;
       padding: 10px;
       margin: 5px;
       border-radius: 10px;
+      max-width: 60%;
     }
 
-    .me {
-      background: #3b82f6;
-      margin-left: auto;
+    .me { background:#3b82f6; margin-left:auto; }
+    .other { background:#334155; margin-right:auto; }
+
+    .user {
+      padding:10px;
+      cursor:pointer;
     }
 
-    .other {
-      background: #334155;
-      margin-right: auto;
+    .user:hover {
+      background:#334155;
     }
   </style>
 </head>
 
-<body class="container mt-4">
+<body>
 
-<h4>Ты: {{ session["user"] }}</h4>
+<div class="container-fluid">
+  <div class="row">
 
-<div class="chat-box" id="chat"></div>
+    <!-- USERS -->
+    <div class="col-3 sidebar">
+      <h5>Пользователи</h5>
 
-<div class="d-flex mt-2">
-  <input id="msg" class="form-control me-2" placeholder="Написать сообщение...">
-  <button onclick="sendMessage()" class="btn btn-primary">➤</button>
+      {% for u in users %}
+        {% if u.username != session["user"] %}
+          <div class="user" onclick="selectUser('{{u.username}}')">
+            {{u.username}}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- CHAT -->
+    <div class="col-9">
+      <h4 class="p-2">Ты: {{session["user"]}}</h4>
+
+      <div id="chat" class="chat-box"></div>
+
+      <div class="d-flex p-2">
+        <input id="msg" class="form-control me-2">
+        <button onclick="sendMessage()" class="btn btn-primary">Send</button>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
 const socket = io();
-const me = "{{ session['user'] }}";
+const me = "{{session['user']}}";
+let currentUser = null;
 
-// ⚠️ пока без выбора пользователя (упрощено)
-const other = "test";  
+function selectUser(user) {
+  currentUser = user;
+  document.getElementById("chat").innerHTML = "";
 
-socket.emit("join", {
-  user1: me,
-  user2: other
-});
+  socket.emit("join", {
+    user1: me,
+    user2: user
+  });
+}
 
 function sendMessage() {
+  if (!currentUser) return alert("Выбери пользователя");
+
   const text = document.getElementById("msg").value;
 
   socket.emit("send_message", {
     sender: me,
-    receiver: other,
+    receiver: currentUser,
     text: text
   });
 
@@ -75,6 +106,8 @@ function sendMessage() {
 }
 
 socket.on("receive_message", (data) => {
+  if (!currentUser) return;
+
   const chat = document.getElementById("chat");
 
   const div = document.createElement("div");
