@@ -1,55 +1,21 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>KadrGram | Авторизация</title>
-    <style>
-        body { background: #f0f2f5; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; margin: 0; }
-        .auth-card { background: white; padding: 40px; border-radius: 20px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
-        .form-control { width: 100%; border-radius: 10px; padding: 12px; border: 1px solid #ddd; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        .btn-main { background: #3390ec; color: white; border: none; border-radius: 10px; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; }
-        .eye { cursor: pointer; color: #3390ec; font-size: 14px; display: block; margin-bottom: 10px; text-align: right; }
-    </style>
+  <title>Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-<div class="auth-card">
-    <h2 id="title">KadrGram</h2>
-    <form id="login-f" action="/login" method="post">
-        <input name="login" class="form-control" placeholder="Логин" required>
-        <input id="p1" name="pwd" type="password" class="form-control" placeholder="Пароль" required>
-        <span class="eye" onclick="toggle('p1')">Показать пароль</span>
-        <button class="btn-main">ВОЙТИ</button>
-        <p onclick="swap()" style="cursor:pointer; color:#3390ec; font-size:13px; margin-top:15px;">Создать аккаунт</p>
-    </form>
 
-    <form id="reg-f" action="/register" method="post" style="display:none;" onsubmit="return check()">
-        <input name="name" class="form-control" placeholder="Имя Фамилия" required>
-        <input name="login" class="form-control" placeholder="Логин (англ)" pattern="[A-Za-z0-9]+" required>
-        <input id="p2" name="pwd" type="password" class="form-control" placeholder="Пароль (7+ симв, A-Z)" required>
-        <span class="eye" onclick="toggle('p2')">Показать пароль</span>
-        <button class="btn-main" style="background:#34a853;">РЕГИСТРАЦИЯ</button>
-        <p onclick="swap()" style="cursor:pointer; color:#3390ec; font-size:13px; margin-top:15px;">Уже есть аккаунт</p>
-    </form>
-</div>
-<script>
-    function toggle(id) { 
-        const i = document.getElementById(id); 
-        i.type = i.type === 'password' ? 'text' : 'password'; 
-    }
-    function swap() {
-        const l = document.getElementById('login-f'), r = document.getElementById('reg-f'), t = document.getElementById('title');
-        l.style.display = l.style.display === 'none' ? 'block' : 'none';
-        r.style.display = r.style.display === 'none' ? 'block' : 'none';
-        t.innerText = l.style.display === 'none' ? 'Регистрация' : 'KadrGram';
-    }
-    function check() {
-        const p = document.getElementById('p2').value;
-        if(p.length < 7 || !/[A-Z]/.test(p) || !/^[A-Za-z0-9]+$/.test(p)) {
-            alert("Пароль: мин 7 симв, англ буквы, хотя бы одна ЗАГЛАВНАЯ!");
-            return false;
-        }
-        return true;
-    }
-</script>
+<body class="container mt-5">
+
+<h2>Login</h2>
+
+<form method="post">
+  <input name="username" class="form-control mb-2" placeholder="Username">
+  <input name="password" type="password" class="form-control mb-2" placeholder="Password">
+  <button class="btn btn-primary">Login</button>
+</form>
+
+<a href="/register">Register</a>
+
 </body>
 </html>
