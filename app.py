@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect, session
+import eventlet
+eventlet.monkey_patch()
+
+from flask import Flask, render_template, request, redirect, session, jsonify
 from flask_socketio import SocketIO, emit, join_room
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
@@ -6,7 +9,7 @@ from pymongo import MongoClient
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -33,11 +36,9 @@ def register():
         if users.find_one({"username": username}):
             return "User already exists"
 
-        hashed = generate_password_hash(password)
-
         users.insert_one({
             "username": username,
-            "password": hashed
+            "password": generate_password_hash(password)
         })
 
         return redirect("/login")
@@ -59,6 +60,24 @@ def login():
         return "Invalid login"
 
     return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+# ---------- HISTORY ----------
+
+@app.route("/get_messages/<user1>/<user2>")
+def get_messages(user1, user2):
+    msgs = list(messages.find({
+        "$or": [
+            {"sender": user1, "receiver": user2},
+            {"sender": user2, "receiver": user1}
+        ]
+    }, {"_id": 0}))
+
+    return jsonify({"messages": msgs})
 
 # ---------- SOCKET ----------
 
@@ -85,7 +104,13 @@ def handle_message(data):
 
     emit("receive_message", msg, room=room)
 
-# ---------- RUN ----------
+# ---------- RUN (ВАЖНО!) ----------
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        debug=True,
+        allow_unsafe_werkzeug=True
+    )
