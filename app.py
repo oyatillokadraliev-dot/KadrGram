@@ -14,7 +14,7 @@ db = client['kadrgram_database']
 users_table = db['users']
 messages_table = db['messages']
 
-# Создаем уникальный индекс для логинов (чтобы база сама не пускала дубликаты)
+# Создаем уникальный индекс для логинов
 users_table.create_index("login", unique=True)
 
 @app.route('/')
@@ -47,7 +47,9 @@ def get_messages():
     my_id = session.get('user_id')
     if not chat_with or not my_id: return jsonify({"messages": [], "my_id": my_id})
     try:
+        # Помечаем сообщения как прочитанные
         messages_table.update_many({"sender": chat_with, "receiver": my_id, "read": False}, {"$set": {"read": True}})
+        
         msgs = list(messages_table.find({"$or": [{"sender": my_id, "receiver": chat_with}, {"sender": chat_with, "receiver": my_id}]}))
         for m in msgs:
             m['id'] = str(m['_id'])
@@ -84,6 +86,25 @@ def send_simple():
     })
     return jsonify({"status": "ok"})
 
+@app.route('/search')
+def search():
+    if 'user_id' not in session: return redirect('/login')
+    query = request.args.get('query', '').strip()
+    results = []
+    if query:
+        found = users_table.find({
+            "$and": [
+                {"_id": {"$ne": ObjectId(session['user_id'])}},
+                {"$or": [
+                    {"name": {"$regex": query, "$options": "i"}},
+                    {"login": {"$regex": query, "$options": "i"}}
+                ]}
+            ]
+        })
+        for u in found:
+            results.append({"id": str(u['_id']), "name": u.get('name'), "login": u.get('login')})
+    return render_template('search.html', results=results)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = request.args.get('error')
@@ -101,11 +122,16 @@ def register():
     p = request.form.get('pwd', '')
     n = request.form.get('name', '').strip()
 
-    # Проверки
+    # Проверка на дубликат логина
     if users_table.find_one({"login": l}):
         return redirect(url_for('login', error="login_taken"))
     
-    if not re.match(r"^[A-Za-z0-9]+$", l) or len(p) < 7 or not any(x.isupper() for x in p):
+    # Проверка сложности и языка
+    is_eng_login = bool(re.match(r"^[A-Za-z0-9]+$", l))
+    is_eng_pass = bool(re.match(r"^[A-Za-z0-9!@#$%^&*()_+=-]+$", p))
+    has_cap = any(x.isupper() for x in p)
+    
+    if not is_eng_login or not is_eng_pass or len(p) < 7 or not has_cap:
         return redirect(url_for('login', error="invalid_data"))
 
     new_user = users_table.insert_one({"login": l, "password": p, "name": n})
