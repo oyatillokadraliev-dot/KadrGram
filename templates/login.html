@@ -5,37 +5,122 @@
     <title>KadrGram - Вход</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .auth-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 300px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #0088cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .toggle { text-align: center; margin-top: 10px; font-size: 14px; color: #0088cc; cursor: pointer; }
+        .auth-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        button { width: 100%; padding: 12px; background: #0088cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .toggle { text-align: center; margin-top: 15px; font-size: 14px; color: #0088cc; cursor: pointer; }
+        .pass-group { position: relative; }
+        .eye-btn { position: absolute; right: 12px; top: 22px; font-size: 12px; color: #0088cc; cursor: pointer; user-select: none; }
+        .hint { font-size: 11px; margin-bottom: 5px; color: #777; transition: 0.3s; }
+        .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; background: #ccc; }
+        .error-box { background: #fee; color: #d9534f; padding: 10px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 15px; border: 1px solid #fcc; }
     </style>
 </head>
 <body>
-    <div class="auth-container" id="loginBox">
-        <h2>Вход в KadrGram</h2>
-        <form action="/login" method="post">
-            <input type="text" name="login" placeholder="Логин" required>
-            <input type="password" name="pwd" placeholder="Пароль" required>
-            <button type="submit">Войти</button>
-        </form>
-        <div class="toggle" onclick="showReg()">Нет аккаунта? Регистрация</div>
-    </div>
+    <div class="auth-container">
+        <!-- Блок ошибок сервера -->
+        {% if error == 'login_taken' %}
+            <div class="error-box">Этот логин уже занят!</div>
+        {% elif error == 'wrong_pass' %}
+            <div class="error-box">Неверный логин или пароль</div>
+        {% elif error == 'invalid_data' %}
+            <div class="error-box">Данные не соответствуют правилам</div>
+        {% endif %}
 
-    <div class="auth-container" id="regBox" style="display:none;">
-        <h2>Регистрация</h2>
-        <form action="/register" method="post">
-            <input type="text" name="name" placeholder="Ваше имя" required>
-            <input type="text" name="login" placeholder="Придумайте логин" required>
-            <input type="password" name="pwd" placeholder="Придумайте пароль" required>
-            <button type="submit">Создать аккаунт</button>
-        </form>
-        <div class="toggle" onclick="showLogin()">Уже есть аккаунт? Войти</div>
+        <!-- ФОРМА ВХОДА -->
+        <div id="loginBox">
+            <h2>Вход</h2>
+            <form action="/login" method="post">
+                <input type="text" name="login" placeholder="Логин" required>
+                <div class="pass-group">
+                    <input type="password" name="pwd" id="l_pwd" placeholder="Пароль" required>
+                    <span class="eye-btn" onclick="togglePass('l_pwd')">Показать</span>
+                </div>
+                <button type="submit">Войти</button>
+            </form>
+            <div class="toggle" onclick="toggleMode()">Нет аккаунта? Регистрация</div>
+        </div>
+
+        <!-- ФОРМА РЕГИСТРАЦИИ -->
+        <div id="regBox" style="display:none;">
+            <h2>Регистрация</h2>
+            <form action="/register" method="post" id="regForm">
+                <input type="text" name="name" placeholder="Ваше имя" required>
+                <input type="text" name="login" id="r_login" placeholder="Логин (English only)" required>
+                
+                <div class="pass-group">
+                    <input type="password" name="pwd" id="r_pwd" placeholder="Пароль" required>
+                    <span class="eye-btn" onclick="togglePass('r_pwd')">Показать</span>
+                </div>
+
+                <div style="margin: 10px 0;">
+                    <div id="len_hint" class="hint"><span class="status-dot"></span> 7+ символов</div>
+                    <div id="cap_hint" class="hint"><span class="status-dot"></span> 1 заглавная буква</div>
+                </div>
+
+                <button type="submit" id="regBtn" disabled>Создать аккаунт</button>
+            </form>
+            <div class="toggle" onclick="toggleMode()">Есть аккаунт? Войти</div>
+        </div>
     </div>
 
     <script>
-        function showReg() { document.getElementById('loginBox').style.display='none'; document.getElementById('regBox').style.display='block'; }
-        function showLogin() { document.getElementById('regBox').style.display='none'; document.getElementById('loginBox').style.display='block'; }
+        // Переключение между Входом и Регистрацией
+        function toggleMode() {
+            const l = document.getElementById('loginBox');
+            const r = document.getElementById('regBox');
+            l.style.display = l.style.display === 'none' ? 'block' : 'none';
+            r.style.display = r.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Если пришла ошибка регистрации, сразу показываем форму регистрации
+        if ("{{error}}" === "login_taken" || "{{error}}" === "invalid_data") toggleMode();
+
+        function togglePass(id) {
+            const inp = document.getElementById(id);
+            const btn = inp.nextElementSibling;
+            if (inp.type === "password") {
+                inp.type = "text"; btn.textContent = "Скрыть";
+            } else {
+                inp.type = "password"; btn.textContent = "Показать";
+            }
+        }
+
+        const rLogin = document.getElementById('r_login');
+        const rPwd = document.getElementById('r_pwd');
+        const regBtn = document.getElementById('regBtn');
+
+        // Логин: запрет на всё, кроме A-Z, 0-9
+        rLogin.oninput = function() {
+            this.value = this.value.replace(/[^A-Za-z0-9]/g, '');
+        };
+
+        // Пароль: живая проверка
+        rPwd.oninput = function() {
+            const val = this.value;
+            const isLenOk = val.length >= 7;
+            const isCapOk = /[A-Z]/.test(val);
+
+            updateHint('len_hint', isLenOk);
+            updateHint('cap_hint', isCapOk);
+
+            if (isLenOk && isCapOk) {
+                this.style.borderColor = '#25d366';
+                regBtn.disabled = false;
+            } else {
+                this.style.borderColor = val.length > 0 ? '#d9534f' : '#ddd';
+                regBtn.disabled = true;
+            }
+        };
+
+        function updateHint(id, isValid) {
+            const el = document.getElementById(id);
+            const dot = el.querySelector('.status-dot');
+            el.style.color = isValid ? '#25d366' : '#d9534f';
+            dot.style.background = isValid ? '#25d366' : '#d9534f';
+        }
     </script>
 </body>
 </html>
