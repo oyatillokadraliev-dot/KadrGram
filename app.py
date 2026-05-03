@@ -7,7 +7,6 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
-# ПОДКЛЮЧЕНИЕ К БАЗЕ
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
@@ -21,8 +20,7 @@ def home():
     try:
         user = users_table.find_one({"_id": ObjectId(my_id)})
         if not user: return redirect('/login')
-    except:
-        return redirect('/login')
+    except: return redirect('/login')
     
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     for u in all_users:
@@ -35,8 +33,7 @@ def home():
         try:
             target_user = users_table.find_one({"_id": ObjectId(chat_with_id)})
             if target_user: target_user['id'] = str(target_user['_id'])
-        except:
-            target_user = None
+        except: target_user = None
             
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
@@ -45,30 +42,16 @@ def get_messages():
     chat_with = request.args.get('chat_with')
     my_id = session.get('user_id')
     if not chat_with or not my_id: return jsonify({"messages": [], "my_id": my_id})
-
     try:
-        # Помечаем сообщения как прочитанные
-        messages_table.update_many(
-            {"sender": chat_with, "receiver": my_id, "read": False},
-            {"$set": {"read": True}}
-        )
-
-        msgs = list(messages_table.find({
-            "$or": [
-                {"sender": my_id, "receiver": chat_with},
-                {"sender": chat_with, "receiver": my_id}
-            ]
-        }))
-        
+        messages_table.update_many({"sender": chat_with, "receiver": my_id, "read": False}, {"$set": {"read": True}})
+        msgs = list(messages_table.find({"$or": [{"sender": my_id, "receiver": chat_with}, {"sender": chat_with, "receiver": my_id}]}))
         for m in msgs:
             m['id'] = str(m['_id'])
             del m['_id']
-            # Передаем полную ISO строку. "Z" в конце скажет JavaScript, что это UTC
             m['utc_time'] = m.get('time', "")
-            
+            m['read'] = m.get('read', False)
         return jsonify({"messages": msgs, "my_id": my_id})
-    except Exception as e:
-        return jsonify({"messages": [], "error": str(e)}), 500
+    except Exception as e: return jsonify({"messages": [], "error": str(e)}), 500
 
 @app.route('/get_contacts')
 def get_contacts():
@@ -88,12 +71,11 @@ def send_simple():
     data = request.get_json()
     my_id = session.get('user_id')
     if not data or not my_id: return jsonify({"status": "error"}), 400
-        
     messages_table.insert_one({
         "sender": str(my_id),
         "receiver": str(data.get('receiver_id')),
         "text": data.get('text'),
-        "time": datetime.utcnow().isoformat() + "Z", # Сохраняем в UTC формате
+        "time": datetime.utcnow().isoformat() + "Z",
         "read": False
     })
     return jsonify({"status": "ok"})
