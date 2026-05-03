@@ -13,11 +13,11 @@
         .user-item:hover { background: #f9f9f9; }
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; }
         .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-        .msg { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; max-width: 70%; position: relative; }
+        .msg { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; max-width: 70%; position: relative; word-wrap: break-word; }
         .my-msg { align-self: flex-end; background: #dcf8c6; }
         .input-area { padding: 20px; background: white; display: flex; }
         .input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .unread-badge { background: #25d366; color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; }
+        .unread-badge { background: #25d366; color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; height: fit-content; }
     </style>
 </head>
 <body>
@@ -27,9 +27,13 @@
         </div>
         <div class="user-list" id="contacts">
             {% for u in all_users %}
-            <div class="user-item" onclick="location.href='/?chat_with={{ u.id }}'">
+            <!-- Добавили id="user-{{ u.id }}" чтобы JS мог найти этот элемент -->
+            <div class="user-item" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
                 <span>{{ u.name }}</span>
-                {% if u.unread > 0 %}<span class="unread-badge">{{ u.unread }}</span>{% endif %}
+                <!-- Добавили id="badge-{{ u.id }}" для управления счетчиком -->
+                <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>
+                    {{ u.unread if u.unread > 0 else '' }}
+                </span>
             </div>
             {% endfor %}
         </div>
@@ -43,7 +47,7 @@
             <div style="padding: 15px; background: white; border-bottom: 1px solid #ddd;">Чат с <b>{{ target_user.name }}</b></div>
             <div class="messages" id="msgBox"></div>
             <div class="input-area">
-                <input type="text" id="textInp" placeholder="Напишите сообщение...">
+                <input type="text" id="textInp" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMsg()">
                 <button onclick="sendMsg()">Отправить</button>
             </div>
         {% else %}
@@ -63,6 +67,24 @@
             });
         }
 
+        // 1. Функция обновления счетчиков в сайдбаре
+        async function updateBadges() {
+            let res = await fetch('/get_contacts'); // Создадим этот роут в app.py
+            let contacts = await res.json();
+            contacts.forEach(c => {
+                let badge = document.getElementById(`badge-${c.id}`);
+                if (badge) {
+                    if (c.unread > 0) {
+                        badge.innerText = c.unread;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.innerText = '';
+                        badge.style.display = 'none';
+                    }
+                }
+            });
+        }
+
         async function loadMsgs() {
             if (!targetId) return;
             let res = await fetch(`/get_messages?chat_with=${targetId}`);
@@ -72,28 +94,41 @@
                 let cls = m.sender === data.my_id ? 'msg my-msg' : 'msg';
                 html += `<div class="${cls}">${m.text}<div style="font-size:10px; color:gray; text-align:right;">${m.display_time}</div></div>`;
             });
-            document.getElementById('msgBox').innerHTML = html;
+            
+            // Сохраняем позицию скролла, если пользователь прокрутил вверх
+            let msgBox = document.getElementById('msgBox');
+            let isAtBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 1;
+            
+            msgBox.innerHTML = html;
+
+            // Если были внизу, прокручиваем к новым сообщениям
+            if (isAtBottom) msgBox.scrollTop = msgBox.scrollHeight;
         }
 
         async function sendMsg() {
-    let inp = document.getElementById('textInp');
-    if (!inp.value) return;
-    await fetch('/send_simple', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            receiver_id: targetId,
-            text: inp.value
-        })
-    });
-    inp.value = '';
-    loadMsgs();
-}
+            let inp = document.getElementById('textInp');
+            if (!inp.value.trim()) return;
+            let text = inp.value;
+            inp.value = ''; // Очищаем сразу для скорости
+            
+            await fetch('/send_simple', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    receiver_id: targetId,
+                    text: text
+                })
+            });
+            loadMsgs();
+        }
+
+        // Запускаем циклы обновления
+        setInterval(updateBadges, 3000); // Обновляем сайдбар всегда
 
         if (targetId) {
-            setInterval(loadMsgs, 3000);
+            setInterval(loadMsgs, 3000); // Сообщения обновляем только в чате
             loadMsgs();
         }
     </script>
 </body>
-</html> targetId
+</html>
