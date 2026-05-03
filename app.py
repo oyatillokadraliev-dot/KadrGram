@@ -18,13 +18,11 @@ messages_table = db['messages']
 def home():
     if 'user_id' not in session: return redirect('/login')
     my_id = session['user_id']
-    
     try:
         user = users_table.find_one({"_id": ObjectId(my_id)})
+        if not user: return redirect('/login')
     except:
         return redirect('/login')
-        
-    if not user: return redirect('/login')
     
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     for u in all_users:
@@ -46,13 +44,10 @@ def home():
 def get_messages():
     chat_with = request.args.get('chat_with')
     my_id = session.get('user_id')
-    
-    if not chat_with or not my_id:
-        return jsonify({"messages": [], "my_id": my_id})
+    if not chat_with or not my_id: return jsonify({"messages": [], "my_id": my_id})
 
     try:
-        # ПОМЕЧАЕМ КАК ПРОЧИТАННЫЕ: когда я загружаю чат с кем-то, 
-        # все сообщения от него ко мне становятся read: True
+        # Помечаем сообщения как прочитанные
         messages_table.update_many(
             {"sender": chat_with, "receiver": my_id, "read": False},
             {"$set": {"read": True}}
@@ -68,7 +63,8 @@ def get_messages():
         for m in msgs:
             m['id'] = str(m['_id'])
             del m['_id']
-            m['display_time'] = m.get('time', "")[11:16]
+            # Передаем полную ISO строку. "Z" в конце скажет JavaScript, что это UTC
+            m['utc_time'] = m.get('time', "")
             
         return jsonify({"messages": msgs, "my_id": my_id})
     except Exception as e:
@@ -76,10 +72,8 @@ def get_messages():
 
 @app.route('/get_contacts')
 def get_contacts():
-    """Эндпоинт для обновления счетчиков в реальном времени"""
     my_id = session.get('user_id')
     if not my_id: return jsonify([])
-    
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     contacts_data = []
     for u in all_users:
@@ -93,15 +87,13 @@ def get_contacts():
 def send_simple():
     data = request.get_json()
     my_id = session.get('user_id')
-    
-    if not data or not my_id:
-        return jsonify({"status": "error"}), 400
+    if not data or not my_id: return jsonify({"status": "error"}), 400
         
     messages_table.insert_one({
         "sender": str(my_id),
         "receiver": str(data.get('receiver_id')),
         "text": data.get('text'),
-        "time": datetime.now().isoformat(),
+        "time": datetime.utcnow().isoformat() + "Z", # Сохраняем в UTC формате
         "read": False
     })
     return jsonify({"status": "ok"})
@@ -117,15 +109,9 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
-    login_val = request.form.get('login')
-    name_val = request.form.get('name')
-    if not login_val or not name_val: return redirect('/login')
-    
-    new_user = users_table.insert_one({
-        "login": login_val, 
-        "password": request.form.get('pwd'), 
-        "name": name_val
-    })
+    l, p, n = request.form.get('login'), request.form.get('pwd'), request.form.get('name')
+    if not l or not n: return redirect('/login')
+    new_user = users_table.insert_one({"login": l, "password": p, "name": n})
     session['user_id'] = str(new_user.inserted_id)
     return redirect('/')
 
