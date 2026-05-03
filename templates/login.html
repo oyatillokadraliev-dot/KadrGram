@@ -2,41 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KadrGram - Вход</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .auth-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
-        /* Стиль для главного заголовка */
-        .brand-title { text-align: center; color: #0088cc; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        h2 { text-align: center; color: #333; margin-top: 0; font-size: 18px; margin-bottom: 20px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100dvh; margin: 0; padding: 20px; box-sizing: border-box; }
         
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        button { width: 100%; padding: 12px; background: #0088cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .toggle { text-align: center; margin-top: 15px; font-size: 14px; color: #0088cc; cursor: pointer; }
+        .auth-container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            width: 100%; 
+            max-width: 360px; /* На компьютере будет узкой, на телефоне — на весь экран */
+        }
+
+        .brand-title { text-align: center; color: #0088cc; font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        h2 { text-align: center; color: #333; margin-top: 0; font-size: 20px; margin-bottom: 25px; }
+        
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; outline: none; font-size: 16px; transition: 0.3s; background: #f9f9f9; }
+        input:focus { border-color: #0088cc; background: white; }
+
+        button { width: 100%; padding: 14px; background: #0088cc; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 15px; font-size: 16px; }
+        button:disabled { background: #ccc; }
+        
+        .toggle { text-align: center; margin-top: 20px; font-size: 15px; color: #0088cc; cursor: pointer; font-weight: 500; }
+        
         .pass-group { position: relative; }
-        .eye-btn { position: absolute; right: 12px; top: 22px; font-size: 12px; color: #0088cc; cursor: pointer; user-select: none; }
-        .hint { font-size: 11px; margin-bottom: 5px; color: #777; transition: 0.3s; }
-        .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; background: #ccc; }
-        .error-box { background: #fee; color: #d9534f; padding: 10px; border-radius: 6px; font-size: 13px; text-align: center; margin-bottom: 15px; border: 1px solid #fcc; }
+        .eye-btn { position: absolute; right: 15px; top: 24px; font-size: 13px; color: #0088cc; cursor: pointer; user-select: none; font-weight: bold; }
+        
+        .hint { font-size: 12px; margin-bottom: 6px; color: #777; display: flex; align-items: center; }
+        .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: #ccc; }
+        .error-box { background: #fee; color: #d9534f; padding: 12px; border-radius: 10px; font-size: 14px; text-align: center; margin-bottom: 20px; border: 1px solid #fcc; }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <!-- ГЛАВНОЕ НАЗВАНИЕ -->
         <div class="brand-title">KadrGram</div>
 
         {% if error == 'login_taken' %}<div class="error-box">Этот логин уже занят!</div>
         {% elif error == 'wrong_pass' %}<div class="error-box">Неверный логин или пароль</div>
         {% elif error == 'invalid_data' %}<div class="error-box">Данные не соответствуют правилам</div>{% endif %}
 
-        <!-- ФОРМА ВХОДА -->
         <div id="loginBox">
             <h2>Войти</h2>
             <form action="/login" method="post">
-                <input type="text" name="login" placeholder="Логин" required>
+                <input type="text" name="login" placeholder="Логин" required autocomplete="username">
                 <div class="pass-group">
-                    <input type="password" name="pwd" id="l_pwd" placeholder="Пароль" required>
+                    <input type="password" name="pwd" id="l_pwd" placeholder="Пароль" required autocomplete="current-password">
                     <span class="eye-btn" onclick="togglePass('l_pwd')">Показать</span>
                 </div>
                 <button type="submit">Войти</button>
@@ -44,12 +56,10 @@
             <div class="toggle" onclick="toggleMode()">Нет аккаунта? Регистрация</div>
         </div>
 
-        <!-- ФОРМА РЕГИСТРАЦИИ -->
         <div id="regBox" style="display:none;">
             <h2>Регистрация</h2>
             <form action="/register" method="post" id="regForm">
                 <input type="text" name="name" placeholder="Ваше имя" required>
-                
                 <input type="text" name="login" id="r_login" placeholder="Логин" required>
                 <div id="log_hint" class="hint" style="margin-top:-5px; margin-bottom:10px;"><span class="status-dot"></span> Только английские буквы</div>
                 
@@ -58,7 +68,7 @@
                     <span class="eye-btn" onclick="togglePass('r_pwd')">Показать</span>
                 </div>
 
-                <div style="margin: 10px 0;">
+                <div style="margin: 15px 0;">
                     <div id="len_hint" class="hint"><span class="status-dot"></span> 7+ символов</div>
                     <div id="cap_hint" class="hint"><span class="status-dot"></span> 1 заглавная буква</div>
                     <div id="lang_hint" class="hint"><span class="status-dot"></span> Только английские буквы</div>
