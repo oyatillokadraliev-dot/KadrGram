@@ -6,7 +6,10 @@
     <style>
         body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .auth-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
+        /* Стиль для главного заголовка */
+        .brand-title { text-align: center; color: #0088cc; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
+        h2 { text-align: center; color: #333; margin-top: 0; font-size: 18px; margin-bottom: 20px; }
+        
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; }
         button { width: 100%; padding: 12px; background: #0088cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
@@ -20,18 +23,16 @@
 </head>
 <body>
     <div class="auth-container">
-        <!-- Блок ошибок сервера -->
-        {% if error == 'login_taken' %}
-            <div class="error-box">Этот логин уже занят!</div>
-        {% elif error == 'wrong_pass' %}
-            <div class="error-box">Неверный логин или пароль</div>
-        {% elif error == 'invalid_data' %}
-            <div class="error-box">Данные не соответствуют правилам</div>
-        {% endif %}
+        <!-- ГЛАВНОЕ НАЗВАНИЕ -->
+        <div class="brand-title">KadrGram</div>
+
+        {% if error == 'login_taken' %}<div class="error-box">Этот логин уже занят!</div>
+        {% elif error == 'wrong_pass' %}<div class="error-box">Неверный логин или пароль</div>
+        {% elif error == 'invalid_data' %}<div class="error-box">Данные не соответствуют правилам</div>{% endif %}
 
         <!-- ФОРМА ВХОДА -->
         <div id="loginBox">
-            <h2>Вход</h2>
+            <h2>Войти</h2>
             <form action="/login" method="post">
                 <input type="text" name="login" placeholder="Логин" required>
                 <div class="pass-group">
@@ -48,7 +49,9 @@
             <h2>Регистрация</h2>
             <form action="/register" method="post" id="regForm">
                 <input type="text" name="name" placeholder="Ваше имя" required>
-                <input type="text" name="login" id="r_login" placeholder="Логин (English only)" required>
+                
+                <input type="text" name="login" id="r_login" placeholder="Логин" required>
+                <div id="log_hint" class="hint" style="margin-top:-5px; margin-bottom:10px;"><span class="status-dot"></span> Только английские буквы</div>
                 
                 <div class="pass-group">
                     <input type="password" name="pwd" id="r_pwd" placeholder="Пароль" required>
@@ -58,6 +61,7 @@
                 <div style="margin: 10px 0;">
                     <div id="len_hint" class="hint"><span class="status-dot"></span> 7+ символов</div>
                     <div id="cap_hint" class="hint"><span class="status-dot"></span> 1 заглавная буква</div>
+                    <div id="lang_hint" class="hint"><span class="status-dot"></span> Только английские буквы</div>
                 </div>
 
                 <button type="submit" id="regBtn" disabled>Создать аккаунт</button>
@@ -67,46 +71,39 @@
     </div>
 
     <script>
-        // Переключение между Входом и Регистрацией
         function toggleMode() {
-            const l = document.getElementById('loginBox');
-            const r = document.getElementById('regBox');
+            const l = document.getElementById('loginBox'), r = document.getElementById('regBox');
             l.style.display = l.style.display === 'none' ? 'block' : 'none';
             r.style.display = r.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Если пришла ошибка регистрации, сразу показываем форму регистрации
         if ("{{error}}" === "login_taken" || "{{error}}" === "invalid_data") toggleMode();
 
         function togglePass(id) {
             const inp = document.getElementById(id);
             const btn = inp.nextElementSibling;
-            if (inp.type === "password") {
-                inp.type = "text"; btn.textContent = "Скрыть";
-            } else {
-                inp.type = "password"; btn.textContent = "Показать";
-            }
+            inp.type = inp.type === "password" ? "text" : "password";
+            btn.textContent = inp.type === "password" ? "Показать" : "Скрыть";
         }
 
-        const rLogin = document.getElementById('r_login');
-        const rPwd = document.getElementById('r_pwd');
-        const regBtn = document.getElementById('regBtn');
+        const rLogin = document.getElementById('r_login'), rPwd = document.getElementById('r_pwd'), regBtn = document.getElementById('regBtn');
 
-        // Логин: запрет на всё, кроме A-Z, 0-9
         rLogin.oninput = function() {
             this.value = this.value.replace(/[^A-Za-z0-9]/g, '');
+            updateHint('log_hint', this.value.length > 0);
         };
 
-        // Пароль: живая проверка
         rPwd.oninput = function() {
             const val = this.value;
             const isLenOk = val.length >= 7;
             const isCapOk = /[A-Z]/.test(val);
+            const isEngOk = /^[A-Za-z0-9!@#$%^&*()_+=-]*$/.test(val) && val.length > 0;
 
             updateHint('len_hint', isLenOk);
             updateHint('cap_hint', isCapOk);
+            updateHint('lang_hint', isEngOk);
 
-            if (isLenOk && isCapOk) {
+            if (isLenOk && isCapOk && isEngOk) {
                 this.style.borderColor = '#25d366';
                 regBtn.disabled = false;
             } else {
@@ -117,6 +114,7 @@
 
         function updateHint(id, isValid) {
             const el = document.getElementById(id);
+            if (!el) return;
             const dot = el.querySelector('.status-dot');
             el.style.color = isValid ? '#25d366' : '#d9534f';
             dot.style.background = isValid ? '#25d366' : '#d9534f';
