@@ -1,5 +1,5 @@
-import os
-from flask import Flask, render_template, request, session, redirect, jsonify
+import os, re
+from flask import Flask, render_template, request, session, redirect, jsonify, url_for
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -7,11 +7,15 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
+# ПОДКЛЮЧЕНИЕ К БАЗЕ
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
 users_table = db['users']
 messages_table = db['messages']
+
+# Создаем уникальный индекс для логинов (чтобы база сама не пускала дубликаты)
+users_table.create_index("login", unique=True)
 
 @app.route('/')
 def home():
@@ -82,17 +86,28 @@ def send_simple():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = request.args.get('error')
     if request.method == 'POST':
         res = users_table.find_one({"login": request.form.get('login'), "password": request.form.get('pwd')})
         if res:
             session['user_id'] = str(res['_id'])
             return redirect('/')
-    return render_template('login.html')
+        return redirect(url_for('login', error="wrong_pass"))
+    return render_template('login.html', error=error)
 
 @app.route('/register', methods=['POST'])
 def register():
-    l, p, n = request.form.get('login'), request.form.get('pwd'), request.form.get('name')
-    if not l or not n: return redirect('/login')
+    l = request.form.get('login', '').strip()
+    p = request.form.get('pwd', '')
+    n = request.form.get('name', '').strip()
+
+    # Проверки
+    if users_table.find_one({"login": l}):
+        return redirect(url_for('login', error="login_taken"))
+    
+    if not re.match(r"^[A-Za-z0-9]+$", l) or len(p) < 7 or not any(x.isupper() for x in p):
+        return redirect(url_for('login', error="invalid_data"))
+
     new_user = users_table.insert_one({"login": l, "password": p, "name": n})
     session['user_id'] = str(new_user.inserted_id)
     return redirect('/')
