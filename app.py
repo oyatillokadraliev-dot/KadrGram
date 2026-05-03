@@ -43,6 +43,7 @@ def home():
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
 @app.route('/get_messages')
+@app.route('/get_messages')
 def get_messages():
     chat_with = request.args.get('chat_with')
     my_id = session.get('user_id')
@@ -51,6 +52,13 @@ def get_messages():
         return jsonify({"messages": [], "my_id": my_id})
 
     try:
+        # 1. Сначала помечаем все сообщения от собеседника ко мне как прочитанные
+        messages_table.update_many(
+            {"sender": chat_with, "receiver": my_id, "read": False},
+            {"$set": {"read": True}}
+        )
+
+        # 2. Получаем историю переписки (уже с обновленными статусами)
         msgs = list(messages_table.find({
             "$or": [
                 {"sender": my_id, "receiver": chat_with},
@@ -61,7 +69,8 @@ def get_messages():
         for m in msgs:
             m['id'] = str(m['_id'])
             del m['_id']
-            m['display_time'] = m['time'][11:16] if 'time' in m else ""
+            # Используем безопасный метод получения времени
+            m['display_time'] = m.get('time', "")[11:16]
             
         return jsonify({"messages": msgs, "my_id": my_id})
     except Exception as e:
