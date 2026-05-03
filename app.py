@@ -1,6 +1,5 @@
-
 import os
-from flask import Flask, render_template, request, session, redirect, jsonify, flash
+from flask import Flask, render_template, request, session, redirect, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -8,7 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
-# Подключение к MongoDB Atlas
+# ПОДКЛЮЧЕНИЕ К БАЗЕ
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
@@ -19,43 +18,67 @@ messages_table = db['messages']
 def home():
     if 'user_id' not in session: return redirect('/login')
     my_id = session['user_id']
-    user = users_table.find_one({"_id": ObjectId(my_id)})
+    
+    try:
+        user = users_table.find_one({"_id": ObjectId(my_id)})
+    except:
+        return redirect('/login')
+        
     if not user: return redirect('/login')
     
-    # Список контактов (все кроме тебя)
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     for u in all_users:
         u['id'] = str(u['_id'])
         u['unread'] = messages_table.count_documents({"sender": u['id'], "receiver": my_id, "read": False})
 
     chat_with_id = request.args.get('chat_with')
-    target_user = users_table.find_one({"_id": ObjectId(chat_with_id)}) if chat_with_id else None
-    if target_user: target_user['id'] = str(target_user['_id'])
-    
+    target_user = None
+    if chat_with_id:
+        try:
+            target_user = users_table.find_one({"_id": ObjectId(chat_with_id)})
+            if target_user: target_user['id'] = str(target_user['_id'])
+        except:
+            target_user = None
+            
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
 @app.route('/get_messages')
 def get_messages():
     chat_with = request.args.get('chat_with')
     my_id = session.get('user_id')
-    msgs = list(messages_table.find({
-        "$or": [
-            {"sender": my_id, "receiver": chat_with},
-            {"sender": chat_with, "receiver": my_id}
-        ]
-    }))
-    for m in msgs:
-        m['id'] = str(m['_id'])
-        m['display_time'] = m['time'][11:16] if 'time' in m else ""
-    return jsonify({"messages": msgs, "my_id": my_id})
+    
+    if not chat_with or not my_id:
+        return jsonify({"messages": [], "my_id": my_id})
+
+    try:
+        msgs = list(messages_table.find({
+            "$or": [
+                {"sender": my_id, "receiver": chat_with},
+                {"sender": chat_with, "receiver": my_id}
+            ]
+        }))
+        
+        for m in msgs:
+            m['id'] = str(m['_id'])
+            del m['_id']
+            m['display_time'] = m['time'][11:16] if 'time' in m else ""
+            
+        return jsonify({"messages": msgs, "my_id": my_id})
+    except Exception as e:
+        return jsonify({"messages": [], "error": str(e)}), 500
 
 @app.route('/send_simple', methods=['POST'])
 def send_simple():
     data = request.get_json()
+    my_id = session.get('user_id')
+    
+    if not data or not my_id:
+        return jsonify({"status": "error"}), 400
+        
     messages_table.insert_one({
-        "sender": str(session.get('user_id')),
-        "receiver": str(data['receiver_id']),
-        "text": data['text'],
+        "sender": str(my_id),
+        "receiver": str(data.get('receiver_id')),
+        "text": data.get('text'),
         "time": datetime.now().isoformat(),
         "read": False
     })
@@ -64,9 +87,7 @@ def send_simple():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        u_login = request.form.get('login')
-        u_pwd = request.form.get('pwd')
-        res = users_table.find_one({"login": u_login, "password": u_pwd})
+        res = users_table.find_one({"login": request.form.get('login'), "password": request.form.get('pwd')})
         if res:
             session['user_id'] = str(res['_id'])
             return redirect('/')
