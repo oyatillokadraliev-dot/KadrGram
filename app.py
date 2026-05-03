@@ -43,7 +43,6 @@ def home():
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
 @app.route('/get_messages')
-@app.route('/get_messages')
 def get_messages():
     chat_with = request.args.get('chat_with')
     my_id = session.get('user_id')
@@ -52,13 +51,13 @@ def get_messages():
         return jsonify({"messages": [], "my_id": my_id})
 
     try:
-        # 1. Сначала помечаем все сообщения от собеседника ко мне как прочитанные
+        # ПОМЕЧАЕМ КАК ПРОЧИТАННЫЕ: когда я загружаю чат с кем-то, 
+        # все сообщения от него ко мне становятся read: True
         messages_table.update_many(
             {"sender": chat_with, "receiver": my_id, "read": False},
             {"$set": {"read": True}}
         )
 
-        # 2. Получаем историю переписки (уже с обновленными статусами)
         msgs = list(messages_table.find({
             "$or": [
                 {"sender": my_id, "receiver": chat_with},
@@ -69,12 +68,26 @@ def get_messages():
         for m in msgs:
             m['id'] = str(m['_id'])
             del m['_id']
-            # Используем безопасный метод получения времени
             m['display_time'] = m.get('time', "")[11:16]
             
         return jsonify({"messages": msgs, "my_id": my_id})
     except Exception as e:
         return jsonify({"messages": [], "error": str(e)}), 500
+
+@app.route('/get_contacts')
+def get_contacts():
+    """Эндпоинт для обновления счетчиков в реальном времени"""
+    my_id = session.get('user_id')
+    if not my_id: return jsonify([])
+    
+    all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
+    contacts_data = []
+    for u in all_users:
+        contacts_data.append({
+            "id": str(u['_id']),
+            "unread": messages_table.count_documents({"sender": str(u['_id']), "receiver": my_id, "read": False})
+        })
+    return jsonify(contacts_data)
 
 @app.route('/send_simple', methods=['POST'])
 def send_simple():
@@ -104,10 +117,14 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
+    login_val = request.form.get('login')
+    name_val = request.form.get('name')
+    if not login_val or not name_val: return redirect('/login')
+    
     new_user = users_table.insert_one({
-        "login": request.form.get('login'), 
+        "login": login_val, 
         "password": request.form.get('pwd'), 
-        "name": request.form.get('name')
+        "name": name_val
     })
     session['user_id'] = str(new_user.inserted_id)
     return redirect('/')
