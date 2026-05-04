@@ -5,82 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KadrGram</title>
     <style>
-        /* Главный фикс для iPhone: используем 100dvh */
-        body { 
-            display: flex; 
-            height: 100vh; 
-            height: 100dvh; 
-            margin: 0; 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: #f0f2f5; 
-            overflow: hidden; 
-        }
-        
-        .sidebar { 
-            width: 350px; 
-            border-right: 1px solid #ddd; 
-            display: flex; 
-            flex-direction: column; 
-            background: white; 
-            z-index: 2;
-        }
-        
-        .chat-area { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            background: #e5ddd5; 
-            height: 100%;
-        }
+        body { display: flex; height: 100vh; height: 100dvh; margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #f0f2f5; overflow: hidden; }
+        .sidebar { width: 350px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: white; z-index: 2; transition: 0.3s; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; height: 100%; position: relative; }
 
         @media (max-width: 768px) {
-            .sidebar { 
-                width: 100%; 
-                position: absolute; 
-                height: 100%;
-                display: {{ 'none' if target_user else 'flex' }}; 
-            }
-            .chat-area { 
-                width: 100%;
-                display: {{ 'flex' if target_user else 'none' }}; 
-            }
+            .sidebar { width: 100%; position: absolute; height: 100%; display: {{ 'none' if target_user else 'flex' }}; }
+            .chat-area { width: 100%; display: {{ 'flex' if target_user else 'none' }}; }
             .back-btn { display: block !important; }
         }
 
         .back-btn { display: none; text-decoration: none; color: #0088cc; font-size: 24px; margin-right: 15px; }
-
+        .online-dot { width: 10px; height: 10px; background: #25d366; border-radius: 50%; display: inline-block; margin-left: 6px; border: 2px solid white; box-shadow: 0 0 2px rgba(0,0,0,0.2); }
+        
         .search-box { padding: 10px; background: #f0f2f5; display: flex; align-items: center; gap: 10px; }
         .search-box input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; font-size: 16px; }
         
         .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         
-        .messages { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            -webkit-overflow-scrolling: touch; 
-        }
-        
+        .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
         .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; font-size: 16px; }
         .my-msg { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
         
-        /* Фикс нижней панели для iPhone */
-        .input-area { 
-            padding: 10px 15px; 
-            background: white; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-            border-top: 1px solid #ddd;
-        }
-        
-        .input-area input { flex: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; -webkit-appearance: none; }
+        .input-area { padding: 10px 15px; background: white; display: flex; align-items: center; gap: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #ddd; }
+        .input-area input { flex: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
         .send-btn { background: none; border: none; color: #0088cc; font-size: 28px; cursor: pointer; padding: 0; }
-
         .unread-badge { background: #25d366; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
         #clockWrapper { padding: 10px; text-align: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
     </style>
@@ -99,8 +49,11 @@
 
         <div class="user-list">
             {% for u in all_users %}
-            <div class="user-item" onclick="location.href='/?chat_with={{ u.id }}'">
-                <span>{{ u.name }}</span>
+            <div class="user-item" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
+                <div style="display:flex; align-items:center;">
+                    <span>{{ u.name }}</span>
+                    {% if u.online %}<span class="online-dot"></span>{% endif %}
+                </div>
                 <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
             </div>
             {% endfor %}
@@ -118,9 +71,7 @@
                 <a href="/" class="back-btn">←</a>
                 <div style="font-weight: bold;">{{ target_user.name }}</div>
             </div>
-            
             <div class="messages" id="msgBox"></div>
-            
             <div class="input-area">
                 <input type="text" id="textInp" placeholder="Сообщение..." autocomplete="off" onkeydown="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">➤</button>
@@ -154,12 +105,25 @@
             });
         }
 
-        async function updateBadges() {
+        async function updateBadgesAndStatus() {
             try {
                 let res = await fetch('/get_contacts');
                 let contacts = await res.json();
                 contacts.forEach(c => {
+                    let userItem = document.getElementById(`user-${c.id}`);
                     let badge = document.getElementById(`badge-${c.id}`);
+                    
+                    if (userItem) {
+                        let nameCont = userItem.querySelector('div');
+                        let dot = nameCont.querySelector('.online-dot');
+                        if (c.online) {
+                            if (!dot) {
+                                let newDot = document.createElement('span');
+                                newDot.className = 'online-dot';
+                                nameCont.appendChild(newDot);
+                            }
+                        } else if (dot) { dot.remove(); }
+                    }
                     if (badge) {
                         badge.innerText = c.unread > 0 ? c.unread : '';
                         badge.style.display = c.unread > 0 ? 'inline-block' : 'none';
@@ -200,7 +164,7 @@
             loadMsgs();
         }
 
-        setInterval(updateBadges, 3000);
+        setInterval(updateBadgesAndStatus, 3000);
         if (targetId) { setInterval(loadMsgs, 3000); loadMsgs(); }
     </script>
 </body>
