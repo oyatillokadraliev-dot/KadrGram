@@ -192,44 +192,47 @@
         } catch (e) { console.error("Ошибка синхронизации данных"); }
     }
 
-    // 4. ЗАГРУЗКА СООБЩЕНИЙ
-    async function loadMsgs() {
-        if (!targetId) return;
-        try {
-            const res = await fetch(`/get_messages?chat_with=${targetId}`);
-            const data = await res.json();
-            let html = '';
+async function loadMsgs() {
+    if (!targetId) return;
+    try {
+        const res = await fetch(`/get_messages?chat_with=${targetId}`);
+        const data = await res.json();
+        
+        let html = '';
+        data.messages.forEach(m => {
+            const isMy = m.sender === data.my_id;
+            const cls = isMy ? 'msg my-msg' : 'msg';
+            let time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
+            const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
             
-            data.messages.forEach(m => {
-                const isMy = m.sender === data.my_id;
-                const cls = isMy ? 'msg my-msg' : 'msg';
-                
-                // Безопасное время
-                let time = "";
-                if (m.utc_time) {
-                    try { time = new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); } catch(e){}
-                }
-                
-                const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
-                
-                // Обработка контента (Текст / Фото / Файл)
-                let content = m.text || "";
-                if (m.type === 'image') {
-                    content = `<img src="${m.text}" loading="lazy" onclick="window.open('${m.text}')">
-                               <a href="${m.text}" download class="save-btn">💾 Сохранить</a>`;
-                } else if (m.type === 'file') {
-                    content = `<a href="${m.text}" target="_blank" class="file-link">📁 Файл: ${m.filename || 'Скачать'}</a>`;
-                }
+            let content = m.text || "";
+            if (m.type === 'image') {
+                // Добавляем размеры в тег img, чтобы браузер знал их до загрузки
+                content = `<img src="${m.text}" width="250" height="200" loading="lazy" onclick="window.open('${m.text}')">
+                           <a href="${m.text}" download class="save-btn">💾 Сохранить</a>`;
+            } else if (m.type === 'file') {
+                content = `<a href="${m.text}" target="_blank" class="file-link">📁 Файл</a>`;
+            }
 
-                html += `<div class="${cls}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
-            });
+            html += `<div class="${cls}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
+        });
 
-            const msgBox = document.getElementById('msgBox');
-            const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 150;
+        const msgBox = document.getElementById('msgBox');
+        
+        // Сравниваем старый контент с новым, чтобы не "дергать" страницу зря
+        if (msgBox.innerHTML !== html) {
+            const isAtBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 200;
+            
             msgBox.innerHTML = html;
-            if (isBottom) msgBox.scrollTop = msgBox.scrollHeight;
-        } catch (e) { console.error("Ошибка загрузки сообщений"); }
-    }
+
+            // Скроллим вниз только если мы и так были внизу или если это наше сообщение
+            if (isAtBottom) {
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        }
+    } catch (e) { console.error("Ошибка чата"); }
+}
+
 
     // 5. ОТПРАВКА И ФАЙЛЫ
     async function sendMsg() {
