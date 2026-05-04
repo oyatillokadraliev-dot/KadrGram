@@ -17,13 +17,9 @@ messages_table = db['messages']
 users_table.create_index("login", unique=True)
 
 def update_last_seen():
-    """Обновляет время последней активности текущего пользователя"""
     my_id = session.get('user_id')
     if my_id:
-        users_table.update_one(
-            {"_id": ObjectId(my_id)},
-            {"$set": {"last_seen": datetime.utcnow()}}
-        )
+        users_table.update_one({"_id": ObjectId(my_id)}, {"$set": {"last_seen": datetime.utcnow()}})
 
 @app.route('/')
 def home():
@@ -41,7 +37,6 @@ def home():
     for u in all_users:
         u['id'] = str(u['_id'])
         u['unread'] = messages_table.count_documents({"sender": u['id'], "receiver": my_id, "read": False})
-        # Проверка онлайн для первой загрузки
         ls = u.get('last_seen')
         u['online'] = (now - ls).total_seconds() < 25 if ls else False
 
@@ -50,7 +45,12 @@ def home():
     if chat_with_id:
         try:
             target_user = users_table.find_one({"_id": ObjectId(chat_with_id)})
-            if target_user: target_user['id'] = str(target_user['_id'])
+            if target_user:
+                target_user['id'] = str(target_user['_id'])
+                ls = target_user.get('last_seen')
+                # Передаем время в ISO для JavaScript
+                target_user['last_seen_iso'] = ls.isoformat() + "Z" if ls else None
+                target_user['online'] = (now - ls).total_seconds() < 25 if ls else False
         except: target_user = None
             
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
@@ -77,18 +77,17 @@ def get_contacts():
     update_last_seen()
     my_id = session.get('user_id')
     if not my_id: return jsonify([])
-    
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     contacts_data = []
     now = datetime.utcnow()
-    
     for u in all_users:
         ls = u.get('last_seen')
         is_online = (now - ls).total_seconds() < 25 if ls else False
         contacts_data.append({
             "id": str(u['_id']),
             "unread": messages_table.count_documents({"sender": str(u['_id']), "receiver": my_id, "read": False}),
-            "online": is_online
+            "online": is_online,
+            "last_seen_iso": ls.isoformat() + "Z" if ls else None
         })
     return jsonify(contacts_data)
 
@@ -99,11 +98,8 @@ def send_simple():
     my_id = session.get('user_id')
     if not data or not my_id: return jsonify({"status": "error"}), 400
     messages_table.insert_one({
-        "sender": str(my_id),
-        "receiver": str(data.get('receiver_id')),
-        "text": data.get('text'),
-        "time": datetime.utcnow().isoformat() + "Z",
-        "read": False
+        "sender": str(my_id), "receiver": str(data.get('receiver_id')),
+        "text": data.get('text'), "time": datetime.utcnow().isoformat() + "Z", "read": False
     })
     return jsonify({"status": "ok"})
 
@@ -115,8 +111,7 @@ def search():
     results = []
     if query:
         found = users_table.find({"$and": [{"_id": {"$ne": ObjectId(session['user_id'])}}, {"$or": [{"name": {"$regex": query, "$options": "i"}}, {"login": {"$regex": query, "$options": "i"}}]}]})
-        for u in found:
-            results.append({"id": str(u['_id']), "name": u.get('name'), "login": u.get('login')})
+        for u in found: results.append({"id": str(u['_id']), "name": u.get('name'), "login": u.get('login')})
     return render_template('search.html', results=results)
 
 @app.route('/login', methods=['GET', 'POST'])
