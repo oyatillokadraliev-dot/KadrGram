@@ -34,6 +34,29 @@
         
         .unread-badge { background: #25d366; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
         #clockWrapper { padding: 10px; text-align: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
+
+        /* Ограничиваем картинку по высоте, чтобы не занимала весь экран */
+        .msg img { 
+            max-width: 100%; 
+            max-height: 300px; /* Максимальная высота */
+            object-fit: contain; /* Сохраняем пропорции */
+            border-radius: 10px; 
+            display: block; 
+            margin-top: 5px; 
+        }
+        
+        /* Кнопка сохранения под картинкой */
+        .save-btn {
+            display: inline-block;
+            margin-top: 8px;
+            color: #0088cc;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(0, 136, 204, 0.1);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -161,12 +184,18 @@
                 let isMy = m.sender === data.my_id;
                 let time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
                 let ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
-                
                 let content = m.text;
+                
                 if (m.type === 'image') {
-                    content = `<img src="${m.text}" onclick="window.open('${m.text}')">`;
+                    content = `
+                        <img src="${m.text}" onclick="window.open('${m.text}')">
+                        <a href="${m.text}" download="${m.filename || 'image.jpg'}" class="save-btn">
+                            💾 Сохранить
+                        </a>`;
                 } else if (m.type === 'file') {
                     content = `<a href="${m.text}" target="_blank" class="file-link">📁 ${m.filename || 'Файл'}</a>`;
+                }
+
                 }
 
                 html += `<div class="msg ${isMy?'my-msg':''}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
