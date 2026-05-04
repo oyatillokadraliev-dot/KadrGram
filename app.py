@@ -48,12 +48,22 @@ def home():
             if target_user:
                 target_user['id'] = str(target_user['_id'])
                 ls = target_user.get('last_seen')
-                # Передаем время в ISO для JavaScript
                 target_user['last_seen_iso'] = ls.isoformat() + "Z" if ls else None
                 target_user['online'] = (now - ls).total_seconds() < 25 if ls else False
         except: target_user = None
             
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
+
+@app.route('/typing', methods=['POST'])
+def typing():
+    my_id = session.get('user_id')
+    target_id = request.json.get('target_id')
+    if my_id:
+        users_table.update_one(
+            {"_id": ObjectId(my_id)},
+            {"$set": {"typing_to": target_id, "last_typing": datetime.utcnow()}}
+        )
+    return jsonify({"status": "ok"})
 
 @app.route('/get_messages')
 def get_messages():
@@ -83,10 +93,18 @@ def get_contacts():
     for u in all_users:
         ls = u.get('last_seen')
         is_online = (now - ls).total_seconds() < 25 if ls else False
+        
+        # Проверка "печатает"
+        is_typing = False
+        lt = u.get('last_typing')
+        if u.get('typing_to') == my_id and lt:
+            is_typing = (now - lt).total_seconds() < 5 # Активно 5 секунд
+            
         contacts_data.append({
             "id": str(u['_id']),
             "unread": messages_table.count_documents({"sender": str(u['_id']), "receiver": my_id, "read": False}),
             "online": is_online,
+            "typing": is_typing,
             "last_seen_iso": ls.isoformat() + "Z" if ls else None
         })
     return jsonify(contacts_data)
@@ -101,6 +119,8 @@ def send_simple():
         "sender": str(my_id), "receiver": str(data.get('receiver_id')),
         "text": data.get('text'), "time": datetime.utcnow().isoformat() + "Z", "read": False
     })
+    # Сбрасываем статус печатания при отправке
+    users_table.update_one({"_id": ObjectId(my_id)}, {"$unset": {"typing_to": "", "last_typing": ""}})
     return jsonify({"status": "ok"})
 
 @app.route('/search')
