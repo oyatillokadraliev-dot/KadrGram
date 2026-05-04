@@ -62,7 +62,7 @@
                 <div>
                     <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{{ target_user.name }}</div>
                     <div id="chatStatus" style="font-size: 12px; color: {{ '#25d366' if target_user.online else '#888' }};">
-                        {% if target_user.online %}в сети{% elif target_user.last_seen_iso %}был(а) недавно{% else %}не был в сети{% endif %}
+                        {% if target_user.online %}в сети{% elif target_user.last_seen_iso %}был(а) в {{ target_user.last_seen_iso[11:16] }}{% else %}был недавно{% endif %}
                     </div>
                 </div>
             </div>
@@ -87,7 +87,23 @@
         }
         setInterval(updateClock, 1000);
 
-        function formatLastSeen(iso, online) {
+        // Функция отправки статуса "печатает"
+        let typingTimer;
+        if (targetId) {
+            document.getElementById('textInp').addEventListener('input', () => {
+                if (!typingTimer) {
+                    fetch('/typing', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ target_id: targetId })
+                    });
+                    typingTimer = setTimeout(() => { typingTimer = null; }, 3000);
+                }
+            });
+        }
+
+        function formatLastSeen(iso, online, typing) {
+            if (typing) return "печатает...";
             if (online) return "в сети";
             if (!iso) return "был(а) недавно";
             const time = new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -112,8 +128,8 @@
                     if (c.id === targetId) {
                         const statusElem = document.getElementById('chatStatus');
                         if (statusElem) {
-                            statusElem.textContent = formatLastSeen(c.last_seen_iso, c.online);
-                            statusElem.style.color = c.online ? "#25d366" : "#888";
+                            statusElem.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing);
+                            statusElem.style.color = (c.online || c.typing) ? "#25d366" : "#888";
                         }
                     }
                 });
