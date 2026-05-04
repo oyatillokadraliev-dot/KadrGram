@@ -111,108 +111,144 @@
     </div>
 
     <script>
-        const targetId = "{{ target_user.id if target_user else '' }}";
+    const targetId = "{{ target_user.id if target_user else '' }}";
 
-        function updateClock() {
-            document.getElementById('digitalClock').textContent = new Date().toLocaleTimeString();
-            const s = document.getElementById('onlineStatus');
-            s.textContent = navigator.onLine ? "● В СЕТИ" : "● ОФФЛАЙН";
-            s.style.color = navigator.onLine ? "#25d366" : "#d9534f";
+    // 1. ЖИВЫЕ ЧАСЫ (Исправлено)
+    function updateClock() {
+        const clockEl = document.getElementById('digitalClock');
+        if (clockEl) {
+            clockEl.textContent = new Date().toLocaleTimeString();
         }
-        setInterval(updateClock, 1000);
+        const statusEl = document.getElementById('onlineStatus');
+        if (statusEl) {
+            statusEl.textContent = navigator.onLine ? "● В СЕТИ" : "● ОФФЛАЙН";
+            statusEl.style.color = navigator.onLine ? "#25d366" : "#d9534f";
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-        let typingTimer;
-        if (targetId) {
-            document.getElementById('textInp').addEventListener('input', () => {
-                if (!typingTimer) {
-                    fetch('/typing', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ target_id: targetId }) });
-                    typingTimer = setTimeout(() => { typingTimer = null; }, 3000);
+    // 2. ФОРМАТ ВРЕМЕНИ ЗАХОДА
+    function formatLastSeen(iso, online, typing) {
+        if (typing) return "печатает...";
+        if (online) return "в сети";
+        if (!iso) return "был(а) недавно";
+        try {
+            const time = new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            return `был(а) в ${time}`;
+        } catch(e) { return "был(а) недавно"; }
+    }
+
+    // 3. СИНХРОНИЗАЦИЯ КОНТАКТОВ И СТАТУСОВ
+    async function syncData() {
+        try {
+            const res = await fetch('/get_contacts');
+            const contacts = await res.json();
+            
+            contacts.forEach(c => {
+                // Точка онлайн в списке
+                const userItem = document.getElementById(`user-${c.id}`);
+                if (userItem) {
+                    const nameCont = userItem.querySelector('div');
+                    let dot = nameCont.querySelector('.online-dot');
+                    if (c.online && !dot) {
+                        const d = document.createElement('span'); d.className='online-dot'; nameCont.appendChild(d);
+                    } else if (!c.online && dot) { dot.remove(); }
                 }
-            });
-        }
-
-        async function uploadFile() {
-            const fileInp = document.getElementById('fileInp');
-            if (!fileInp.files[0] || !targetId) return;
-
-            const formData = new FormData();
-            formData.append('file', fileInp.files[0]);
-            formData.append('receiver_id', targetId);
-
-            document.getElementById('textInp').placeholder = "Загрузка файла...";
-            
-            await fetch('/upload_file', { method: 'POST', body: formData });
-            
-            fileInp.value = '';
-            document.getElementById('textInp').placeholder = "Сообщение...";
-            loadMsgs();
-        }
-
-        function formatLastSeen(iso, online, typing) {
-            if (typing) return "печатает...";
-            if (online) return "в сети";
-            if (!iso) return "был(а) недавно";
-            return `был(а) в ${new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-        }
-
-        async function updateBadgesAndStatus() {
-            try {
-                let res = await fetch('/get_contacts');
-                let contacts = await res.json();
-                contacts.forEach(c => {
-                    let userItem = document.getElementById(`user-${c.id}`);
-                    if (userItem) {
-                        let nameCont = userItem.querySelector('div');
-                        let dot = nameCont.querySelector('.online-dot');
-                        if (c.online) { if(!dot){ let d=document.createElement('span'); d.className='online-dot'; nameCont.appendChild(d); } } 
-                        else if(dot) dot.remove();
-                    }
-                    if (c.id === targetId) {
-                        const s = document.getElementById('chatStatus');
-                        if (s) { s.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing); s.style.color = (c.online || c.typing) ? "#25d366" : "#888"; }
-                    }
-                });
-            } catch (e) {}
-        }
-
-        async function loadMsgs() {
-            if (!targetId) return;
-            let res = await fetch(`/get_messages?chat_with=${targetId}`);
-            let data = await res.json();
-            let html = '';
-            data.messages.forEach(m => {
-                let isMy = m.sender === data.my_id;
-                let time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
-                let ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
-                let content = m.text;
                 
-                if (m.type === 'image') {
-                    content = `
-                        <img src="${m.text}" onclick="window.open('${m.text}')">
-                        <a href="${m.text}" download="${m.filename || 'image.jpg'}" class="save-btn">
-                            💾 Сохранить
-                        </a>`;
-                } else if (m.type === 'file') {
-                    content = `<a href="${m.text}" target="_blank" class="file-link">📁 ${m.filename || 'Файл'}</a>`;
+                // Баджи
+                const badge = document.getElementById(`badge-${c.id}`);
+                if (badge) {
+                    badge.innerText = c.unread > 0 ? c.unread : '';
+                    badge.style.display = c.unread > 0 ? 'inline-block' : 'none';
                 }
 
+                // Статус в шапке чата
+                if (c.id === targetId) {
+                    const s = document.getElementById('chatStatus');
+                    if (s) {
+                        s.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing);
+                        s.style.color = (c.online || c.typing) ? "#25d366" : "#888";
+                    }
                 }
-
-                html += `<div class="msg ${isMy?'my-msg':''}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
             });
-            document.getElementById('msgBox').innerHTML = html;
-        }
+        } catch (e) { console.error("Ошибка синхронизации данных"); }
+    }
 
-        async function sendMsg() {
-            let inp = document.getElementById('textInp');
-            if (!inp.value.trim()) return;
-            let t = inp.value; inp.value = '';
-            await fetch('/send_simple', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ receiver_id: targetId, text: t }) });
-            loadMsgs();
-        }
+    // 4. ЗАГРУЗКА СООБЩЕНИЙ
+    async function loadMsgs() {
+        if (!targetId) return;
+        try {
+            const res = await fetch(`/get_messages?chat_with=${targetId}`);
+            const data = await res.json();
+            let html = '';
+            
+            data.messages.forEach(m => {
+                const isMy = m.sender === data.my_id;
+                const cls = isMy ? 'msg my-msg' : 'msg';
+                
+                // Безопасное время
+                let time = "";
+                if (m.utc_time) {
+                    try { time = new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); } catch(e){}
+                }
+                
+                const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
+                
+                // Обработка контента (Текст / Фото / Файл)
+                let content = m.text || "";
+                if (m.type === 'image') {
+                    content = `<img src="${m.text}" loading="lazy" onclick="window.open('${m.text}')">
+                               <a href="${m.text}" download class="save-btn">💾 Сохранить</a>`;
+                } else if (m.type === 'file') {
+                    content = `<a href="${m.text}" target="_blank" class="file-link">📁 Файл: ${m.filename || 'Скачать'}</a>`;
+                }
 
-        setInterval(updateBadgesAndStatus, 3000);
-        if (targetId) { setInterval(loadMsgs, 3000); loadMsgs(); }
-    </script>
+                html += `<div class="${cls}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
+            });
+
+            const msgBox = document.getElementById('msgBox');
+            const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 150;
+            msgBox.innerHTML = html;
+            if (isBottom) msgBox.scrollTop = msgBox.scrollHeight;
+        } catch (e) { console.error("Ошибка загрузки сообщений"); }
+    }
+
+    // 5. ОТПРАВКА И ФАЙЛЫ
+    async function sendMsg() {
+        const inp = document.getElementById('textInp');
+        if (!inp.value.trim()) return;
+        const text = inp.value; inp.value = '';
+        await fetch('/send_simple', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ receiver_id: targetId, text: text })
+        });
+        loadMsgs();
+    }
+
+    async function uploadFile() {
+        const fileInp = document.getElementById('fileInp');
+        if (!fileInp.files[0] || !targetId) return;
+        const formData = new FormData();
+        formData.append('file', fileInp.files[0]);
+        formData.append('receiver_id', targetId);
+        
+        const textInp = document.getElementById('textInp');
+        textInp.placeholder = "Загрузка...";
+        await fetch('/upload_file', { method: 'POST', body: formData });
+        fileInp.value = '';
+        textInp.placeholder = "Сообщение...";
+        loadMsgs();
+    }
+
+    // Запуск циклов
+    setInterval(syncData, 3000);
+    if (targetId) {
+        setInterval(loadMsgs, 3000);
+        loadMsgs();
+    }
+</script>
+
 </body>
 </html>
