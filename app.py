@@ -1,14 +1,23 @@
 import os, re
-from flask import Flask, render_template, request, session, redirect, jsonify, url_for
+from flask import Flask, render_template, request, session, redirect, jsonify, url_for, send_from_directory # Добавили send_from_directory
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+from werkzeug.utils import secure_filename # Добавили secure_filename
 
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 
 # ПОДКЛЮЧЕНИЕ К БАЗЕ
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
+# ... дальше твой остальной код ...
+
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
 users_table = db['users']
@@ -122,6 +131,40 @@ def send_simple():
     # Сбрасываем статус печатания при отправке
     users_table.update_one({"_id": ObjectId(my_id)}, {"$unset": {"typing_to": "", "last_typing": ""}})
     return jsonify({"status": "ok"})
+
+@app.route('/upload_file', methods=['POST'])
+def upload_file():
+    if 'user_id' not in session: return jsonify({"status": "error"}), 401
+    
+    file = request.files.get('file')
+    receiver_id = request.form.get('receiver_id')
+    
+    if file and file.filename:
+        filename = secure_filename(f"{datetime.utcnow().timestamp()}_{file.filename}")
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        # Сохраняем в базу как специальный тип сообщения
+        file_url = f"/uploads/{filename}"
+        is_image = file.content_type.startswith('image/')
+        
+        messages_table.insert_one({
+            "sender": str(session['user_id']),
+            "receiver": str(receiver_id),
+            "text": file_url, # Путь к файлу
+            "type": "image" if is_image else "file",
+            "filename": file.filename,
+            "time": datetime.utcnow().isoformat() + "Z",
+            "read": False
+        })
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error"}), 400
+
+# Чтобы браузер мог открывать файлы из папки uploads
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 @app.route('/search')
 def search():
