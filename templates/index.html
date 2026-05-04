@@ -56,6 +56,23 @@
             background: rgba(0, 136, 204, 0.1);
             padding: 5px 10px;
             border-radius: 5px;
+        /* Фикс "волн": резервируем место под картинку заранее */
+        .msg img { 
+            display: block;
+            max-width: 100%; 
+            max-height: 300px; 
+            min-height: 100px; /* Чтобы чат не схлопывался, пока фото грузится */
+            background: #f0f0f0; /* Серый фон на время загрузки */
+            border-radius: 10px;
+            margin-top: 5px;
+            object-fit: contain;
+        }
+        
+        /* Плавный скролл для чата */
+        #msgBox {
+            scroll-behavior: smooth;
+        }
+
         }
     </style>
 </head>
