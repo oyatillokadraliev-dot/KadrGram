@@ -82,5 +82,5 @@ def on_typing(data):
 # Остальные роуты (login, register, logout) остаются как были
 
 if __name__ == '__main__':
-    # Запускаем через socketio.run вместо app.run
-    socketio.run(app, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    # Для локального запуска
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
