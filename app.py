@@ -2,28 +2,29 @@ import os, re
 from flask import Flask, render_template, request, session, redirect, jsonify, url_for, send_from_directory
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime, timedelta
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
 
-# Настройки загрузки файлов
+# НАСТРОЙКИ БЕЗОПАСНОСТИ ФАЙЛОВ
 UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
+if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024 # 10 МБ
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024 # 10МБ
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'txt'}
 
-# ПОДКЛЮЧЕНИЕ К БАЗЕ
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# БАЗА ДАННЫХ
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Admin:KadrGram01@cluster0.tfe27jw.mongodb.net/?appName=Cluster0")
 client = MongoClient(MONGO_URI)
 db = client['kadrgram_database']
 users_table = db['users']
 messages_table = db['messages']
-
 users_table.create_index("login", unique=True)
 
 def update_last_seen():
@@ -43,15 +44,14 @@ def home():
     update_last_seen()
     all_users = list(users_table.find({"_id": {"$ne": ObjectId(my_id)}}))
     now = datetime.utcnow()
-    
     for u in all_users:
         u['id'] = str(u['_id'])
         u['unread'] = messages_table.count_documents({"sender": u['id'], "receiver": my_id, "read": False})
         ls = u.get('last_seen')
         u['online'] = (now - ls).total_seconds() < 25 if ls else False
-
-    chat_with_id = request.args.get('chat_with')
+    
     target_user = None
+    chat_with_id = request.args.get('chat_with')
     if chat_with_id:
         try:
             target_user = users_table.find_one({"_id": ObjectId(chat_with_id)})
@@ -60,38 +60,45 @@ def home():
                 ls = target_user.get('last_seen')
                 target_user['last_seen_iso'] = ls.isoformat() + "Z" if ls else None
                 target_user['online'] = (now - ls).total_seconds() < 25 if ls else False
-        except: target_user = None
+        except: pass
             
     return render_template('index.html', user=user, all_users=all_users, target_user=target_user)
 
 @app.route('/upload_file', methods=['POST'])
 def upload_file():
     if 'user_id' not in session: return jsonify({"status": "error"}), 401
+    
+    # Обработка картинок (Base64 через JSON)
+    if request.is_json:
+        data = request.get_json()
+        messages_table.insert_one({
+            "sender": str(session['user_id']),
+            "receiver": str(data.get('receiver_id')),
+            "text": data.get('file_data'),
+            "type": "image",
+            "filename": data.get('filename'),
+            "time": datetime.utcnow().isoformat() + "Z",
+            "read": False
+        })
+        return jsonify({"status": "ok"})
+    
+    # Обработка файлов (FormData)
     file = request.files.get('file')
     receiver_id = request.form.get('receiver_id')
-    
-    if file and file.filename:
+    if file and allowed_file(file.filename):
         filename = secure_filename(f"{datetime.utcnow().timestamp()}_{file.filename}")
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        
-        file_url = f"/uploads/{filename}"
-        is_image = file.content_type.startswith('image/')
-        
         messages_table.insert_one({
             "sender": str(session['user_id']),
             "receiver": str(receiver_id),
-            "text": file_url,
-            "type": "image" if is_image else "file",
+            "text": f"/uploads/{filename}",
+            "type": "file",
             "filename": file.filename,
             "time": datetime.utcnow().isoformat() + "Z",
             "read": False
         })
         return jsonify({"status": "ok"})
-    return jsonify({"status": "error"}), 400
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return jsonify({"status": "error", "message": "File not allowed"}), 400
 
 @app.route('/get_messages')
 def get_messages():
@@ -108,7 +115,6 @@ def get_messages():
             m['utc_time'] = m.get('time', "")
             m['read'] = m.get('read', False)
             m['type'] = m.get('type', 'text')
-            m['filename'] = m.get('filename', '')
         return jsonify({"messages": msgs, "my_id": my_id})
     except Exception as e: return jsonify({"messages": [], "error": str(e)}), 500
 
@@ -122,17 +128,12 @@ def get_contacts():
     now = datetime.utcnow()
     for u in all_users:
         ls = u.get('last_seen')
-        is_online = (now - ls).total_seconds() < 25 if ls else False
-        is_typing = False
         lt = u.get('last_typing')
-        if u.get('typing_to') == my_id and lt:
-            is_typing = (now - lt).total_seconds() < 5
-            
         contacts_data.append({
             "id": str(u['_id']),
             "unread": messages_table.count_documents({"sender": str(u['_id']), "receiver": my_id, "read": False}),
-            "online": is_online,
-            "typing": is_typing,
+            "online": (now - ls).total_seconds() < 25 if ls else False,
+            "typing": (now - lt).total_seconds() < 5 if (u.get('typing_to') == my_id and lt) else False,
             "last_seen_iso": ls.isoformat() + "Z" if ls else None
         })
     return jsonify(contacts_data)
@@ -158,14 +159,19 @@ def send_simple():
     users_table.update_one({"_id": ObjectId(my_id)}, {"$unset": {"typing_to": "", "last_typing": ""}})
     return jsonify({"status": "ok"})
 
-# Остальные роуты (search, login, register, logout) остаются без изменений
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = request.args.get('error')
     if request.method == 'POST':
-        res = users_table.find_one({"login": request.form.get('login'), "password": request.form.get('pwd')})
-        if res:
-            session['user_id'] = str(res['_id'])
+        u_login = request.form.get('login')
+        u_pwd = request.form.get('pwd')
+        user = users_table.find_one({"login": u_login})
+        if user and check_password_hash(user["password"], u_pwd):
+            session['user_id'] = str(user['_id'])
             return redirect('/')
         return redirect(url_for('login', error="wrong_pass"))
     return render_template('login.html', error=error)
@@ -177,13 +183,7 @@ def register():
     if not re.match(r"^[A-Za-z0-9]+$", l) or len(p) < 7 or not any(x.isupper() for x in p):
         return redirect(url_for('login', error="invalid_data"))
     hashed = generate_password_hash(p)
-    
-    new_user = users_table.insert_one({
-        "login": l,
-        "password": hashed,
-        "name": n,
-        "last_seen": datetime.utcnow()
-    })
+    new_user = users_table.insert_one({"login": l, "password": hashed, "name": n, "last_seen": datetime.utcnow()})
     session['user_id'] = str(new_user.inserted_id)
     return redirect('/')
 
