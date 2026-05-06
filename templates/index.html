@@ -20,13 +20,13 @@
         .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; font-size: 16px; }
+        .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 16px; position: relative; }
         .my-msg { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
-        .msg img { max-width: 100%; max-height: 350px; border-radius: 10px; display: block; margin-top: 5px; object-fit: contain; background: #eee; }
+        .msg img { max-width: 100%; max-height: 350px; border-radius: 10px; display: block; margin: 5px 0; object-fit: contain; background: #eee; }
         .input-area { padding: 10px 15px; background: white; display: flex; align-items: center; gap: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #ddd; }
         .input-area input[type="text"] { flex: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
-        .send-btn { background: none; border: none; color: #0088cc; font-size: 28px; cursor: pointer; padding: 0; }
-        .attach-btn { font-size: 24px; cursor: pointer; color: #777; user-select: none; }
+        .attach-btn { font-size: 24px; cursor: pointer; color: #777; }
+        .send-btn { background: none; border: none; color: #0088cc; font-size: 28px; cursor: pointer; }
         .unread-badge { background: #25d366; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
         #clockWrapper { padding: 10px; text-align: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
         .save-btn { display: inline-block; margin-top: 5px; color: #0088cc; font-size: 11px; text-decoration: none; font-weight: bold; background: #f0f0f0; padding: 4px 8px; border-radius: 5px; }
@@ -72,7 +72,7 @@
             <div class="messages" id="msgBox"></div>
             <div class="input-area">
                 <label for="fileInp" class="attach-btn">📎</label>
-                <input type="file" id="fileInp" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.docx" style="display:none;" onchange="uploadFile()">
+                <input type="file" id="fileInp" style="display:none;" onchange="uploadFile()">
                 <input type="text" id="textInp" placeholder="Сообщение..." autocomplete="off" onkeydown="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">➤</button>
             </div>
@@ -107,26 +107,46 @@
             if (!file || !targetId) return;
 
             const textInp = document.getElementById('textInp');
-            textInp.placeholder = "Загрузка...";
+            textInp.placeholder = "Сжатие и отправка...";
 
             if (file.type.startsWith('image/')) {
-                // ОТПРАВЛЯЕМ КАРТИНКУ КАК BASE64 (В БАЗУ НАВСЕГДА)
                 const reader = new FileReader();
-                reader.onload = async function(e) {
-                    await fetch('/upload_file', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            file_data: e.target.result,
-                            filename: file.name,
-                            receiver_id: targetId
-                        })
-                    });
-                    finalizeUpload();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = async function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX_SIZE = 1200;
+
+                        if (width > height) {
+                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                        } else {
+                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        await fetch('/upload_file', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                file_data: compressedBase64,
+                                filename: file.name,
+                                receiver_id: targetId
+                            })
+                        });
+                        finalizeUpload();
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             } else {
-                // ОТПРАВЛЯЕМ ФАЙЛ КАК FORMDATA (НА СЕРВЕР)
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('receiver_id', targetId);
@@ -188,7 +208,7 @@
                 });
                 const msgBox = document.getElementById('msgBox');
                 if (msgBox.innerHTML !== html) {
-                    const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 150;
+                    const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 200;
                     msgBox.innerHTML = html;
                     if (isBottom) msgBox.scrollTop = msgBox.scrollHeight;
                 }
