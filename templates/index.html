@@ -80,6 +80,8 @@
             <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color: #888;">💬 Выберите чат</div>
         {% endif %}
     </div>
+<script src="https://cloudflare.com"></script>
+
   <script>
     const socket = io(); // Подключаемся к серверу
     const targetId = "{{ target_user.id if target_user else '' }}";
