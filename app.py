@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "kadrgram_ultra_2026"
@@ -175,7 +176,14 @@ def register():
     if users_table.find_one({"login": l}): return redirect(url_for('login', error="login_taken"))
     if not re.match(r"^[A-Za-z0-9]+$", l) or len(p) < 7 or not any(x.isupper() for x in p):
         return redirect(url_for('login', error="invalid_data"))
-    new_user = users_table.insert_one({"login": l, "password": p, "name": n, "last_seen": datetime.utcnow()})
+    hashed = generate_password_hash(p)
+    
+    new_user = users_table.insert_one({
+        "login": l,
+        "password": hashed,
+        "name": n,
+        "last_seen": datetime.utcnow()
+    })
     session['user_id'] = str(new_user.inserted_id)
     return redirect('/')
 
