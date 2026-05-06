@@ -81,21 +81,23 @@ def on_typing(data):
 
 @app.route('/download_socket_io')
 def download_socket():
-    import requests
-    # Ссылка на файл
-    url = "https://socket.io"
+    import urllib.request
+    import os
+    url = "https://cloudflare.com"
     try:
-        # Проверяем, есть ли папка static
+        # Создаем папку static, если её нет
         if not os.path.exists('static'):
             os.makedirs('static')
         
-        # Скачиваем файл
-        r = requests.get(url)
+        # Скачиваем файл напрямую на сервер
+        response = urllib.request.urlopen(url)
         with open("static/socket.io.js", "wb") as f:
-            f.write(r.content)
-        return "УСПЕХ! Файл скачан в папку static. Теперь удали этот код из app.py и обнови index.html."
+            f.write(response.read())
+            
+        return "УСПЕХ! Файл теперь на сервере. Обнови главную страницу."
     except Exception as e:
-        return f"Ошибка при скачивании: {str(e)}"
+        return f"Ошибка: {str(e)}"
+
 
 if __name__ == '__main__':
     # Для локального запуска
