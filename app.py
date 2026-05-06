@@ -79,7 +79,23 @@ def handle_message(data):
 def on_typing(data):
     emit('is_typing', {"sender_id": session.get('user_id')}, room=str(data['receiver_id']))
 
-# Остальные роуты (login, register, logout) остаются как были
+@app.route('/download_socket_io')
+def download_socket():
+    import requests
+    # Ссылка на файл
+    url = "https://socket.io"
+    try:
+        # Проверяем, есть ли папка static
+        if not os.path.exists('static'):
+            os.makedirs('static')
+        
+        # Скачиваем файл
+        r = requests.get(url)
+        with open("static/socket.io.js", "wb") as f:
+            f.write(r.content)
+        return "УСПЕХ! Файл скачан в папку static. Теперь удали этот код из app.py и обнови index.html."
+    except Exception as e:
+        return f"Ошибка при скачивании: {str(e)}"
 
 if __name__ == '__main__':
     # Для локального запуска
