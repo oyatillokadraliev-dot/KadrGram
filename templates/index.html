@@ -20,60 +20,16 @@
         .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        
-        /* Стили сообщений */
-        .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-size: 16px; }
+        .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; font-size: 16px; }
         .my-msg { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
-        .msg img { max-width: 100%; border-radius: 10px; display: block; margin-top: 5px; }
-        .file-link { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0088cc; font-weight: 500; padding: 5px 0; }
-
+        .msg img { max-width: 100%; max-height: 350px; border-radius: 10px; display: block; margin-top: 5px; object-fit: contain; background: #eee; }
         .input-area { padding: 10px 15px; background: white; display: flex; align-items: center; gap: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #ddd; }
         .input-area input[type="text"] { flex: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
         .send-btn { background: none; border: none; color: #0088cc; font-size: 28px; cursor: pointer; padding: 0; }
         .attach-btn { font-size: 24px; cursor: pointer; color: #777; user-select: none; }
-        
         .unread-badge { background: #25d366; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; }
         #clockWrapper { padding: 10px; text-align: center; background: #f9f9f9; border-bottom: 1px solid #ddd; }
-
-        /* Ограничиваем картинку по высоте, чтобы не занимала весь экран */
-        .msg img { 
-            max-width: 100%; 
-            max-height: 300px; /* Максимальная высота */
-            object-fit: contain; /* Сохраняем пропорции */
-            border-radius: 10px; 
-            display: block; 
-            margin-top: 5px; 
-        }
-        
-        /* Кнопка сохранения под картинкой */
-        .save-btn {
-            display: inline-block;
-            margin-top: 8px;
-            color: #0088cc;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            background: rgba(0, 136, 204, 0.1);
-            padding: 5px 10px;
-            border-radius: 5px;
-        /* Фикс "волн": резервируем место под картинку заранее */
-        .msg img { 
-            display: block;
-            max-width: 100%; 
-            max-height: 300px; 
-            min-height: 100px; /* Чтобы чат не схлопывался, пока фото грузится */
-            background: #f0f0f0; /* Серый фон на время загрузки */
-            border-radius: 10px;
-            margin-top: 5px;
-            object-fit: contain;
-        }
-        
-        /* Плавный скролл для чата */
-        #msgBox {
-            scroll-behavior: smooth;
-        }
-
-        }
+        .save-btn { display: inline-block; margin-top: 5px; color: #0088cc; font-size: 11px; text-decoration: none; font-weight: bold; background: #f0f0f0; padding: 4px 8px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -109,16 +65,14 @@
                 <div>
                     <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{{ target_user.name }}</div>
                     <div id="chatStatus" style="font-size: 12px; color: {{ '#25d366' if target_user.online else '#888' }};">
-                        {% if target_user.online %}в сети{% elif target_user.last_seen_iso %}был(а) недавно{% else %}не был в сети{% endif %}
+                        {% if target_user.online %}в сети{% elif target_user.last_seen_iso %}был недавно{% else %}не был в сети{% endif %}
                     </div>
                 </div>
             </div>
             <div class="messages" id="msgBox"></div>
             <div class="input-area">
-                <!-- Скрытый инпут для файлов -->
                 <label for="fileInp" class="attach-btn">📎</label>
-                <input type="file" id="fileInp" style="display:none;" onchange="uploadFile()">
-                
+                <input type="file" id="fileInp" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.docx" style="display:none;" onchange="uploadFile()">
                 <input type="text" id="textInp" placeholder="Сообщение..." autocomplete="off" onkeydown="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">➤</button>
             </div>
@@ -128,147 +82,129 @@
     </div>
 
     <script>
-    const targetId = "{{ target_user.id if target_user else '' }}";
+        const targetId = "{{ target_user.id if target_user else '' }}";
 
-    // 1. ЖИВЫЕ ЧАСЫ (Исправлено)
-    function updateClock() {
-        const clockEl = document.getElementById('digitalClock');
-        if (clockEl) {
-            clockEl.textContent = new Date().toLocaleTimeString();
+        function updateClock() {
+            const el = document.getElementById('digitalClock');
+            if(el) el.textContent = new Date().toLocaleTimeString();
         }
-        const statusEl = document.getElementById('onlineStatus');
-        if (statusEl) {
-            statusEl.textContent = navigator.onLine ? "● В СЕТИ" : "● ОФФЛАЙН";
-            statusEl.style.color = navigator.onLine ? "#25d366" : "#d9534f";
-        }
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-    // 2. ФОРМАТ ВРЕМЕНИ ЗАХОДА
-    function formatLastSeen(iso, online, typing) {
-        if (typing) return "печатает...";
-        if (online) return "в сети";
-        if (!iso) return "был(а) недавно";
-        try {
-            const time = new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            return `был(а) в ${time}`;
-        } catch(e) { return "был(а) недавно"; }
-    }
-
-    // 3. СИНХРОНИЗАЦИЯ КОНТАКТОВ И СТАТУСОВ
-    async function syncData() {
-        try {
-            const res = await fetch('/get_contacts');
-            const contacts = await res.json();
-            
-            contacts.forEach(c => {
-                // Точка онлайн в списке
-                const userItem = document.getElementById(`user-${c.id}`);
-                if (userItem) {
-                    const nameCont = userItem.querySelector('div');
-                    let dot = nameCont.querySelector('.online-dot');
-                    if (c.online && !dot) {
-                        const d = document.createElement('span'); d.className='online-dot'; nameCont.appendChild(d);
-                    } else if (!c.online && dot) { dot.remove(); }
-                }
-                
-                // Баджи
-                const badge = document.getElementById(`badge-${c.id}`);
-                if (badge) {
-                    badge.innerText = c.unread > 0 ? c.unread : '';
-                    badge.style.display = c.unread > 0 ? 'inline-block' : 'none';
-                }
-
-                // Статус в шапке чата
-                if (c.id === targetId) {
-                    const s = document.getElementById('chatStatus');
-                    if (s) {
-                        s.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing);
-                        s.style.color = (c.online || c.typing) ? "#25d366" : "#888";
-                    }
+        let typingTimer;
+        if (targetId) {
+            document.getElementById('textInp').addEventListener('input', () => {
+                if (!typingTimer) {
+                    fetch('/typing', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ target_id: targetId }) });
+                    typingTimer = setTimeout(() => { typingTimer = null; }, 3000);
                 }
             });
-        } catch (e) { console.error("Ошибка синхронизации данных"); }
-    }
+        }
 
-async function loadMsgs() {
-    if (!targetId) return;
-    try {
-        const res = await fetch(`/get_messages?chat_with=${targetId}`);
-        const data = await res.json();
-        
-        let html = '';
-        data.messages.forEach(m => {
-            const isMy = m.sender === data.my_id;
-            const cls = isMy ? 'msg my-msg' : 'msg';
-            let time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
-            const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
-            
-            let content = m.text || "";
-            if (m.type === 'image') {
-                // Добавляем размеры в тег img, чтобы браузер знал их до загрузки
-                content = `<img src="${m.text}" width="250" height="200" loading="lazy" onclick="window.open('${m.text}')">
-                           <a href="${m.text}" download class="save-btn">💾 Сохранить</a>`;
-            } else if (m.type === 'file') {
-                content = `<a href="${m.text}" target="_blank" class="file-link">📁 Файл</a>`;
-            }
+        async function uploadFile() {
+            const fileInp = document.getElementById('fileInp');
+            const file = fileInp.files[0];
+            if (!file || !targetId) return;
 
-            html += `<div class="${cls}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
-        });
+            const textInp = document.getElementById('textInp');
+            textInp.placeholder = "Загрузка...";
 
-        const msgBox = document.getElementById('msgBox');
-        
-        // Сравниваем старый контент с новым, чтобы не "дергать" страницу зря
-        if (msgBox.innerHTML !== html) {
-            const isAtBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 200;
-            
-            msgBox.innerHTML = html;
-
-            // Скроллим вниз только если мы и так были внизу или если это наше сообщение
-            if (isAtBottom) {
-                msgBox.scrollTop = msgBox.scrollHeight;
+            if (file.type.startsWith('image/')) {
+                // ОТПРАВЛЯЕМ КАРТИНКУ КАК BASE64 (В БАЗУ НАВСЕГДА)
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    await fetch('/upload_file', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            file_data: e.target.result,
+                            filename: file.name,
+                            receiver_id: targetId
+                        })
+                    });
+                    finalizeUpload();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // ОТПРАВЛЯЕМ ФАЙЛ КАК FORMDATA (НА СЕРВЕР)
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('receiver_id', targetId);
+                await fetch('/upload_file', { method: 'POST', body: formData });
+                finalizeUpload();
             }
         }
-    } catch (e) { console.error("Ошибка чата"); }
-}
 
+        function finalizeUpload() {
+            document.getElementById('fileInp').value = '';
+            document.getElementById('textInp').placeholder = "Сообщение...";
+            loadMsgs();
+        }
 
-    // 5. ОТПРАВКА И ФАЙЛЫ
-    async function sendMsg() {
-        const inp = document.getElementById('textInp');
-        if (!inp.value.trim()) return;
-        const text = inp.value; inp.value = '';
-        await fetch('/send_simple', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ receiver_id: targetId, text: text })
-        });
-        loadMsgs();
-    }
+        function formatLastSeen(iso, online, typing) {
+            if (typing) return "печатает...";
+            if (online) return "в сети";
+            if (!iso) return "был(а) недавно";
+            return `был(а) в ${new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+        }
 
-    async function uploadFile() {
-        const fileInp = document.getElementById('fileInp');
-        if (!fileInp.files[0] || !targetId) return;
-        const formData = new FormData();
-        formData.append('file', fileInp.files[0]);
-        formData.append('receiver_id', targetId);
-        
-        const textInp = document.getElementById('textInp');
-        textInp.placeholder = "Загрузка...";
-        await fetch('/upload_file', { method: 'POST', body: formData });
-        fileInp.value = '';
-        textInp.placeholder = "Сообщение...";
-        loadMsgs();
-    }
+        async function syncData() {
+            try {
+                let res = await fetch('/get_contacts');
+                let contacts = await res.json();
+                contacts.forEach(c => {
+                    let userItem = document.getElementById(`user-${c.id}`);
+                    if (userItem) {
+                        let nameCont = userItem.querySelector('div');
+                        let dot = nameCont.querySelector('.online-dot');
+                        if (c.online) { if(!dot){ let d=document.createElement('span'); d.className='online-dot'; nameCont.appendChild(d); } } 
+                        else if(dot) dot.remove();
+                    }
+                    if (c.id === targetId) {
+                        const s = document.getElementById('chatStatus');
+                        if (s) { s.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing); s.style.color = (c.online || c.typing) ? "#25d366" : "#888"; }
+                    }
+                });
+            } catch (e) {}
+        }
 
-    // Запуск циклов
-    setInterval(syncData, 3000);
-    if (targetId) {
-        setInterval(loadMsgs, 3000);
-        loadMsgs();
-    }
-</script>
+        async function loadMsgs() {
+            if (!targetId) return;
+            try {
+                let res = await fetch(`/get_messages?chat_with=${targetId}`);
+                let data = await res.json();
+                let html = '';
+                data.messages.forEach(m => {
+                    const isMy = m.sender === data.my_id;
+                    const time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
+                    const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
+                    let content = m.text || "";
+                    if (m.type === 'image') {
+                        content = `<img src="${m.text}" loading="lazy" onclick="window.open('${m.text}')"><a href="${m.text}" download="${m.filename}" class="save-btn">💾 Сохранить</a>`;
+                    } else if (m.type === 'file') {
+                        content = `<a href="${m.text}" target="_blank" style="text-decoration:none; color:#0088cc; font-weight:bold;">📁 Файл: ${m.filename}</a>`;
+                    }
+                    html += `<div class="msg ${isMy?'my-msg':''}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
+                });
+                const msgBox = document.getElementById('msgBox');
+                if (msgBox.innerHTML !== html) {
+                    const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 150;
+                    msgBox.innerHTML = html;
+                    if (isBottom) msgBox.scrollTop = msgBox.scrollHeight;
+                }
+            } catch (e) {}
+        }
 
+        async function sendMsg() {
+            let inp = document.getElementById('textInp');
+            if (!inp.value.trim()) return;
+            let t = inp.value; inp.value = '';
+            await fetch('/send_simple', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ receiver_id: targetId, text: t }) });
+            loadMsgs();
+        }
+
+        setInterval(syncData, 3000);
+        if (targetId) { setInterval(loadMsgs, 3000); loadMsgs(); }
+    </script>
 </body>
 </html>
