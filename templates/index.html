@@ -81,150 +81,63 @@
         {% endif %}
     </div>
 
-    <script>
-        const targetId = "{{ target_user.id if target_user else '' }}";
+  <script>
+    const socket = io(); // Подключаемся к серверу
+    const targetId = "{{ target_user.id if target_user else '' }}";
+    const myId = "{{ user.id }}";
 
-        function updateClock() {
-            const el = document.getElementById('digitalClock');
-            if(el) el.textContent = new Date().toLocaleTimeString();
+    // Сообщаем серверу, что мы онлайн
+    socket.emit('join', {});
+
+    // СЛУШАЕМ НОВЫЕ СООБЩЕНИЯ
+    socket.on('receive_message', (msg) => {
+        // Если сообщение из текущего чата — рисуем его сразу
+        if (msg.sender === targetId || msg.sender === myId) {
+            drawMessage(msg);
+        } else {
+            // Иначе — обновляем счетчик (badge) у того, кто прислал
+            updateBadge(msg.sender);
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+    });
 
-        let typingTimer;
-        if (targetId) {
-            document.getElementById('textInp').addEventListener('input', () => {
-                if (!typingTimer) {
-                    fetch('/typing', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ target_id: targetId }) });
-                    typingTimer = setTimeout(() => { typingTimer = null; }, 3000);
-                }
-            });
+    function drawMessage(m) {
+        const msgBox = document.getElementById('msgBox');
+        const isMy = m.sender === myId;
+        const time = new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        
+        let content = m.text;
+        if (m.type === 'image') content = `<img src="${m.text}" loading="lazy">`;
+        
+        const html = `<div class="msg ${isMy?'my-msg':''}">${content}<div style="font-size:10px; color:gray; text-align:right;">${time}</div></div>`;
+        msgBox.insertAdjacentHTML('beforeend', html);
+        msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    async function sendMsg() {
+        const inp = document.getElementById('textInp');
+        if (!inp.value.trim()) return;
+        
+        // Отправляем через сокет, а не через fetch!
+        socket.emit('new_message', {
+            receiver_id: targetId,
+            text: inp.value,
+            type: 'text'
+        });
+        inp.value = '';
+    }
+
+    // Слушаем статус "печатает"
+    socket.on('is_typing', (data) => {
+        if (data.sender_id === targetId) {
+            document.getElementById('chatStatus').textContent = "печатает...";
+            setTimeout(() => { document.getElementById('chatStatus').textContent = "в сети"; }, 3000);
         }
+    });
 
-        async function uploadFile() {
-            const fileInp = document.getElementById('fileInp');
-            const file = fileInp.files[0];
-            if (!file || !targetId) return;
+    document.getElementById('textInp').addEventListener('input', () => {
+        socket.emit('start_typing', { receiver_id: targetId });
+    });
+</script>
 
-            const textInp = document.getElementById('textInp');
-            textInp.placeholder = "Сжатие и отправка...";
-
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = async function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const MAX_SIZE = 1200;
-
-                        if (width > height) {
-                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                        } else {
-                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                        
-                        await fetch('/upload_file', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                                file_data: compressedBase64,
-                                filename: file.name,
-                                receiver_id: targetId
-                            })
-                        });
-                        finalizeUpload();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('receiver_id', targetId);
-                await fetch('/upload_file', { method: 'POST', body: formData });
-                finalizeUpload();
-            }
-        }
-
-        function finalizeUpload() {
-            document.getElementById('fileInp').value = '';
-            document.getElementById('textInp').placeholder = "Сообщение...";
-            loadMsgs();
-        }
-
-        function formatLastSeen(iso, online, typing) {
-            if (typing) return "печатает...";
-            if (online) return "в сети";
-            if (!iso) return "был(а) недавно";
-            return `был(а) в ${new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-        }
-
-        async function syncData() {
-            try {
-                let res = await fetch('/get_contacts');
-                let contacts = await res.json();
-                contacts.forEach(c => {
-                    let userItem = document.getElementById(`user-${c.id}`);
-                    if (userItem) {
-                        let nameCont = userItem.querySelector('div');
-                        let dot = nameCont.querySelector('.online-dot');
-                        if (c.online) { if(!dot){ let d=document.createElement('span'); d.className='online-dot'; nameCont.appendChild(d); } } 
-                        else if(dot) dot.remove();
-                    }
-                    if (c.id === targetId) {
-                        const s = document.getElementById('chatStatus');
-                        if (s) { s.textContent = formatLastSeen(c.last_seen_iso, c.online, c.typing); s.style.color = (c.online || c.typing) ? "#25d366" : "#888"; }
-                    }
-                });
-            } catch (e) {}
-        }
-
-        async function loadMsgs() {
-            if (!targetId) return;
-            try {
-                let res = await fetch(`/get_messages?chat_with=${targetId}`);
-                let data = await res.json();
-                let html = '';
-                data.messages.forEach(m => {
-                    const isMy = m.sender === data.my_id;
-                    const time = m.utc_time ? new Date(m.utc_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
-                    const ticks = isMy ? (m.read ? '<span style="color:#34b7f1"> ✔✔</span>' : '<span style="color:gray"> ✔</span>') : "";
-                    let content = m.text || "";
-                    if (m.type === 'image') {
-                        content = `<img src="${m.text}" loading="lazy" onclick="window.open('${m.text}')"><a href="${m.text}" download="${m.filename}" class="save-btn">💾 Сохранить</a>`;
-                    } else if (m.type === 'file') {
-                        content = `<a href="${m.text}" target="_blank" style="text-decoration:none; color:#0088cc; font-weight:bold;">📁 Файл: ${m.filename}</a>`;
-                    }
-                    html += `<div class="msg ${isMy?'my-msg':''}">${content}<div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}${ticks}</div></div>`;
-                });
-                const msgBox = document.getElementById('msgBox');
-                if (msgBox.innerHTML !== html) {
-                    const isBottom = msgBox.scrollHeight - msgBox.clientHeight <= msgBox.scrollTop + 200;
-                    msgBox.innerHTML = html;
-                    if (isBottom) msgBox.scrollTop = msgBox.scrollHeight;
-                }
-            } catch (e) {}
-        }
-
-        async function sendMsg() {
-            let inp = document.getElementById('textInp');
-            if (!inp.value.trim()) return;
-            let t = inp.value; inp.value = '';
-            await fetch('/send_simple', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ receiver_id: targetId, text: t }) });
-            loadMsgs();
-        }
-
-        setInterval(syncData, 3000);
-        if (targetId) { setInterval(loadMsgs, 3000); loadMsgs(); }
-    </script>
 </body>
 </html>
