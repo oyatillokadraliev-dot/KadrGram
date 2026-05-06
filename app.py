@@ -85,18 +85,23 @@ def download_socket():
     import os
     url = "https://cloudflare.com"
     try:
-        # Создаем папку static, если её нет
         if not os.path.exists('static'):
             os.makedirs('static')
         
-        # Скачиваем файл напрямую на сервер
-        response = urllib.request.urlopen(url)
-        with open("static/socket.io.js", "wb") as f:
-            f.write(response.read())
+        # Добавляем заголовок "браузера", чтобы нас не блокировали
+        req = urllib.request.Request(
+            url, 
+            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        )
+        
+        with urllib.request.urlopen(req) as response:
+            with open("static/socket.io.js", "wb") as f:
+                f.write(response.read())
             
         return "УСПЕХ! Файл теперь на сервере. Обнови главную страницу."
     except Exception as e:
         return f"Ошибка: {str(e)}"
+
 
 
 if __name__ == '__main__':
