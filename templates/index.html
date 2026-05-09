@@ -66,43 +66,50 @@
         {% endif %}
     </div>
 
+    <!-- 1. ПОДКЛЮЧАЕМ БИБЛИОТЕКУ СТРОГО ПЕРЕД СКРИПТАМИ -->
     <script src="https://socket.io"></script>
+
     <script>
-        const socket = io();
+        // Проверка: загрузилась ли библиотека
+        if (typeof io === 'undefined') {
+            alert("Ошибка: Библиотека Socket.IO не загружена! Проверьте интернет или ссылку.");
+        }
+
+        // 2. ОБЪЯВЛЯЕМ ПЕРЕМЕННЫЕ (Важно: до того, как их начнут юзать функции)
+        const socket = io(); 
         const targetId = "{{ target_user.id if target_user else '' }}";
         const myId = "{{ user._id|string }}";
 
-        // Загрузка истории
+        // 3. ФУНКЦИЯ ОТПРАВКИ (Теперь targetId точно доступен)
+        function sendMsg() {
+            const inp = document.getElementById('textInp');
+            if (!inp || !inp.value.trim() || !targetId) return;
+            
+            socket.emit('new_message', {
+                receiver_id: targetId,
+                text: inp.value
+            });
+            inp.value = '';
+        }
+
+        // 4. ОСТАЛЬНАЯ ЛОГИКА
+        socket.emit('join');
+
         if (targetId) {
             fetch(`/get_messages?with=${targetId}`)
                 .then(r => r.json())
                 .then(msgs => {
                     msgs.forEach(m => drawMessage(m));
-                    scrollToBottom();
+                    const box = document.getElementById('msgBox');
+                    if(box) box.scrollTop = box.scrollHeight;
                 });
         }
-
-        socket.emit('join');
 
         socket.on('receive_message', (msg) => {
             if ((msg.sender === targetId && msg.receiver === myId) || (msg.sender === myId && msg.receiver === targetId)) {
                 drawMessage(msg);
-                scrollToBottom();
-            } else {
-                updateBadge(msg.sender);
-            }
-        });
-
-        socket.on('user_status', (data) => {
-            const userEl = document.getElementById(`user-${data.user_id}`);
-            if (userEl) {
-                const container = userEl.querySelector('.status-container');
-                container.innerHTML = data.online ? '<span class="online-dot"></span>' : '';
-            }
-            if (data.user_id === targetId) {
-                const st = document.getElementById('chatStatus');
-                st.innerText = data.online ? "в сети" : "был недавно";
-                st.style.color = data.online ? "#25d366" : "#888";
+                const box = document.getElementById('msgBox');
+                if(box) box.scrollTop = box.scrollHeight;
             }
         });
 
@@ -114,25 +121,13 @@
             const html = `<div class="msg ${isMy?'my-msg':''}">${m.text}<div style="font-size:10px; color:gray; text-align:right; margin-top:5px;">${time}</div></div>`;
             box.insertAdjacentHTML('beforeend', html);
         }
-
-        function sendMsg() {
-            const inp = document.getElementById('textInp');
-            if (!inp.value.trim() || !targetId) return;
-            socket.emit('new_message', { receiver_id: targetId, text: inp.value });
-            inp.value = '';
-        }
-
-        function scrollToBottom() {
-            const b = document.getElementById('msgBox');
-            if(b) b.scrollTop = b.scrollHeight;
-        }
-
-        function updateBadge(sid) {
-            const b = document.getElementById(`badge-${sid}`);
-            if(b) { b.style.display = 'block'; b.innerText = (parseInt(b.innerText)||0) + 1; }
-        }
-
-        document.getElementById('textInp')?.addEventListener('keydown', e => { if(e.key==='Enter') sendMsg() });
+        
+        // Слушаем Enter
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.activeElement.id === 'textInp') {
+                sendMsg();
+            }
+        });
     </script>
 </body>
 </html>
