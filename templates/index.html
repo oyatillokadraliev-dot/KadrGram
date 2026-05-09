@@ -6,93 +6,51 @@
     <title>KadrGram</title>
     <style>
         body { display: flex; height: 100dvh; margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #f0f2f5; overflow: hidden; }
-        .sidebar { width: 350px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: white; z-index: 2; }
+        .sidebar { width: 350px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: white; }
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #e5ddd5; position: relative; }
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; position: absolute; height: 100%; display: {{ 'none' if target_user else 'flex' }}; }
-            .chat-area { width: 100%; display: {{ 'flex' if target_user else 'none' }}; }
-            .back-btn { display: block !important; }
-        }
-        .back-btn { display: none; text-decoration: none; color: #0088cc; font-size: 24px; margin-right: 15px; }
-        .online-dot { width: 9px; height: 9px; background: #25d366; border-radius: 50%; display: inline-block; margin-left: 5px; border: 2px solid white; }
-        .user-list { flex: 1; overflow-y: auto; }
         .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .online-dot { width: 10px; height: 10px; background: #25d366; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        .msg { background: white; padding: 10px 14px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-self: flex-start; }
-        .my-msg { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
-        .input-area { padding: 10px 15px; background: white; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
-        .input-area input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
-        .send-btn { background: none; border: none; color: #0088cc; font-size: 28px; cursor: pointer; }
-        .unread-badge { background: #25d366; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; }
+        .msg { background: white; padding: 8px 12px; border-radius: 12px; margin-bottom: 8px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .my-msg { align-self: flex-end; background: #dcf8c6; }
+        .input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #ddd; }
+        .input-area input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
+        .send-btn { background: none; border: none; color: #0088cc; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div style="padding: 20px; font-size: 22px; font-weight: bold; color: #0088cc;">KadrGram</div>
-        <div class="user-list">
+        <div style="padding: 20px; font-size: 20px; font-weight: bold; color: #0088cc;">KadrGram</div>
+        <div style="flex: 1; overflow-y: auto;">
             {% for u in all_users %}
-            <div class="user-item" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
-                <div style="display:flex; align-items:center;">
-                    <span>{{ u.name }}</span>
-                    <span class="status-container">{% if u.online %}<span class="online-dot"></span>{% endif %}</span>
-                </div>
-                <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
+            <div class="user-item" onclick="location.href='/?chat_with={{ u.id }}'">
+                <span>{{ u.name }} {% if u.online %}<span class="online-dot"></span>{% endif %}</span>
             </div>
             {% endfor %}
         </div>
-        <div style="padding: 15px; background: #f9f9f9; border-top: 1px solid #eee;">
-            <b>{{ user.name }}</b> <a href="/logout" style="float:right; color:red; text-decoration:none;">Выход</a>
-        </div>
+        <div style="padding: 15px; background: #eee;"><b>{{ user.name }}</b> <a href="/logout" style="float:right; color:red;">Выход</a></div>
     </div>
 
     <div class="chat-area">
         {% if target_user %}
-            <div style="padding: 10px 15px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center;">
-                <a href="/" class="back-btn">←</a>
-                <div>
-                    <div style="font-weight: bold;">{{ target_user.name }}</div>
-                    <div id="chatStatus" style="font-size: 12px; color: {{ '#25d366' if target_user.online else '#888' }};">
-                        {{ 'в сети' if target_user.online else 'был недавно' }}
-                    </div>
-                </div>
-            </div>
+            <div style="padding: 15px; background: white; border-bottom: 1px solid #ddd; font-weight: bold;">{{ target_user.name }}</div>
             <div class="messages" id="msgBox"></div>
             <div class="input-area">
-                <input type="text" id="textInp" placeholder="Сообщение..." autocomplete="off">
+                <input type="text" id="textInp" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">➤</button>
             </div>
         {% else %}
-            <div style="display:flex; justify-content:center; align-items:center; height:100%; color: #888;">💬 Выберите чат</div>
+            <div style="display:flex; justify-content:center; align-items:center; height:100%; color: #888;">Выберите чат для начала общения</div>
         {% endif %}
     </div>
 
-    <!-- 1. ПОДКЛЮЧАЕМ БИБЛИОТЕКУ СТРОГО ПЕРЕД СКРИПТАМИ -->
-    <script src="https://socket.io"></script>
-
+    <!-- ПОДКЛЮЧАЕМ SOCKET.IO -->
+    <script src="https://cloudflare.com"></script>
     <script>
-        // Проверка: загрузилась ли библиотека
-        if (typeof io === 'undefined') {
-            alert("Ошибка: Библиотека Socket.IO не загружена! Проверьте интернет или ссылку.");
-        }
-
-        // 2. ОБЪЯВЛЯЕМ ПЕРЕМЕННЫЕ (Важно: до того, как их начнут юзать функции)
-        const socket = io(); 
+        const socket = io();
         const targetId = "{{ target_user.id if target_user else '' }}";
         const myId = "{{ user._id|string }}";
 
-        // 3. ФУНКЦИЯ ОТПРАВКИ (Теперь targetId точно доступен)
-        function sendMsg() {
-            const inp = document.getElementById('textInp');
-            if (!inp || !inp.value.trim() || !targetId) return;
-            
-            socket.emit('new_message', {
-                receiver_id: targetId,
-                text: inp.value
-            });
-            inp.value = '';
-        }
-
-        // 4. ОСТАЛЬНАЯ ЛОГИКА
         socket.emit('join');
 
         if (targetId) {
@@ -100,34 +58,36 @@
                 .then(r => r.json())
                 .then(msgs => {
                     msgs.forEach(m => drawMessage(m));
-                    const box = document.getElementById('msgBox');
-                    if(box) box.scrollTop = box.scrollHeight;
+                    scrollToBottom();
                 });
         }
 
         socket.on('receive_message', (msg) => {
             if ((msg.sender === targetId && msg.receiver === myId) || (msg.sender === myId && msg.receiver === targetId)) {
                 drawMessage(msg);
-                const box = document.getElementById('msgBox');
-                if(box) box.scrollTop = box.scrollHeight;
+                scrollToBottom();
             }
         });
+
+        function sendMsg() {
+            const inp = document.getElementById('textInp');
+            if (!inp.value.trim() || !targetId) return;
+            socket.emit('new_message', { receiver_id: targetId, text: inp.value });
+            inp.value = '';
+        }
 
         function drawMessage(m) {
             const box = document.getElementById('msgBox');
             if(!box) return;
             const isMy = m.sender === myId;
-            const time = new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            const html = `<div class="msg ${isMy?'my-msg':''}">${m.text}<div style="font-size:10px; color:gray; text-align:right; margin-top:5px;">${time}</div></div>`;
+            const html = `<div class="msg ${isMy?'my-msg':''}">${m.text}</div>`;
             box.insertAdjacentHTML('beforeend', html);
         }
-        
-        // Слушаем Enter
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && document.activeElement.id === 'textInp') {
-                sendMsg();
-            }
-        });
+
+        function scrollToBottom() {
+            const b = document.getElementById('msgBox');
+            if(b) b.scrollTop = b.scrollHeight;
+        }
     </script>
 </body>
 </html>
