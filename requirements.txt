@@ -1,9 +1,11 @@
-Flask==3.0.3
+Flask==2.3.3
 Flask-SocketIO==5.3.6
-eventlet==0.36.1
-gunicorn==22.0.0
-pymongo==4.7.2
+eventlet==0.35.2
+gunicorn==21.2.0
+pymongo[srv]==4.6.1
 python-dotenv==1.0.1
-Werkzeug==3.0.2
+Werkzeug==2.3.7
 bleach==6.1.0
+flask-wtf==1.2.1
+flask-limiter==3.7.0
 dnspython==2.6.1
