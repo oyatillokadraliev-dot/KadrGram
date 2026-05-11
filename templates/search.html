@@ -1,49 +1,197 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>KadrGram | Поиск людей</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KadrGram | Поиск</title>
+
     <style>
-        body { background: #f0f2f5; font-family: sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .search-container { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .back-btn { text-decoration: none; color: #3390ec; font-weight: bold; font-size: 20px; }
-        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
-        button { background: #3390ec; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .user-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; }
-        .user-info b { display: block; color: #222; }
-        .user-info span { color: #888; font-size: 13px; }
-        .write-btn { background: #34a853; color: white; text-decoration: none; padding: 8px 15px; border-radius: 8px; font-size: 14px; }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back {
+            font-size: 20px;
+            text-decoration: none;
+            color: #3390ec;
+            font-weight: bold;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: #3390ec;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            background: #3390ec;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .user {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 14px;
+            border-bottom: 1px solid #f3f3f3;
+            transition: 0.2s;
+        }
+
+        .user:hover {
+            background: #f9f9f9;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name {
+            font-weight: bold;
+            color: #222;
+        }
+
+        .login {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .chat-btn {
+            background: #34a853;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+
     </style>
+
 </head>
+
 <body>
-    <div class="search-container">
-        <div class="header">
-            <a href="/" class="back-btn">←</a>
-            <h2 style="margin: 0;">Поиск</h2>
-        </div>
 
-        <form action="/search" method="get" class="form-group">
-            <input name="query" placeholder="Введите имя или логин..." value="{{ request.args.get('query', '') }}" required>
-            <button type="submit">Найти</button>
-        </form>
+<div class="container">
 
-        <div class="results">
-            {% for r in results %}
-                <div class="user-card">
-                    <div class="user-info">
-                        <b>{{ r.name }}</b>
-                        <span>@{{ r.login }}</span>
-                    </div>
-                    <a href="/?chat_with={{ r.id }}" class="write-btn">Написать</a>
-                </div>
-            {% else %}
-                {% if request.args.get('query') %}
-                    <p style="text-align: center; color: #888; margin-top: 20px;">Никого не нашли...</p>
-                {% endif %}
-            {% endfor %}
-        </div>
+    <div class="header">
+        <a href="/" class="back">←</a>
+        <h2>Поиск пользователей</h2>
     </div>
+
+    <form action="/search" method="get">
+
+        <input
+            name="query"
+            placeholder="Имя или логин..."
+            value="{{ request.args.get('query', '') | e }}"
+            required
+        />
+
+        <button type="submit">Найти</button>
+
+    </form>
+
+    <div class="results">
+
+        {% for r in results %}
+
+        <div class="user">
+
+            <div class="info">
+
+                <div class="name">
+                    {{ r.name | e }}
+                </div>
+
+                <div class="login">
+                    @{{ r.login | e }}
+                </div>
+
+            </div>
+
+            <a class="chat-btn" href="/?chat_with={{ r.id }}">
+                Написать
+            </a>
+
+        </div>
+
+        {% else %}
+
+            {% if request.args.get('query') %}
+
+                <div class="empty">
+                    Никого не нашли 😔<br><br>
+                    Попробуйте:
+                    <br>• имя
+                    <br>• логин
+                </div>
+
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
 </body>
+
 </html>
