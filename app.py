@@ -10,10 +10,6 @@ from flask_socketio import SocketIO, emit, join_room, disconnect
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# =========================
-# INIT
-# =========================
-eventlet.monkey_patch()
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +20,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode="eventlet",
+    async_mode="threading",
     manage_session=False
 )
 
