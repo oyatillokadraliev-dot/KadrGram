@@ -1,6 +1,7 @@
+import eventlet
+eventlet.monkey_patch()
 import os
 import bleach
-import eventlet
 import logging
 from datetime import datetime, timedelta
 from bson.objectid import ObjectId
