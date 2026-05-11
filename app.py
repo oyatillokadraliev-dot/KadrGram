@@ -38,22 +38,23 @@ db = None
 users = None
 messages = None
 
-try:
-    if MONGO_URI:
+if MONGO_URI:
+    try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         client.admin.command("ping")
 
-        db = client["kadrgram"]
-        users = db["users"]
-        messages = db["messages"]
+        print("✅ MONGO CONNECTED SUCCESSFULLY")
 
-        logging.info("MongoDB connected")
-    else:
-        logging.error("MONGO_URI not set")
+        logging.info("SUCCESS: Connected to MongoDB Atlas!")
 
-except Exception as e:
-    logging.error(f"Mongo error: {e}")
+    except Exception as e:
+        print("❌ MONGO ERROR:", repr(e))
 
+        logging.error(f"DATABASE ERROR: {e}")
+        client = None
+else:
+    print("❌ MONGO_URI is missing in environment variables")
+    client = None
 # =========================
 # SIMPLE RATE LIMIT
 # =========================
