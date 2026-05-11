@@ -74,100 +74,59 @@
         {% endif %}
     </div>
 
-    <!-- КРИТИЧНО: Подключаем библиотеку ДО основного кода -->
-    <script src="https://cloudflare.com"></script>
+   <!-- Исправленное подключение библиотеки -->
+<script src="https://socket.io"></script>
 
-    <script>
-        // 1. Инициализация переменных (Строго в начале!)
-        const socket = io(); 
-        const targetId = "{{ target_user.id if target_user else '' }}";
-        const myId = "{{ user._id|string }}";
+<script>
+    const socket = io(); 
+    const targetId = "{{ target_user.id if target_user else '' }}";
+    const myId = "{{ my_id }}"; // Используем готовую строку из бэкенда
 
-        // 2. Вход в персональную комнату
-        socket.emit('join');
+    socket.emit('join');
 
-        // 3. Загрузка истории сообщений при открытии чата
-        if (targetId) {
-            fetch(`/get_messages?with=${targetId}`)
-                .then(r => r.json())
-                .then(msgs => {
-                    msgs.forEach(m => drawMessage(m));
-                    scrollToBottom();
-                });
+    // Исправленная отрисовка (добавлен ключ 'time' из бэкенда)
+    function drawMessage(m) {
+        const box = document.getElementById('msgBox');
+        if(!box) return;
+        const isMy = m.sender === myId;
+        // Обработка даты
+        const date = m.time || m.created_at; 
+        const time = new Date(date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        
+        const html = `
+            <div class="msg ${isMy ? 'my-msg' : ''}">
+                ${m.text}
+                <div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}</div>
+            </div>`;
+        box.insertAdjacentHTML('beforeend', html);
+    }
+
+    socket.on('receive_message', (msg) => {
+        if (msg.sender === targetId || msg.sender === myId) {
+            drawMessage(msg);
+            scrollToBottom();
+        } else {
+            updateBadge(msg.sender);
         }
+    });
 
-        // 4. Получение нового сообщения в реальном времени
-        socket.on('receive_message', (msg) => {
-            if ((msg.sender === targetId && msg.receiver === myId) || (msg.sender === myId && msg.receiver === targetId)) {
-                drawMessage(msg);
-                scrollToBottom();
-            } else {
-                updateBadge(msg.sender);
-            }
+    function sendMsg() {
+        const inp = document.getElementById('textInp');
+        const val = inp.value.trim();
+        if (!val || !targetId) return;
+
+        socket.emit('new_message', {
+            receiver_id: targetId,
+            text: val
         });
+        inp.value = '';
+    }
+    
+    // Добавь обработку Enter, если её не было
+    document.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') sendMsg();
+    });
+</script>
 
-        // 5. Глобальное обновление статусов (онлайн/оффлайн)
-        socket.on('user_status', (data) => {
-            const userEl = document.getElementById(`user-${data.user_id}`);
-            if (userEl) {
-                const dotContainer = userEl.querySelector('.status-dot-container');
-                dotContainer.innerHTML = data.online ? '<span class="online-dot"></span>' : '';
-            }
-            if (data.user_id === targetId) {
-                const statusText = document.getElementById('chatStatus');
-                statusText.innerText = data.online ? "в сети" : "был недавно";
-                statusText.style.color = data.online ? "#25d366" : "#888";
-            }
-        });
-
-        // Функция отправки сообщения
-        function sendMsg() {
-            const inp = document.getElementById('textInp');
-            const val = inp.value.trim();
-            if (!val || !targetId) return;
-
-            socket.emit('new_message', {
-                receiver_id: targetId,
-                text: val
-            });
-            inp.value = '';
-        }
-
-        // Отрисовка сообщения в окне
-        function drawMessage(m) {
-            const box = document.getElementById('msgBox');
-            if(!box) return;
-            const isMy = m.sender === myId;
-            const time = new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            
-            const html = `
-                <div class="msg ${isMy ? 'my-msg' : ''}">
-                    ${m.text}
-                    <div style="font-size:10px; color:gray; text-align:right; margin-top:4px;">${time}</div>
-                </div>`;
-            box.insertAdjacentHTML('beforeend', html);
-        }
-
-        function scrollToBottom() {
-            const b = document.getElementById('msgBox');
-            if(b) b.scrollTop = b.scrollHeight;
-        }
-
-        function updateBadge(sid) {
-            const b = document.getElementById(`badge-${sid}`);
-            if(b) {
-                b.style.display = 'block';
-                b.innerText = (parseInt(b.innerText) || 0) + 1;
-            }
-        }
-
-        // Обработка нажатия Enter
-        const inputField = document.getElementById('textInp');
-        if (inputField) {
-            inputField.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') sendMsg();
-            });
-        }
-    </script>
 </body>
 </html>
