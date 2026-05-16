@@ -6,13 +6,9 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-
     <title>KadrGram</title>
-
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             display: flex;
@@ -47,32 +43,32 @@
                 height: 100%;
                 display: {{ 'none' if target_user else 'flex' }};
             }
-
             .chat-area {
                 width: 100%;
                 display: {{ 'flex' if target_user else 'none' }};
             }
-
-            .back-btn {
-                display: block !important;
+            .back-btn { display: block !important; }
             }
-        }
 
         .sidebar-header {
-            padding: 20px;
+            padding: 16px 20px;
             background: white;
             border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .logo {
-            margin: 0;
+        .logo { margin: 0; color: #0088cc; }
+
+        /* ИСПРАВЛЕНО: добавлена кнопка поиска в sidebar */
+        .search-link {
             color: #0088cc;
+            text-decoration: none;
+            font-size: 20px;
         }
 
-        .user-list {
-            flex: 1;
-            overflow-y: auto;
-        }
+        .user-list { flex: 1; overflow-y: auto; }
 
         .user-item {
             padding: 15px;
@@ -84,18 +80,13 @@
             transition: background 0.2s;
         }
 
-        .user-item:hover {
-            background: #f5f5f5;
-        }
+        .user-item:hover { background: #f5f5f5; }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
+        .user-item.active { background: #e8f4fd; }
 
-        .user-name {
-            font-weight: 500;
-        }
+        .user-info { display: flex; align-items: center; }
+
+        .user-name { font-weight: 500; }
 
         .online-dot {
             width: 10px;
@@ -148,14 +139,9 @@
             margin-right: 15px;
         }
 
-        .chat-user-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
+        .chat-user-name { font-weight: bold; font-size: 16px; }
 
-        .chat-status {
-            font-size: 12px;
-        }
+        .chat-status { font-size: 12px; }
 
         .messages {
             flex: 1;
@@ -207,9 +193,7 @@
             font-size: 16px;
         }
 
-        .message-input:focus {
-            border-color: #0088cc;
-        }
+        .message-input:focus { border-color: #0088cc; }
 
         .send-btn {
             background: none;
@@ -228,10 +212,7 @@
             color: #888;
         }
 
-        .empty-chat-icon {
-            font-size: 50px;
-            margin-bottom: 10px;
-        }
+        .empty-chat-icon { font-size: 50px; margin-bottom: 10px; }
 
         .connection-status {
             position: absolute;
@@ -249,331 +230,256 @@
 
 <body>
 
-    <!-- SIDEBAR -->
+<!-- SIDEBAR -->
+<div class="sidebar">
 
-    <div class="sidebar">
+    <div class="sidebar-header">
+        <h2 class="logo">KadrGram</h2>
+        <!-- ИСПРАВЛЕНО: добавлена ссылка на поиск (маршрут теперь есть в app.py) -->
+        <a href="/search" class="search-link" title="Найти пользователя">🔍</a>
+    </div>
 
-        <div class="sidebar-header">
-            <h2 class="logo">KadrGram</h2>
-        </div>
-
-        <div class="user-list">
-
-            {% for u in all_users %}
-
-            <div
-                class="user-item"
-                id="user-{{ u.id }}"
-                onclick="location.href='/?chat_with={{ u.id }}'"
-            >
-
-                <div class="user-info">
-
-                    <span class="user-name">
-                        {{ u.name }}
-                    </span>
-
-                    <span class="status-dot-container">
-                        {% if u.online %}
-                            <span class="online-dot"></span>
-                        {% endif %}
-                    </span>
-
-                </div>
-
-                <span
-                    class="unread-badge"
-                    id="badge-{{ u.id }}"
-                    {% if u.unread == 0 %}style="display:none;"{% endif %}
-                >
-                    {{ u.unread }}
+    <div class="user-list">
+        {% for u in all_users %}
+        <div
+            class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
+            id="user-{{ u.id }}"
+            onclick="location.href='/?chat_with={{ u.id }}'"
+        >
+            <div class="user-info">
+                <span class="user-name">{{ u.name }}</span>
+                <span class="status-dot-container">
+                    {% if u.online %}<span class="online-dot"></span>{% endif %}
                 </span>
-
             </div>
-
-            {% endfor %}
-
+            <span
+                class="unread-badge"
+                id="badge-{{ u.id }}"
+                {% if u.unread == 0 %}style="display:none;"{% endif %}
+            >
+                {{ u.unread }}
+            </span>
         </div>
-
-        <div class="sidebar-footer">
-
-            <b style="font-size:14px;">
-                {{ user.name }}
-            </b>
-
-            <a href="/logout" class="logout-link">
-                Выход
-            </a>
-
-        </div>
-
+        {% endfor %}
     </div>
 
-    <!-- CHAT -->
-
-    <div class="chat-area">
-
-        <div class="connection-status" id="connectionStatus">
-            Подключение...
-        </div>
-
-        {% if target_user %}
-
-            <div class="chat-header">
-
-                <a href="/" class="back-btn">
-                    ←
-                </a>
-
-                <div>
-
-                    <div class="chat-user-name">
-                        {{ target_user.name }}
-                    </div>
-
-                    <div
-                        id="chatStatus"
-                        class="chat-status"
-                        style="color: {{ '#25d366' if target_user.online else '#888' }};"
-                    >
-                        {{ 'в сети' if target_user.online else 'был недавно' }}
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="messages" id="msgBox"></div>
-
-            <div class="input-area">
-
-                <input
-                    type="text"
-                    id="textInp"
-                    class="message-input"
-                    placeholder="Напишите сообщение..."
-                    autocomplete="off"
-                />
-
-                <button class="send-btn" onclick="sendMsg()">
-                    ➤
-                </button>
-
-            </div>
-
-        {% else %}
-
-            <div class="empty-chat">
-
-                <div class="empty-chat-icon">
-                    💬
-                </div>
-
-                <div>
-                    Выберите чат, чтобы начать общение
-                </div>
-
-            </div>
-
-        {% endif %}
-
+    <div class="sidebar-footer">
+        <b style="font-size:14px;">{{ user.name }}</b>
+        <a href="/logout" class="logout-link">Выход</a>
     </div>
 
-    <!-- SOCKET.IO -->
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
+<!-- CHAT -->
+<div class="chat-area">
 
-    <script>
+    <div class="connection-status" id="connectionStatus">Подключение...</div>
 
-        const socket = io();
+    {% if target_user %}
 
-        const targetId = "{{ target_user.id if target_user else '' }}";
-        const myId = "{{ my_id }}";
+        <div class="chat-header">
+            <a href="/" class="back-btn">←</a>
+            <div>
+                <div class="chat-user-name">{{ target_user.name }}</div>
+                <div
+                    id="chatStatus"
+                    class="chat-status"
+                    style="color: {{ '#25d366' if target_user.online else '#888' }};"
+                >
+                    {{ 'в сети' if target_user.online else 'был недавно' }}
+                </div>
+            </div>
+        </div>
 
-        const msgBox = document.getElementById('msgBox');
-        const input = document.getElementById('textInp');
-        const connectionStatus = document.getElementById('connectionStatus');
+        <div class="messages" id="msgBox"></div>
 
-        socket.emit('join');
+        <div class="input-area">
+            <input
+                type="text"
+                id="textInp"
+                class="message-input"
+                placeholder="Напишите сообщение..."
+                autocomplete="off"
+            />
+            <button class="send-btn" onclick="sendMsg()">➤</button>
+        </div>
 
-        // =========================
-        // XSS PROTECTION
-        // =========================
+    {% else %}
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.innerText = text;
-            return div.innerHTML;
-        }
+        <div class="empty-chat">
+            <div class="empty-chat-icon">💬</div>
+            <div>Выберите чат, чтобы начать общение</div>
+        </div>
 
-        // =========================
-        // CONNECTION STATUS
-        // =========================
+    {% endif %}
 
-        socket.on('connect', () => {
-            connectionStatus.style.display = 'none';
-        });
+</div>
 
-        socket.on('disconnect', () => {
-            connectionStatus.innerText = 'Нет соединения';
-            connectionStatus.style.display = 'block';
-        });
+<script src="/socket.io/socket.io.js"></script>
 
-        socket.on('reconnect_attempt', () => {
-            connectionStatus.innerText = 'Переподключение...';
-            connectionStatus.style.display = 'block';
-        });
+<script>
+    const socket = io();
 
-        // =========================
-        // DRAW MESSAGE
-        // =========================
+    const targetId = "{{ target_user.id if target_user else '' }}";
+    const myId     = "{{ my_id }}";
 
-        function drawMessage(m, isOptimistic = false) {
+    const msgBox           = document.getElementById('msgBox');
+    const input            = document.getElementById('textInp');
+    const connectionStatus = document.getElementById('connectionStatus');
 
-            if (!msgBox) return;
+    // ИСПРАВЛЕНО: убран лишний emit('join') — join_room вызывается на сервере в on_connect
+    // socket.emit('join');  ← удалено
 
-            const isMy = m.sender === myId;
+    // =========================
+    // XSS PROTECTION
+    // =========================
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
 
-            const date = m.time || m.created_at || new Date();
+    // =========================
+    // CONNECTION STATUS
+    // =========================
+    socket.on('connect', () => {
+        connectionStatus.style.display = 'none';
+    });
 
-            const time = new Date(date).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+    socket.on('disconnect', () => {
+        connectionStatus.innerText = 'Нет соединения';
+        connectionStatus.style.display = 'block';
+    });
 
-            const shouldScroll =
-                msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 120;
+    socket.on('reconnect_attempt', () => {
+        connectionStatus.innerText = 'Переподключение...';
+        connectionStatus.style.display = 'block';
+    });
 
-            const msg = document.createElement('div');
+    // =========================
+    // DRAW MESSAGE
+    // =========================
+    function drawMessage(m, isOptimistic = false) {
+        if (!msgBox) return;
 
-            msg.classList.add('msg');
+        const isMy   = m.sender === myId;
+        const date   = m.time || m.created_at || new Date();
+        const time   = new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-            if (isMy) {
-                msg.classList.add('my-msg');
-            }
+        const shouldScroll =
+            msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 120;
 
-            if (isOptimistic) {
-                msg.style.opacity = '0.7';
-            }
+        const msg = document.createElement('div');
+        msg.classList.add('msg');
+        if (isMy) msg.classList.add('my-msg');
+        if (isOptimistic) msg.style.opacity = '0.7';
 
-            const text = document.createElement('div');
-            text.innerHTML = escapeHtml(m.text);
+        const text = document.createElement('div');
+        text.innerHTML = escapeHtml(m.text);
 
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'msg-time';
-            timeDiv.innerText = time;
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'msg-time';
+        timeDiv.innerText = time;
 
-            msg.appendChild(text);
-            msg.appendChild(timeDiv);
+        msg.appendChild(text);
+        msg.appendChild(timeDiv);
+        msgBox.appendChild(msg);
 
-            msgBox.appendChild(msg);
+        if (shouldScroll) scrollToBottom();
+    }
 
-            if (shouldScroll) {
+    // =========================
+    // SCROLL
+    // =========================
+    function scrollToBottom() {
+        if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    // =========================
+    // LOAD HISTORY
+    // ИСПРАВЛЕНО: при открытии чата загружаем историю через API
+    // =========================
+    if (targetId && msgBox) {
+        fetch(`/get_messages?with=${targetId}`)
+            .then(r => r.json())
+            .then(msgs => {
+                msgs.forEach(m => drawMessage(m));
                 scrollToBottom();
+            })
+            .catch(err => console.error('Ошибка загрузки сообщений:', err));
+    }
+
+    // =========================
+    // RECEIVE MESSAGE
+    // ИСПРАВЛЕНО: убрано дублирование — оптимистичное сообщение уже добавлено,
+    // поэтому входящее от себя (my echo) пропускаем, если уже нарисовали
+    // =========================
+    let pendingOptimistic = false;
+
+    socket.on('receive_message', (msg) => {
+        const isCurrentChat =
+            (msg.sender === targetId && msg.receiver === myId) ||
+            (msg.sender === myId    && msg.receiver === targetId);  // ИСПРАВЛЕНО: проверяем обе стороны
+
+        if (isCurrentChat) {
+            if (msg.sender === myId && pendingOptimistic) {
+                // Заменяем оптимистичное сообщение реальным (убираем прозрачность)
+                const optimistic = msgBox.querySelector('.my-msg[style*="opacity"]');
+                if (optimistic) {
+                    optimistic.style.opacity = '1';
+                    pendingOptimistic = false;
+                    return;
+                }
             }
-        }
-
-        // =========================
-        // SCROLL
-        // =========================
-
-        function scrollToBottom() {
-
-            if (!msgBox) return;
-
-            msgBox.scrollTop = msgBox.scrollHeight;
-        }
-
-        // =========================
-        // RECEIVE MESSAGE
-        // =========================
-
-        socket.on('receive_message', (msg) => {
-
-            const isCurrentChat =
-                msg.sender === targetId ||
-                msg.sender === myId;
-
-            if (isCurrentChat) {
-
+            if (msg.sender !== myId) {
                 drawMessage(msg);
-
-            } else {
-
-                updateBadge(msg.sender);
-
             }
-
-        });
-
-        // =========================
-        // SEND MESSAGE
-        // =========================
-
-        function sendMsg() {
-
-            if (!input || !targetId) return;
-
-            const val = input.value.trim();
-
-            if (!val) return;
-
-            // optimistic UI
-
-            drawMessage({
-                sender: myId,
-                text: val,
-                time: new Date()
-            }, true);
-
-            socket.emit('new_message', {
-                receiver_id: targetId,
-                text: val
-            });
-
-            input.value = '';
-
-            input.focus();
+        } else {
+            updateBadge(msg.sender);
         }
+    });
 
-        // =========================
-        // ENTER SEND
-        // =========================
+    // =========================
+    // SEND MESSAGE
+    // =========================
+    function sendMsg() {
+        if (!input || !targetId) return;
+        const val = input.value.trim();
+        if (!val) return;
 
-        document.addEventListener('keypress', (e) => {
+        // Оптимистичный UI
+        pendingOptimistic = true;
+        drawMessage({ sender: myId, text: val, time: new Date() }, true);
 
-            if (e.key === 'Enter') {
-                sendMsg();
-            }
+        socket.emit('new_message', { receiver_id: targetId, text: val });
 
-        });
+        input.value = '';
+        input.focus();
+    }
 
-        // =========================
-        // UNREAD BADGE
-        // =========================
+    // =========================
+    // ENTER SEND
+    // =========================
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMsg();
+    });
 
-        function updateBadge(userId) {
+    // =========================
+    // UNREAD BADGE
+    // =========================
+    function updateBadge(userId) {
+        const badge = document.getElementById(`badge-${userId}`);
+        if (!badge) return;
+        badge.style.display = 'inline-block';
+        const current = parseInt(badge.innerText || '0');
+        badge.innerText = current + 1;
+    }
 
-            const badge = document.getElementById(`badge-${userId}`);
-
-            if (!badge) return;
-
-            badge.style.display = 'inline-block';
-
-            const current = parseInt(badge.innerText || '0');
-
-            badge.innerText = current + 1;
-        }
-
-        // =========================
-        // AUTO FOCUS
-        // =========================
-
-        if (input) {
-            input.focus();
-        }
-
-    </script>
+    // =========================
+    // AUTO FOCUS
+    // =========================
+    if (input) input.focus();
+</script>
 
 </body>
 </html>
