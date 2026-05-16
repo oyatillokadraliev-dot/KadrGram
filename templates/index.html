@@ -315,7 +315,7 @@
 
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <script>
     const socket = io();
@@ -326,9 +326,6 @@
     const msgBox           = document.getElementById('msgBox');
     const input            = document.getElementById('textInp');
     const connectionStatus = document.getElementById('connectionStatus');
-
-    // ИСПРАВЛЕНО: убран лишний emit('join') — join_room вызывается на сервере в on_connect
-    // socket.emit('join');  ← удалено
 
     // =========================
     // XSS PROTECTION
@@ -362,17 +359,29 @@
     function drawMessage(m, isOptimistic = false) {
         if (!msgBox) return;
 
-        const isMy   = m.sender === myId;
-        const date   = m.time || m.created_at || new Date();
-        const time   = new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isMy = m.sender === myId;
+
+        const date = m.time || m.created_at || new Date();
+
+        const time = new Date(date).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
 
         const shouldScroll =
             msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 120;
 
         const msg = document.createElement('div');
+
         msg.classList.add('msg');
-        if (isMy) msg.classList.add('my-msg');
-        if (isOptimistic) msg.style.opacity = '0.7';
+
+        if (isMy) {
+            msg.classList.add('my-msg');
+        }
+
+        if (isOptimistic) {
+            msg.style.opacity = '0.7';
+        }
 
         const text = document.createElement('div');
         text.innerHTML = escapeHtml(m.text);
@@ -383,21 +392,25 @@
 
         msg.appendChild(text);
         msg.appendChild(timeDiv);
+
         msgBox.appendChild(msg);
 
-        if (shouldScroll) scrollToBottom();
+        if (shouldScroll) {
+            scrollToBottom();
+        }
     }
 
     // =========================
     // SCROLL
     // =========================
     function scrollToBottom() {
-        if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+        if (msgBox) {
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }
     }
 
     // =========================
     // LOAD HISTORY
-    // ИСПРАВЛЕНО: при открытии чата загружаем историю через API
     // =========================
     if (targetId && msgBox) {
         fetch(`/get_messages?with=${targetId}`)
@@ -406,34 +419,40 @@
                 msgs.forEach(m => drawMessage(m));
                 scrollToBottom();
             })
-            .catch(err => console.error('Ошибка загрузки сообщений:', err));
+            .catch(err => {
+                console.error('Ошибка загрузки сообщений:', err);
+            });
     }
 
     // =========================
     // RECEIVE MESSAGE
-    // ИСПРАВЛЕНО: убрано дублирование — оптимистичное сообщение уже добавлено,
-    // поэтому входящее от себя (my echo) пропускаем, если уже нарисовали
     // =========================
     let pendingOptimistic = false;
 
     socket.on('receive_message', (msg) => {
+
         const isCurrentChat =
             (msg.sender === targetId && msg.receiver === myId) ||
-            (msg.sender === myId    && msg.receiver === targetId);  // ИСПРАВЛЕНО: проверяем обе стороны
+            (msg.sender === myId && msg.receiver === targetId);
 
         if (isCurrentChat) {
+
             if (msg.sender === myId && pendingOptimistic) {
-                // Заменяем оптимистичное сообщение реальным (убираем прозрачность)
-                const optimistic = msgBox.querySelector('.my-msg[style*="opacity"]');
+
+                const optimistic =
+                    msgBox.querySelector('.my-msg[style*="opacity"]');
+
                 if (optimistic) {
                     optimistic.style.opacity = '1';
                     pendingOptimistic = false;
                     return;
                 }
             }
+
             if (msg.sender !== myId) {
                 drawMessage(msg);
             }
+
         } else {
             updateBadge(msg.sender);
         }
@@ -443,15 +462,25 @@
     // SEND MESSAGE
     // =========================
     function sendMsg() {
+
         if (!input || !targetId) return;
+
         const val = input.value.trim();
+
         if (!val) return;
 
-        // Оптимистичный UI
         pendingOptimistic = true;
-        drawMessage({ sender: myId, text: val, time: new Date() }, true);
 
-        socket.emit('new_message', { receiver_id: targetId, text: val });
+        drawMessage({
+            sender: myId,
+            text: val,
+            time: new Date()
+        }, true);
+
+        socket.emit('new_message', {
+            receiver_id: targetId,
+            text: val
+        });
 
         input.value = '';
         input.focus();
@@ -460,26 +489,38 @@
     // =========================
     // ENTER SEND
     // =========================
-    document.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMsg();
-    });
+    if (input) {
+        input.addEventListener('keypress', (e) => {
+
+            if (e.key === 'Enter') {
+                sendMsg();
+            }
+
+        });
+    }
 
     // =========================
     // UNREAD BADGE
     // =========================
     function updateBadge(userId) {
+
         const badge = document.getElementById(`badge-${userId}`);
+
         if (!badge) return;
+
         badge.style.display = 'inline-block';
+
         const current = parseInt(badge.innerText || '0');
+
         badge.innerText = current + 1;
     }
 
     // =========================
     // AUTO FOCUS
     // =========================
-    if (input) input.focus();
+    if (input) {
+        input.focus();
+    }
 </script>
-
 </body>
 </html>
