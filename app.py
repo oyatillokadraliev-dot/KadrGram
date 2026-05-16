@@ -40,6 +40,11 @@ if MONGO_URI:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         client.admin.command("ping")
 
+        db = client["kadrgram"]
+
+        users = db["users"]
+        messages = db["messages"]
+
         print("✅ MONGO CONNECTED SUCCESSFULLY")
 
         logging.info("SUCCESS: Connected to MongoDB Atlas!")
