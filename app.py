@@ -83,7 +83,7 @@ def oid(x):
 
 def get_user():
     uid = session.get("user_id")
-    if not uid or not users:
+    if not uid or users is None:
         return None
     return users.find_one({"_id": oid(uid)})
 
@@ -93,7 +93,7 @@ def get_user():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if not users:
+        if users is None:
             return "DB error", 500
 
         login_val = request.form.get("login", "").strip()
@@ -140,7 +140,7 @@ def register():
 def logout():
     uid = session.get("user_id")
 
-    if uid and users:
+    if uid and users is not None:
         users.update_one({"_id": oid(uid)}, {"$set": {"online": False}})
 
     session.clear()
