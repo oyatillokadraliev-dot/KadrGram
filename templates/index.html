@@ -2,17 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
-
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             display: flex;
@@ -23,6 +16,7 @@
             overflow: hidden;
         }
 
+        /* ---- SIDEBAR ---- */
         .sidebar {
             width: 350px;
             border-right: 1px solid #ddd;
@@ -32,47 +26,20 @@
             z-index: 2;
         }
 
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #e5ddd5;
-            position: relative;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                position: absolute;
-                height: 100%;
-                display: {{ 'none' if target_user else 'flex' }};
-            }
-
-            .chat-area {
-                width: 100%;
-                display: {{ 'flex' if target_user else 'none' }};
-            }
-
-            .back-btn {
-                display: block !important;
-            }
-        }
-
         .sidebar-header {
             padding: 20px;
             background: white;
             border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .logo {
-            margin: 0;
-            color: #0088cc;
-        }
+        .logo { margin: 0; color: #0088cc; }
 
-        .user-list {
-            flex: 1;
-            overflow-y: auto;
-        }
+        .search-link { color: #0088cc; text-decoration: none; font-size: 20px; }
+
+        .user-list { flex: 1; overflow-y: auto; }
 
         .user-item {
             padding: 15px;
@@ -84,27 +51,18 @@
             transition: background 0.2s;
         }
 
-        .user-item:hover {
-            background: #f5f5f5;
-        }
+        .user-item:hover { background: #f5f5f5; }
+        .user-item.active { background: #e8f4fd; }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .user-name {
-            font-weight: 500;
-        }
+        .user-info { display: flex; align-items: center; gap: 6px; }
+        .user-name { font-weight: 500; }
 
         .online-dot {
-            width: 10px;
-            height: 10px;
+            width: 9px; height: 9px;
             background: #25d366;
             border-radius: 50%;
             display: inline-block;
-            margin-left: 6px;
-            border: 2px solid white;
+            flex-shrink: 0;
         }
 
         .unread-badge {
@@ -125,11 +83,15 @@
             align-items: center;
         }
 
-        .logout-link {
-            color: #d9534f;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
+        .logout-link { color: #d9534f; text-decoration: none; font-size: 14px; font-weight: bold; }
+
+        /* ---- CHAT ---- */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #e5ddd5;
+            position: relative;
         }
 
         .chat-header {
@@ -138,6 +100,7 @@
             border-bottom: 1px solid #ddd;
             display: flex;
             align-items: center;
+            gap: 10px;
         }
 
         .back-btn {
@@ -145,32 +108,27 @@
             text-decoration: none;
             color: #0088cc;
             font-size: 24px;
-            margin-right: 15px;
         }
 
-        .chat-user-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
+        .chat-user-name { font-weight: bold; font-size: 16px; }
 
-        .chat-status {
-            font-size: 12px;
-        }
+        .chat-status { font-size: 12px; color: #888; transition: color 0.3s; }
 
+        /* ---- MESSAGES ---- */
         .messages {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .msg {
             background: white;
-            padding: 10px 14px;
+            padding: 8px 12px 4px;
             border-radius: 15px;
-            max-width: 80%;
+            max-width: 78%;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -182,13 +140,45 @@
             border-bottom-right-radius: 3px;
         }
 
+        .msg-text { font-size: 15px; }
+
+        /* время справа внизу — как в Telegram */
         .msg-time {
             font-size: 10px;
-            color: gray;
+            color: #aaa;
             text-align: right;
-            margin-top: 4px;
+            margin-top: 2px;
+            line-height: 1;
         }
 
+        /* ---- TYPING INDICATOR ---- */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: white;
+            padding: 10px 14px;
+            border-radius: 15px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .typing-dots { display: flex; gap: 4px; align-items: center; }
+
+        .typing-dots span {
+            width: 7px; height: 7px;
+            background: #aaa;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30%            { transform: translateY(-5px); }
+        }
+
+        /* ---- INPUT ---- */
         .input-area {
             padding: 10px 15px;
             background: white;
@@ -207,9 +197,7 @@
             font-size: 16px;
         }
 
-        .message-input:focus {
-            border-color: #0088cc;
-        }
+        .message-input:focus { border-color: #0088cc; }
 
         .send-btn {
             background: none;
@@ -219,6 +207,7 @@
             cursor: pointer;
         }
 
+        /* ---- EMPTY ---- */
         .empty-chat {
             display: flex;
             flex-direction: column;
@@ -228,331 +217,354 @@
             color: #888;
         }
 
-        .empty-chat-icon {
-            font-size: 50px;
-            margin-bottom: 10px;
-        }
+        .empty-chat-icon { font-size: 50px; margin-bottom: 10px; }
 
+        /* ---- CONNECTION ---- */
         .connection-status {
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: 10px; right: 15px;
             background: rgba(0,0,0,0.7);
             color: white;
             padding: 6px 10px;
             border-radius: 10px;
             font-size: 12px;
             display: none;
+            z-index: 10;
+        }
+
+        /* ---- MOBILE ---- */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                height: 100%;
+                display: {{ 'none' if target_user else 'flex' }};
+            }
+            .chat-area {
+                width: 100%;
+                display: {{ 'flex' if target_user else 'none' }};
+            }
+            .back-btn { display: block !important; }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- SIDEBAR -->
+<!-- SIDEBAR -->
+<div class="sidebar">
 
-    <div class="sidebar">
+    <div class="sidebar-header">
+        <h2 class="logo">KadrGram</h2>
+        <a href="/search" class="search-link" title="Поиск">🔍</a>
+    </div>
 
-        <div class="sidebar-header">
-            <h2 class="logo">KadrGram</h2>
-        </div>
-
-        <div class="user-list">
-
-            {% for u in all_users %}
-
-            <div
-                class="user-item"
-                id="user-{{ u.id }}"
-                onclick="location.href='/?chat_with={{ u.id }}'"
-            >
-
-                <div class="user-info">
-
-                    <span class="user-name">
-                        {{ u.name }}
-                    </span>
-
-                    <span class="status-dot-container">
-                        {% if u.online %}
-                            <span class="online-dot"></span>
-                        {% endif %}
-                    </span>
-
-                </div>
-
-                <span
-                    class="unread-badge"
-                    id="badge-{{ u.id }}"
-                    {% if u.unread == 0 %}style="display:none;"{% endif %}
-                >
-                    {{ u.unread }}
+    <div class="user-list">
+        {% for u in all_users %}
+        <div
+            class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
+            id="user-{{ u.id }}"
+            onclick="location.href='/?chat_with={{ u.id }}'"
+        >
+            <div class="user-info">
+                <span class="user-name">{{ u.name }}</span>
+                <span id="dot-{{ u.id }}">
+                    {% if u.online %}<span class="online-dot"></span>{% endif %}
                 </span>
-
             </div>
-
-            {% endfor %}
-
+            <span
+                class="unread-badge"
+                id="badge-{{ u.id }}"
+                {% if u.unread == 0 %}style="display:none;"{% endif %}
+            >{{ u.unread }}</span>
         </div>
-
-        <div class="sidebar-footer">
-
-            <b style="font-size:14px;">
-                {{ user.name }}
-            </b>
-
-            <a href="/logout" class="logout-link">
-                Выход
-            </a>
-
-        </div>
-
+        {% endfor %}
     </div>
 
-    <!-- CHAT -->
-
-    <div class="chat-area">
-
-        <div class="connection-status" id="connectionStatus">
-            Подключение...
-        </div>
-
-        {% if target_user %}
-
-            <div class="chat-header">
-
-                <a href="/" class="back-btn">
-                    ←
-                </a>
-
-                <div>
-
-                    <div class="chat-user-name">
-                        {{ target_user.name }}
-                    </div>
-
-                    <div
-                        id="chatStatus"
-                        class="chat-status"
-                        style="color: {{ '#25d366' if target_user.online else '#888' }};"
-                    >
-                        {{ 'в сети' if target_user.online else 'был недавно' }}
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="messages" id="msgBox"></div>
-
-            <div class="input-area">
-
-                <input
-                    type="text"
-                    id="textInp"
-                    class="message-input"
-                    placeholder="Напишите сообщение..."
-                    autocomplete="off"
-                />
-
-                <button class="send-btn" onclick="sendMsg()">
-                    ➤
-                </button>
-
-            </div>
-
-        {% else %}
-
-            <div class="empty-chat">
-
-                <div class="empty-chat-icon">
-                    💬
-                </div>
-
-                <div>
-                    Выберите чат, чтобы начать общение
-                </div>
-
-            </div>
-
-        {% endif %}
-
+    <div class="sidebar-footer">
+        <b style="font-size:14px;">{{ user.name }}</b>
+        <a href="/logout" class="logout-link">Выход</a>
     </div>
 
-    <!-- SOCKET.IO -->
+</div>
 
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<!-- CHAT -->
+<div class="chat-area">
 
-    <script>
-        // Jinja-переменные — безопасно рендерятся на сервере
-        const TARGET_ID = "{{ target_user.id if target_user else '' }}";
-        const MY_ID     = "{{ my_id }}";
+    <div class="connection-status" id="connStatus">Подключение...</div>
 
-        // =========================
-        // XSS PROTECTION
-        // =========================
-        function escapeHtml(text) {
-            const d = document.createElement('div');
-            d.innerText = text;
-            return d.innerHTML;
+    {% if target_user %}
+
+    <div class="chat-header">
+        <a href="/" class="back-btn">←</a>
+        <div>
+            <div class="chat-user-name">{{ target_user.name }}</div>
+            <div id="chatStatus" class="chat-status"
+                 style="color:{{ '#25d366' if target_user.online else '#888' }};">
+                {{ 'в сети' if target_user.online else target_user.last_seen_str }}
+            </div>
+        </div>
+    </div>
+
+    <div class="messages" id="msgBox">
+        <!-- Индикатор "печатает..." — всегда последний элемент -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="textInp"
+            class="message-input"
+            placeholder="Напишите сообщение..."
+            autocomplete="off"
+        />
+        <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+
+    {% else %}
+
+    <div class="empty-chat">
+        <div class="empty-chat-icon">💬</div>
+        <div>Выберите чат, чтобы начать общение</div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+
+    const TARGET_ID = "{{ target_user.id if target_user else '' }}";
+    const MY_ID     = "{{ my_id }}";
+
+    // =========================
+    // XSS
+    // =========================
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.innerText = text;
+        return d.innerHTML;
+    }
+
+    // =========================
+    // ВРЕМЯ — форматируем красиво
+    // =========================
+    function formatTime(isoStr) {
+        var d = new Date(isoStr);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // =========================
+    // DRAW MESSAGE
+    // =========================
+    function drawMessage(m, optimistic) {
+        var box = document.getElementById('msgBox');
+        if (!box) return;
+
+        var isMy = (m.sender === MY_ID);
+        var time = formatTime(m.time || new Date().toISOString());
+
+        var wrap = document.createElement('div');
+        wrap.className = 'msg' + (isMy ? ' my-msg' : '');
+        if (optimistic) wrap.dataset.optimistic = '1';
+
+        var txt = document.createElement('div');
+        txt.className = 'msg-text';
+        txt.innerHTML = escapeHtml(m.text);
+
+        var ts = document.createElement('div');
+        ts.className = 'msg-time';
+        ts.innerText = time;
+
+        wrap.appendChild(txt);
+        wrap.appendChild(ts);
+
+        // Вставляем ПЕРЕД индикатором печати
+        var indicator = document.getElementById('typingIndicator');
+        box.insertBefore(wrap, indicator);
+
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // =========================
+    // SOCKET
+    // =========================
+    var socket = io({ transports: ['websocket', 'polling'] });
+
+    socket.on('connect', function() {
+        var s = document.getElementById('connStatus');
+        if (s) s.style.display = 'none';
+    });
+
+    socket.on('disconnect', function() {
+        var s = document.getElementById('connStatus');
+        if (s) { s.innerText = 'Нет соединения'; s.style.display = 'block'; }
+    });
+
+    // =========================
+    // ONLINE / OFFLINE
+    // =========================
+    socket.on('user_online', function(data) {
+        var dotWrap = document.getElementById('dot-' + data.user_id);
+        if (dotWrap && !dotWrap.querySelector('.online-dot'))
+            dotWrap.innerHTML = '<span class="online-dot"></span>';
+
+        if (TARGET_ID === data.user_id) {
+            var s = document.getElementById('chatStatus');
+            if (s) { s.innerText = 'в сети'; s.style.color = '#25d366'; }
         }
+    });
 
-        // =========================
-        // DRAW MESSAGE
-        // =========================
-        function drawMessage(m, optimistic) {
-            const box = document.getElementById('msgBox');
-            if (!box) return;
+    socket.on('user_offline', function(data) {
+        var dotWrap = document.getElementById('dot-' + data.user_id);
+        if (dotWrap) dotWrap.innerHTML = '';
 
-            const isMy = m.sender === MY_ID;
-            const time = new Date(m.time || new Date())
-                .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (TARGET_ID === data.user_id) {
+            var s = document.getElementById('chatStatus');
+            if (s) {
+                s.innerText = data.last_seen_str || 'был(а) недавно';
+                s.style.color = '#888';
+            }
+        }
+    });
 
-            const wrap = document.createElement('div');
-            wrap.className = 'msg' + (isMy ? ' my-msg' : '');
-            if (optimistic) wrap.dataset.optimistic = '1';
+    // =========================
+    // TYPING INDICATOR
+    // =========================
+    var typingTimer = null;
 
-            const txt = document.createElement('div');
-            txt.innerHTML = escapeHtml(m.text);
+    socket.on('typing', function(data) {
+        if (data.sender_id !== TARGET_ID) return;
 
-            const ts = document.createElement('div');
-            ts.className = 'msg-time';
-            ts.innerText = time;
+        var ind = document.getElementById('typingIndicator');
+        var box = document.getElementById('msgBox');
+        if (!ind || !box) return;
 
-            wrap.appendChild(txt);
-            wrap.appendChild(ts);
-            box.appendChild(wrap);
-
+        if (data.typing) {
+            ind.style.display = 'block';
             box.scrollTop = box.scrollHeight;
+            // Авто-скрытие через 4 сек на случай если событие потерялось
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(function() {
+                ind.style.display = 'none';
+            }, 4000);
+        } else {
+            clearTimeout(typingTimer);
+            ind.style.display = 'none';
+        }
+    });
+
+    // Отправка typing на сервер при печати
+    var myTypingTimer = null;
+    var isTyping = false;
+
+    document.addEventListener('input', function(e) {
+        if (e.target.id !== 'textInp' || !TARGET_ID) return;
+
+        if (!isTyping) {
+            isTyping = true;
+            socket.emit('typing', { receiver_id: TARGET_ID, typing: true });
         }
 
-        // =========================
-        // SOCKET
-        // =========================
-        const socket = io({ transports: ['websocket', 'polling'] });
+        clearTimeout(myTypingTimer);
+        myTypingTimer = setTimeout(function() {
+            isTyping = false;
+            socket.emit('typing', { receiver_id: TARGET_ID, typing: false });
+        }, 2000);
+    });
 
-        const connStatus = document.getElementById('connectionStatus');
+    // =========================
+    // RECEIVE MESSAGE
+    // =========================
+    socket.on('receive_message', function(msg) {
+        var box = document.getElementById('msgBox');
+        if (!box) { updateBadge(msg.sender); return; }
 
-        socket.on('connect', () => {
-            if (connStatus) connStatus.style.display = 'none';
-        });
+        var isCurrentChat =
+            (msg.sender === TARGET_ID && msg.receiver === MY_ID) ||
+            (msg.sender === MY_ID     && msg.receiver === TARGET_ID);
 
-        socket.on('disconnect', () => {
-            if (connStatus) {
-                connStatus.innerText = 'Нет соединения';
-                connStatus.style.display = 'block';
-            }
-        });
+        if (!isCurrentChat) { updateBadge(msg.sender); return; }
 
-        // =========================
-        // RECEIVE MESSAGE
-        // =========================
-        socket.on('receive_message', function(msg) {
-            const box = document.getElementById('msgBox');
-            if (!box) {
-                // Чат не открыт — обновляем бейдж
-                updateBadge(msg.sender);
-                return;
-            }
-
-            const isCurrentChat =
-                (msg.sender === TARGET_ID && msg.receiver === MY_ID) ||
-                (msg.sender === MY_ID     && msg.receiver === TARGET_ID);
-
-            if (!isCurrentChat) {
-                updateBadge(msg.sender);
-                return;
-            }
-
-            // Если это эхо нашего сообщения — убираем оптимистичный пузырь
-            if (msg.sender === MY_ID) {
-                const opt = box.querySelector('[data-optimistic="1"]');
-                if (opt) { opt.removeAttribute('data-optimistic'); return; }
-            }
-
-            drawMessage(msg, false);
-        });
-
-        // =========================
-        // ONLINE / OFFLINE
-        // =========================
-        socket.on('user_online', function(data) {
-            const dot = document.querySelector('#user-' + data.user_id + ' .status-dot-container');
-            if (dot && !dot.querySelector('.online-dot'))
-                dot.innerHTML = '<span class="online-dot"></span>';
-
-            if (TARGET_ID === data.user_id) {
-                const s = document.getElementById('chatStatus');
-                if (s) { s.innerText = 'в сети'; s.style.color = '#25d366'; }
-            }
-        });
-
-        socket.on('user_offline', function(data) {
-            const dot = document.querySelector('#user-' + data.user_id + ' .status-dot-container');
-            if (dot) dot.innerHTML = '';
-
-            if (TARGET_ID === data.user_id) {
-                const s = document.getElementById('chatStatus');
-                if (s) { s.innerText = 'был недавно'; s.style.color = '#888'; }
-            }
-        });
-
-        // =========================
-        // LOAD HISTORY
-        // =========================
-        if (TARGET_ID) {
-            fetch('/get_messages?with=' + TARGET_ID)
-                .then(function(r) { return r.json(); })
-                .then(function(msgs) {
-                    msgs.forEach(function(m) { drawMessage(m, false); });
-                    var box = document.getElementById('msgBox');
-                    if (box) box.scrollTop = box.scrollHeight;
-                })
-                .catch(function(e) { console.error('История:', e); });
+        if (msg.sender === MY_ID) {
+            var opt = box.querySelector('[data-optimistic="1"]');
+            if (opt) { opt.removeAttribute('data-optimistic'); return; }
         }
 
-        // =========================
-        // SEND — глобальная функция, вызывается из onclick
-        // =========================
-        function sendMsg() {
-            var inp = document.getElementById('textInp');
-            if (!inp || !TARGET_ID) return;
+        // Скрываем индикатор — сообщение пришло
+        var ind = document.getElementById('typingIndicator');
+        if (ind) ind.style.display = 'none';
 
-            var val = inp.value.trim();
-            if (!val) return;
+        drawMessage(msg, false);
+    });
 
-            drawMessage({ sender: MY_ID, text: val, time: new Date() }, true);
+    // =========================
+    // LOAD HISTORY
+    // =========================
+    if (TARGET_ID) {
+        fetch('/get_messages?with=' + TARGET_ID)
+            .then(function(r) { return r.json(); })
+            .then(function(msgs) {
+                msgs.forEach(function(m) { drawMessage(m, false); });
+                var box = document.getElementById('msgBox');
+                if (box) box.scrollTop = box.scrollHeight;
+            })
+            .catch(function(e) { console.error('История:', e); });
+    }
 
-            socket.emit('new_message', { receiver_id: TARGET_ID, text: val });
+    // =========================
+    // SEND
+    // =========================
+    function sendMsg() {
+        var inp = document.getElementById('textInp');
+        if (!inp || !TARGET_ID) return;
 
-            inp.value = '';
-            inp.focus();
+        var val = inp.value.trim();
+        if (!val) return;
+
+        // Сбрасываем typing
+        clearTimeout(myTypingTimer);
+        if (isTyping) {
+            isTyping = false;
+            socket.emit('typing', { receiver_id: TARGET_ID, typing: false });
         }
 
-        // =========================
-        // ENTER
-        // =========================
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMsg();
-        });
+        drawMessage({ sender: MY_ID, text: val, time: new Date().toISOString() }, true);
 
-        // =========================
-        // BADGE
-        // =========================
-        function updateBadge(userId) {
-            var badge = document.getElementById('badge-' + userId);
-            if (!badge) return;
-            badge.style.display = 'inline-block';
-            badge.innerText = (parseInt(badge.innerText) || 0) + 1;
-        }
+        socket.emit('new_message', { receiver_id: TARGET_ID, text: val });
 
-        // =========================
-        // AUTO FOCUS
-        // =========================
-        var _autoFocus = document.getElementById('textInp');
-        if (_autoFocus) _autoFocus.focus();
+        inp.value = '';
+        inp.focus();
+    }
 
-    </script>
+    // =========================
+    // ENTER
+    // =========================
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMsg();
+    });
 
+    // =========================
+    // BADGE
+    // =========================
+    function updateBadge(userId) {
+        var badge = document.getElementById('badge-' + userId);
+        if (!badge) return;
+        badge.style.display = 'inline-block';
+        badge.innerText = (parseInt(badge.innerText) || 0) + 1;
+    }
+
+    // =========================
+    // AUTO FOCUS
+    // =========================
+    var _inp = document.getElementById('textInp');
+    if (_inp) _inp.focus();
+
+</script>
 </body>
 </html>
