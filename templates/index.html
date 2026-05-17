@@ -6,6 +6,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
+
     <title>KadrGram</title>
 
     <style>
@@ -40,7 +41,6 @@
         }
 
         @media (max-width: 768px) {
-
             .sidebar {
                 width: 100%;
                 position: absolute;
@@ -59,23 +59,14 @@
         }
 
         .sidebar-header {
-            padding: 16px 20px;
+            padding: 20px;
             background: white;
             border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .logo {
             margin: 0;
             color: #0088cc;
-        }
-
-        .search-link {
-            color: #0088cc;
-            text-decoration: none;
-            font-size: 20px;
         }
 
         .user-list {
@@ -95,10 +86,6 @@
 
         .user-item:hover {
             background: #f5f5f5;
-        }
-
-        .user-item.active {
-            background: #e8f4fd;
         }
 
         .user-info {
@@ -262,463 +249,331 @@
 
 <body>
 
-<div class="sidebar">
+    <!-- SIDEBAR -->
 
-    <div class="sidebar-header">
-        <h2 class="logo">KadrGram</h2>
+    <div class="sidebar">
 
-        <a
-            href="/search"
-            class="search-link"
-            title="Найти пользователя"
-        >
-            🔍
-        </a>
-    </div>
-
-    <div class="user-list">
-
-        {% for u in all_users %}
-
-        <div
-            class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
-            id="user-{{ u.id }}"
-            onclick="location.href='/?chat_with={{ u.id }}'"
-        >
-
-            <div class="user-info">
-
-                <span class="user-name">
-                    {{ u.name }}
-                </span>
-
-                <span class="status-dot-container">
-
-                    {% if u.online %}
-                        <span class="online-dot"></span>
-                    {% endif %}
-
-                </span>
-
-            </div>
-
-            <span
-                class="unread-badge"
-                id="badge-{{ u.id }}"
-                {% if u.unread == 0 %}style="display:none;"{% endif %}
-            >
-                {{ u.unread }}
-            </span>
-
+        <div class="sidebar-header">
+            <h2 class="logo">KadrGram</h2>
         </div>
 
-        {% endfor %}
+        <div class="user-list">
 
-    </div>
-
-    <div class="sidebar-footer">
-
-        <b style="font-size:14px;">
-            {{ user.name }}
-        </b>
-
-        <a href="/logout" class="logout-link">
-            Выход
-        </a>
-
-    </div>
-
-</div>
-
-<div class="chat-area">
-
-    <div class="connection-status" id="connectionStatus">
-        Подключение...
-    </div>
-
-    {% if target_user %}
-
-    <div class="chat-header">
-
-        <a href="/" class="back-btn">
-            ←
-        </a>
-
-        <div>
-
-            <div class="chat-user-name">
-                {{ target_user.name }}
-            </div>
+            {% for u in all_users %}
 
             <div
-                id="chatStatus"
-                class="chat-status"
-                style="color: {{ '#25d366' if target_user.online else '#888' }};"
+                class="user-item"
+                id="user-{{ u.id }}"
+                onclick="location.href='/?chat_with={{ u.id }}'"
             >
-                {{ 'в сети' if target_user.online else 'был недавно' }}
+
+                <div class="user-info">
+
+                    <span class="user-name">
+                        {{ u.name }}
+                    </span>
+
+                    <span class="status-dot-container">
+                        {% if u.online %}
+                            <span class="online-dot"></span>
+                        {% endif %}
+                    </span>
+
+                </div>
+
+                <span
+                    class="unread-badge"
+                    id="badge-{{ u.id }}"
+                    {% if u.unread == 0 %}style="display:none;"{% endif %}
+                >
+                    {{ u.unread }}
+                </span>
+
             </div>
 
+            {% endfor %}
+
+        </div>
+
+        <div class="sidebar-footer">
+
+            <b style="font-size:14px;">
+                {{ user.name }}
+            </b>
+
+            <a href="/logout" class="logout-link">
+                Выход
+            </a>
+
         </div>
 
     </div>
 
-    <div class="messages" id="msgBox"></div>
+    <!-- CHAT -->
 
-    <div class="input-area">
+    <div class="chat-area">
 
-        <input
-            type="text"
-            id="textInp"
-            class="message-input"
-            placeholder="Напишите сообщение..."
-            autocomplete="off"
-        />
+        <div class="connection-status" id="connectionStatus">
+            Подключение...
+        </div>
 
-        <button
-            class="send-btn"
-            onclick="sendMsg()"
-        >
-            ➤
-        </button>
+        {% if target_user %}
+
+            <div class="chat-header">
+
+                <a href="/" class="back-btn">
+                    ←
+                </a>
+
+                <div>
+
+                    <div class="chat-user-name">
+                        {{ target_user.name }}
+                    </div>
+
+                    <div
+                        id="chatStatus"
+                        class="chat-status"
+                        style="color: {{ '#25d366' if target_user.online else '#888' }};"
+                    >
+                        {{ 'в сети' if target_user.online else 'был недавно' }}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="messages" id="msgBox"></div>
+
+            <div class="input-area">
+
+                <input
+                    type="text"
+                    id="textInp"
+                    class="message-input"
+                    placeholder="Напишите сообщение..."
+                    autocomplete="off"
+                />
+
+                <button class="send-btn" onclick="sendMsg()">
+                    ➤
+                </button>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-chat">
+
+                <div class="empty-chat-icon">
+                    💬
+                </div>
+
+                <div>
+                    Выберите чат, чтобы начать общение
+                </div>
+
+            </div>
+
+        {% endif %}
 
     </div>
 
-    {% else %}
+    <!-- SOCKET.IO -->
 
-    <div class="empty-chat">
+    <script src="/socket.io/socket.io.js"></script>
 
-        <div class="empty-chat-icon">
-            💬
-        </div>
+    <script>
 
-        <div>
-            Выберите чат, чтобы начать общение
-        </div>
+        const socket = io();
 
-    </div>
+        const targetId = "{{ target_user.id if target_user else '' }}";
+        const myId = "{{ my_id }}";
 
-    {% endif %}
+        const msgBox = document.getElementById('msgBox');
+        const msgInput = document.getElementById('textInp');
+        const connectionStatus = document.getElementById('connectionStatus');
 
-</div>
+        socket.emit('join');
 
-<script src="/socket.io/socket.io.js"></script>
+        // =========================
+        // XSS PROTECTION
+        // =========================
 
-<script>
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
 
-    const socket = io();
+        // =========================
+        // CONNECTION STATUS
+        // =========================
 
-    const targetId =
-        "{{ target_user.id if target_user else '' }}";
+        socket.on('connect', () => {
+            connectionStatus.style.display = 'none';
+        });
 
-    const myId =
-        "{{ my_id }}";
+        socket.on('disconnect', () => {
+            connectionStatus.innerText = 'Нет соединения';
+            connectionStatus.style.display = 'block';
+        });
 
-    const msgBox =
-        document.getElementById('msgBox');
+        socket.on('reconnect_attempt', () => {
+            connectionStatus.innerText = 'Переподключение...';
+            connectionStatus.style.display = 'block';
+        });
 
-    const input =
-        document.getElementById('textInp');
+        // =========================
+        // DRAW MESSAGE
+        // =========================
 
-    const connectionStatus =
-        document.getElementById('connectionStatus');
+        function drawMessage(m, isOptimistic = false) {
 
-    // =========================
-    // XSS
-    // =========================
+            if (!msgBox) return;
 
-    function escapeHtml(text) {
+            const isMy = m.sender === myId;
 
-        const div =
-            document.createElement('div');
+            const date = m.time || m.created_at || new Date();
 
-        div.innerText = text;
-
-        return div.innerHTML;
-    }
-
-    // =========================
-    // CONNECTION
-    // =========================
-
-    socket.on('connect', () => {
-
-        connectionStatus.style.display = 'none';
-    });
-
-    socket.on('disconnect', () => {
-
-        connectionStatus.innerText =
-            'Нет соединения';
-
-        connectionStatus.style.display = 'block';
-    });
-
-    // =========================
-    // DRAW MESSAGE
-    // =========================
-
-    function drawMessage(m, optimistic=false) {
-
-        if (!msgBox) return;
-
-        const isMy =
-            m.sender === myId;
-
-        const date =
-            m.time || new Date();
-
-        const time =
-            new Date(date).toLocaleTimeString([], {
+            const time = new Date(date).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit'
             });
 
-        const msg =
-            document.createElement('div');
+            const shouldScroll =
+                msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 120;
 
-        msg.classList.add('msg');
+            const msg = document.createElement('div');
 
-        if (isMy) {
-            msg.classList.add('my-msg');
-        }
+            msg.classList.add('msg');
 
-        if (optimistic) {
-            msg.style.opacity = '0.7';
-        }
+            if (isMy) {
+                msg.classList.add('my-msg');
+            }
 
-        const text =
-            document.createElement('div');
+            if (isOptimistic) {
+                msg.style.opacity = '0.7';
+            }
 
-        text.innerHTML =
-            escapeHtml(m.text);
+            const text = document.createElement('div');
+            text.innerHTML = escapeHtml(m.text);
 
-        const timeDiv =
-            document.createElement('div');
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'msg-time';
+            timeDiv.innerText = time;
 
-        timeDiv.className = 'msg-time';
-        timeDiv.innerText = time;
+            msg.appendChild(text);
+            msg.appendChild(timeDiv);
 
-        msg.appendChild(text);
-        msg.appendChild(timeDiv);
+            msgBox.appendChild(msg);
 
-        msgBox.appendChild(msg);
-
-        scrollToBottom();
-    }
-
-    // =========================
-    // SCROLL
-    // =========================
-
-    function scrollToBottom() {
-
-        if (msgBox) {
-
-            msgBox.scrollTop =
-                msgBox.scrollHeight;
-        }
-    }
-
-    // =========================
-    // LOAD HISTORY
-    // =========================
-
-    if (targetId && msgBox) {
-
-        fetch(`/get_messages?with=${targetId}`)
-            .then(r => r.json())
-            .then(msgs => {
-
-                msgs.forEach(m => {
-                    drawMessage(m);
-                });
-
+            if (shouldScroll) {
                 scrollToBottom();
-            });
-    }
-
-    // =========================
-    // RECEIVE MESSAGE
-    // =========================
-
-    let pendingOptimistic = false;
-
-    socket.on('receive_message', (msg) => {
-
-        const isCurrentChat =
-            (msg.sender === targetId &&
-             msg.receiver === myId) ||
-
-            (msg.sender === myId &&
-             msg.receiver === targetId);
-
-        if (!isCurrentChat) {
-
-            updateBadge(msg.sender);
-
-            return;
-        }
-
-        if (
-            msg.sender === myId &&
-            pendingOptimistic
-        ) {
-
-            const optimistic =
-                msgBox.querySelector(
-                    '.my-msg[style*="opacity"]'
-                );
-
-            if (optimistic) {
-
-                optimistic.style.opacity = '1';
-
-                pendingOptimistic = false;
-
-                return;
             }
         }
 
-        if (msg.sender !== myId) {
-            drawMessage(msg);
+        // =========================
+        // SCROLL
+        // =========================
+
+        function scrollToBottom() {
+
+            if (!msgBox) return;
+
+            msgBox.scrollTop = msgBox.scrollHeight;
         }
-    });
 
-    // =========================
-    // SEND
-    // =========================
+        // =========================
+        // RECEIVE MESSAGE
+        // =========================
 
-    function sendMsg() {
+        socket.on('receive_message', (msg) => {
 
-        if (!input || !targetId) return;
+            const isCurrentChat =
+                msg.sender === targetId ||
+                msg.sender === myId;
 
-        const val =
-            input.value.trim();
+            if (isCurrentChat) {
 
-        if (!val) return;
+                drawMessage(msg);
 
-        pendingOptimistic = true;
+            } else {
 
-        drawMessage({
-            sender: myId,
-            text: val,
-            time: new Date()
-        }, true);
+                updateBadge(msg.sender);
 
-        socket.emit('new_message', {
-            receiver_id: targetId,
-            text: val
+            }
+
         });
 
-        input.value = '';
+        // =========================
+        // SEND MESSAGE
+        // =========================
 
-        input.focus();
-    }
+        function sendMsg() {
 
-    // =========================
-    // ENTER
-    // =========================
+            if (!msgInput || !targetId) return;
 
-    if (input) {
+            const val = msgInput.value.trim();
 
-        input.addEventListener('keypress', (e) => {
+            if (!val) return;
+
+            // optimistic UI
+
+            drawMessage({
+                sender: myId,
+                text: val,
+                time: new Date()
+            }, true);
+
+            socket.emit('new_message', {
+                receiver_id: targetId,
+                text: val
+            });
+
+            msgInput.value = '';
+
+            msgInput.focus();
+        }
+
+        // =========================
+        // ENTER SEND
+        // =========================
+
+        document.addEventListener('keypress', (e) => {
 
             if (e.key === 'Enter') {
                 sendMsg();
             }
 
         });
-    }
 
-    // =========================
-    // BADGES
-    // =========================
+        // =========================
+        // UNREAD BADGE
+        // =========================
 
-    function updateBadge(userId) {
+        function updateBadge(userId) {
 
-        const badge =
-            document.getElementById(
-                `badge-${userId}`
-            );
+            const badge = document.getElementById(`badge-${userId}`);
 
-        if (!badge) return;
+            if (!badge) return;
 
-        badge.style.display =
-            'inline-block';
+            badge.style.display = 'inline-block';
 
-        const current =
-            parseInt(badge.innerText || '0');
+            const current = parseInt(badge.innerText || '0');
 
-        badge.innerText =
-            current + 1;
-    }
-
-    // =========================
-    // ONLINE STATUS
-    // =========================
-
-    socket.on('user_online', (data) => {
-
-        const userEl = document.querySelector(
-            `#user-${data.user_id} .status-dot-container`
-        );
-
-        if (
-            userEl &&
-            !userEl.querySelector('.online-dot')
-        ) {
-
-            userEl.innerHTML =
-                '<span class="online-dot"></span>';
+            badge.innerText = current + 1;
         }
 
-        if (targetId === data.user_id) {
+        // =========================
+        // AUTO FOCUS
+        // =========================
 
-            const status =
-                document.getElementById('chatStatus');
-
-            if (status) {
-
-                status.innerText = 'в сети';
-
-                status.style.color = '#25d366';
-            }
-        }
-    });
-
-    socket.on('user_offline', (data) => {
-
-        const userEl = document.querySelector(
-            `#user-${data.user_id} .status-dot-container`
-        );
-
-        if (userEl) {
-            userEl.innerHTML = '';
+        if (msgInput) {
+            msgInput.focus();
         }
 
-        if (targetId === data.user_id) {
-
-            const status =
-                document.getElementById('chatStatus');
-
-            if (status) {
-
-                status.innerText = 'был недавно';
-
-                status.style.color = '#888';
-            }
-        }
-    });
-
-    // =========================
-    // AUTO FOCUS
-    // =========================
-
-    if (input) {
-        input.focus();
-    }
-
-</script>
+    </script>
 
 </body>
 </html>
