@@ -202,6 +202,7 @@ def home():
     if not user:
         return redirect("/login")
     my_id = str(user["_id"])
+    pinned = user.get("pinned_chats", [])
     raw_users = list(users.find({"_id": {"$ne": user["_id"]}}))
     all_users = []
     for u in raw_users:
@@ -211,7 +212,10 @@ def home():
         }) if messages is not None else 0
         su = serialize_user(u)
         su["unread"] = unread
+        su["pinned"] = uid_str in pinned
         all_users.append(su)
+    # Закреплённые вверху
+    all_users.sort(key=lambda u: (0 if u["pinned"] else 1))
     target_user = None
     chat_with = request.args.get("chat_with")
     if chat_with:
@@ -302,6 +306,28 @@ def search():
         }).limit(20))
         results = [serialize_user(u) for u in raw]
     return render_template("search.html", results=results)
+
+@app.route("/pin_chat", methods=["POST"])
+def pin_chat():
+    user = get_user()
+    if not user:
+        return jsonify({"error": "unauthorized"}), 401
+    data = request.get_json()
+    chat_id = data.get("chat_id")
+    action = data.get("action")  # "pin" или "unpin"
+    if not chat_id:
+        return jsonify({"error": "no chat_id"}), 400
+    if action == "pin":
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$addToSet": {"pinned_chats": chat_id}}
+        )
+    else:
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$pull": {"pinned_chats": chat_id}}
+        )
+    return jsonify({"ok": True})
 
 # =========================
 # SOCKET.IO
