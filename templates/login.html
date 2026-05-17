@@ -1,711 +1,345 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-
     <meta charset="UTF-8" />
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-
-    <title>KadrGram — Вход</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>KadrGram</title>
     <style>
-
-        * {
-            box-sizing: border-box;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --primary: #0088cc;
-            --primary-hover: #007ab8;
-            --success: #25d366;
-            --danger: #d9534f;
-            --bg: #f0f2f5;
-            --border: #ddd;
-            --text: #333;
-            --muted: #777;
+            --accent:  #6c63ff;
+            --accent2: #48cfad;
+            --bg:      #0f0f1a;
+            --bg2:     #16162a;
+            --bg3:     #1e1e35;
+            --border:  rgba(255,255,255,0.08);
+            --text:    #f0f0ff;
+            --text2:   #9999bb;
+            --danger:  #ff6b6b;
+            --success: #48cfad;
         }
 
-        body {
-            margin: 0;
-            padding: 20px;
-            min-height: 100dvh;
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+        body {
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                system-ui,
-                sans-serif;
-
+            padding: 20px;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Фоновые круги */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(108,99,255,0.12), transparent 70%);
+            top: -100px; left: -100px;
+        }
+
+        body::after {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(72,207,173,0.1), transparent 70%);
+            bottom: -80px; right: -80px;
         }
 
         .auth-container {
-
             width: 100%;
-            max-width: 380px;
-
-            background: white;
-
-            padding: 30px;
-
-            border-radius: 18px;
-
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.08);
-
-            animation: fadeIn .25s ease;
+            max-width: 400px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 36px 32px;
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+            animation: fadeUp 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+        .brand-wrap {
+            text-align: center;
+            margin-bottom: 28px;
+        }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .brand-icon {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 14px;
+            box-shadow: 0 8px 24px rgba(108,99,255,0.35);
         }
 
         .brand-title {
-
-            text-align: center;
-
-            color: var(--primary);
-
-            font-size: 34px;
-
+            font-size: 28px;
             font-weight: 700;
-
-            margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .subtitle {
+        .subtitle { font-size: 14px; color: var(--text2); margin-top: 6px; }
 
-            text-align: center;
-
-            color: var(--muted);
-
-            margin-bottom: 28px;
-
-            font-size: 15px;
-        }
-
-        h2 {
-
-            margin-top: 0;
-
-            margin-bottom: 22px;
-
-            text-align: center;
-
-            color: var(--text);
-
-            font-size: 22px;
-        }
-
-        form {
-            width: 100%;
-        }
-
-        .input-group {
-            margin-bottom: 14px;
-        }
-
-        input {
-
-            width: 100%;
-
-            padding: 14px;
-
-            border-radius: 12px;
-
-            border: 1px solid var(--border);
-
-            outline: none;
-
-            font-size: 16px;
-
-            background: #f9f9f9;
-
-            transition: .2s;
-        }
-
-        input:hover {
-            border-color: #bbb;
-        }
-
-        input:focus {
-
-            border-color: var(--primary);
-
-            background: white;
-
-            box-shadow:
-                0 0 0 4px rgba(0,136,204,0.08);
-        }
-
-        .pass-group {
-            position: relative;
-        }
-
-        .eye-btn {
-
-            position: absolute;
-
-            right: 14px;
-
-            top: 50%;
-
-            transform: translateY(-50%);
-
-            cursor: pointer;
-
-            color: var(--primary);
-
-            font-size: 13px;
-
-            font-weight: bold;
-
-            user-select: none;
-        }
-
-        button {
-
-            width: 100%;
-
-            padding: 14px;
-
-            border: none;
-
-            border-radius: 12px;
-
-            background: var(--primary);
-
-            color: white;
-
-            font-size: 16px;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
-            transition: .2s;
-
-            margin-top: 8px;
-        }
-
-        button:hover {
-            background: var(--primary-hover);
-        }
-
-        button:disabled {
-
-            background: #ccc;
-
-            cursor: not-allowed;
-        }
-
-        .toggle {
-
-            margin-top: 22px;
-
-            text-align: center;
-
-            color: var(--primary);
-
-            font-size: 15px;
-
-            font-weight: 500;
-
-            cursor: pointer;
-        }
-
-        .toggle:hover {
-            text-decoration: underline;
-        }
+        h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text); }
 
         .error-box {
-
-            background: #fff0f0;
-
+            background: rgba(255,107,107,0.1);
             color: var(--danger);
-
-            padding: 12px;
-
+            border: 1px solid rgba(255,107,107,0.25);
+            padding: 12px 16px;
             border-radius: 12px;
-
-            border: 1px solid #ffc9c9;
-
-            margin-bottom: 20px;
-
-            text-align: center;
-
+            margin-bottom: 18px;
             font-size: 14px;
+            text-align: center;
         }
 
-        .rules {
-            margin: 14px 0;
+        .input-group { margin-bottom: 12px; }
+
+        input {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            outline: none;
+            font-size: 15px;
+            background: var(--bg3);
+            color: var(--text);
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+
+        input::placeholder { color: var(--text2); }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(108,99,255,0.12);
+        }
+
+        .pass-group { position: relative; }
+
+        .eye-btn {
+            position: absolute;
+            right: 14px; top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text2);
+            font-size: 13px;
+            font-weight: 600;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .eye-btn:hover { color: var(--text); }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: inherit;
+            box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.45); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { background: var(--bg3); color: var(--text2); box-shadow: none; cursor: not-allowed; transform: none; }
+
+        .toggle {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .toggle:hover { color: var(--accent2); }
+
+        .rules { margin: 12px 0; }
 
         .hint {
-
             display: flex;
             align-items: center;
-
             font-size: 13px;
-
-            color: var(--muted);
-
-            margin-bottom: 8px;
-
-            transition: .2s;
+            color: var(--text2);
+            margin-bottom: 7px;
+            transition: color 0.2s;
         }
 
         .status-dot {
-
-            width: 8px;
-            height: 8px;
-
+            width: 7px; height: 7px;
             border-radius: 50%;
-
             margin-right: 8px;
-
-            background: #ccc;
-
-            transition: .2s;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            transition: all 0.2s;
         }
 
-        .success {
-            color: var(--success);
-        }
+        .hint.success { color: var(--success); }
+        .hint.success .status-dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 6px var(--success); }
+        .hint.invalid { color: var(--danger); }
+        .hint.invalid .status-dot { background: var(--danger); border-color: var(--danger); }
 
-        .success .status-dot {
-            background: var(--success);
-        }
-
-        .invalid {
-            color: var(--danger);
-        }
-
-        .invalid .status-dot {
-            background: var(--danger);
-        }
-
-        .footer-note {
-
-            margin-top: 18px;
-
-            text-align: center;
-
-            color: #999;
-
-            font-size: 12px;
-        }
-
+        .footer-note { margin-top: 20px; text-align: center; color: var(--text2); font-size: 12px; }
     </style>
-
 </head>
-
 <body>
 
-    <div class="auth-container">
-
-        <div class="brand-title">
-            KadrGram
-        </div>
-
-        <div class="subtitle">
-            Современный мессенджер
-        </div>
-
-        <!-- ERRORS -->
-
-        {% if error == 'login_taken' %}
-
-            <div class="error-box">
-                Этот логин уже занят
-            </div>
-
-        {% elif error == 'wrong_pass' %}
-
-            <div class="error-box">
-                Неверный логин или пароль
-            </div>
-
-        {% elif error == 'invalid_data' %}
-
-            <div class="error-box">
-                Данные не соответствуют правилам
-            </div>
-
-        {% endif %}
-
-        <!-- LOGIN -->
-
-        <div id="loginBox">
-
-            <h2>
-                Вход
-            </h2>
-
-            <form
-                action="/login"
-                method="POST"
-                onsubmit="handleLoginSubmit(event)"
-            >
-
-                <div class="input-group">
-
-                    <input
-                        type="text"
-                        name="login"
-                        placeholder="Логин"
-                        required
-                        autocomplete="username"
-                        maxlength="32"
-                    />
-
-                </div>
-
-                <div class="input-group pass-group">
-
-                    <input
-                        type="password"
-                        name="pwd"
-                        id="loginPwd"
-                        placeholder="Пароль"
-                        required
-                        autocomplete="current-password"
-                        minlength="8"
-                    />
-
-                    <span
-                        class="eye-btn"
-                        onclick="togglePass('loginPwd', this)"
-                    >
-                        Показать
-                    </span>
-
-                </div>
-
-                <button type="submit" id="loginBtn">
-                    Войти
-                </button>
-
-            </form>
-
-            <div class="toggle" onclick="toggleMode()">
-                Нет аккаунта? Регистрация
-            </div>
-
-        </div>
-
-        <!-- REGISTER -->
-
-        <div id="regBox" style="display:none;">
-
-            <h2>
-                Регистрация
-            </h2>
-
-            <form
-                action="/register"
-                method="POST"
-                id="regForm"
-                onsubmit="handleRegisterSubmit(event)"
-            >
-
-                <div class="input-group">
-
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Ваше имя"
-                        required
-                        maxlength="32"
-                        autocomplete="name"
-                    />
-
-                </div>
-
-                <div class="input-group">
-
-                    <input
-                        type="text"
-                        name="login"
-                        id="r_login"
-                        placeholder="Логин"
-                        required
-                        maxlength="24"
-                        autocomplete="username"
-                    />
-
-                </div>
-
-                <div
-                    id="login_hint"
-                    class="hint"
-                >
-                    <span class="status-dot"></span>
-                    Только английские буквы и цифры
-                </div>
-
-                <div class="input-group pass-group">
-
-                    <input
-                        type="password"
-                        name="pwd"
-                        id="r_pwd"
-                        placeholder="Пароль"
-                        required
-                        minlength="8"
-                        autocomplete="new-password"
-                    />
-
-                    <span
-                        class="eye-btn"
-                        onclick="togglePass('r_pwd', this)"
-                    >
-                        Показать
-                    </span>
-
-                </div>
-
-                <div class="rules">
-
-                    <div id="len_hint" class="hint">
-                        <span class="status-dot"></span>
-                        Минимум 8 символов
-                    </div>
-
-                    <div id="upper_hint" class="hint">
-                        <span class="status-dot"></span>
-                        Минимум 1 заглавная буква
-                    </div>
-
-                    <div id="lower_hint" class="hint">
-                        <span class="status-dot"></span>
-                        Минимум 1 строчная буква
-                    </div>
-
-                    <div id="number_hint" class="hint">
-                        <span class="status-dot"></span>
-                        Минимум 1 цифра
-                    </div>
-
-                    <div id="eng_hint" class="hint">
-                        <span class="status-dot"></span>
-                        Только английские символы
-                    </div>
-
-                </div>
-
-                <button
-                    type="submit"
-                    id="regBtn"
-                    disabled
-                >
-                    Создать аккаунт
-                </button>
-
-            </form>
-
-            <div class="toggle" onclick="toggleMode()">
-                Уже есть аккаунт? Войти
-            </div>
-
-        </div>
-
-        <div class="footer-note">
-            © KadrGram
-        </div>
-
+<div class="auth-container">
+    <div class="brand-wrap">
+        <div class="brand-icon">💬</div>
+        <div class="brand-title">KadrGram</div>
+        <div class="subtitle">Современный мессенджер</div>
     </div>
 
-    <script>
+    {% if error == 'login_taken' %}
+        <div class="error-box">Этот логин уже занят</div>
+    {% elif error == 'wrong_pass' %}
+        <div class="error-box">Неверный логин или пароль</div>
+    {% elif error == 'invalid_data' %}
+        <div class="error-box">Данные не соответствуют правилам</div>
+    {% endif %}
 
-        const loginBox = document.getElementById('loginBox');
-        const regBox = document.getElementById('regBox');
+    <!-- LOGIN -->
+    <div id="loginBox">
+        <h2>Вход</h2>
+        <form action="/login" method="POST" onsubmit="handleLoginSubmit()">
+            <div class="input-group">
+                <input type="text" name="login" placeholder="Логин" required autocomplete="username" maxlength="32" />
+            </div>
+            <div class="input-group pass-group">
+                <input type="password" name="pwd" id="loginPwd" placeholder="Пароль" required autocomplete="current-password" minlength="8" />
+                <span class="eye-btn" onclick="togglePass('loginPwd', this)">Показать</span>
+            </div>
+            <button type="submit" id="loginBtn" class="btn-primary">Войти</button>
+        </form>
+        <div class="toggle" onclick="toggleMode()">Нет аккаунта? Регистрация →</div>
+    </div>
 
-        const rLogin = document.getElementById('r_login');
-        const rPwd = document.getElementById('r_pwd');
+    <!-- REGISTER -->
+    <div id="regBox" style="display:none;">
+        <h2>Регистрация</h2>
+        <form action="/register" method="POST" onsubmit="handleRegisterSubmit()">
+            <div class="input-group">
+                <input type="text" name="name" placeholder="Ваше имя" required maxlength="32" autocomplete="name" />
+            </div>
+            <div class="input-group">
+                <input type="text" name="login" id="r_login" placeholder="Логин" required maxlength="24" autocomplete="username" />
+            </div>
+            <div id="login_hint" class="hint"><span class="status-dot"></span>Только английские буквы и цифры, мин. 3</div>
+            <div class="input-group pass-group">
+                <input type="password" name="pwd" id="r_pwd" placeholder="Пароль" required minlength="8" autocomplete="new-password" />
+                <span class="eye-btn" onclick="togglePass('r_pwd', this)">Показать</span>
+            </div>
+            <div class="rules">
+                <div id="len_hint"    class="hint"><span class="status-dot"></span>Минимум 8 символов</div>
+                <div id="upper_hint"  class="hint"><span class="status-dot"></span>Минимум 1 заглавная</div>
+                <div id="lower_hint"  class="hint"><span class="status-dot"></span>Минимум 1 строчная</div>
+                <div id="number_hint" class="hint"><span class="status-dot"></span>Минимум 1 цифра</div>
+                <div id="eng_hint"    class="hint"><span class="status-dot"></span>Только латиница</div>
+            </div>
+            <button type="submit" id="regBtn" class="btn-primary" disabled>Создать аккаунт</button>
+        </form>
+        <div class="toggle" onclick="toggleMode()">← Уже есть аккаунт? Войти</div>
+    </div>
 
-        const regBtn = document.getElementById('regBtn');
+    <div class="footer-note">© KadrGram</div>
+</div>
 
-        // =========================
-        // AUTO OPEN REGISTER
-        // =========================
+<script>
+    var loginBox = document.getElementById('loginBox');
+    var regBox   = document.getElementById('regBox');
+    var rLogin   = document.getElementById('r_login');
+    var rPwd     = document.getElementById('r_pwd');
+    var regBtn   = document.getElementById('regBtn');
 
-        if (
-            "{{error}}" === "login_taken" ||
-            "{{error}}" === "invalid_data"
-        ) {
-            toggleMode();
-        }
+    if ("{{error}}" === "login_taken" || "{{error}}" === "invalid_data") toggleMode();
 
-        // =========================
-        // TOGGLE LOGIN/REGISTER
-        // =========================
+    function toggleMode() {
+        var isLogin = loginBox.style.display !== 'none';
+        loginBox.style.display = isLogin ? 'none' : 'block';
+        regBox.style.display   = isLogin ? 'block' : 'none';
+        setTimeout(function() {
+            var el = isLogin ? document.getElementById('r_login') : document.querySelector('[name="login"]');
+            if (el) el.focus();
+        }, 50);
+    }
 
-        function toggleMode() {
+    function togglePass(id, btn) {
+        var inp = document.getElementById(id);
+        if (!inp) return;
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+        btn.innerText = inp.type === 'password' ? 'Показать' : 'Скрыть';
+    }
 
-            const isLoginVisible =
-                loginBox.style.display !== 'none';
+    rLogin.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z0-9]/g, '');
+        updateHint('login_hint', this.value.length >= 3);
+        validateReg();
+    });
 
-            loginBox.style.display =
-                isLoginVisible ? 'none' : 'block';
+    rPwd.addEventListener('input', function() {
+        var v = this.value;
+        var c = {
+            len:    v.length >= 8,
+            upper:  /[A-Z]/.test(v),
+            lower:  /[a-z]/.test(v),
+            number: /[0-9]/.test(v),
+            eng:    /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v)
+        };
+        Object.keys(c).forEach(function(k) { updateHint(k + '_hint', c[k]); });
+        validateReg();
+    });
 
-            regBox.style.display =
-                isLoginVisible ? 'block' : 'none';
+    function validateReg() {
+        var loginOk = rLogin.value.length >= 3;
+        var v = rPwd.value;
+        var pwdOk = v.length >= 8 && /[A-Z]/.test(v) && /[a-z]/.test(v) && /[0-9]/.test(v) && /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v);
+        regBtn.disabled = !(loginOk && pwdOk);
+    }
 
-            setTimeout(() => {
+    function updateHint(id, valid) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'hint ' + (valid ? 'success' : 'invalid');
+    }
 
-                const input =
-                    isLoginVisible
-                    ? document.getElementById('r_login')
-                    : document.querySelector('[name="login"]');
+    function handleLoginSubmit() {
+        var btn = document.getElementById('loginBtn');
+        btn.disabled = true; btn.innerText = 'Вход...';
+        setTimeout(function() { btn.disabled = false; btn.innerText = 'Войти'; }, 5000);
+    }
 
-                if (input) {
-                    input.focus();
-                }
-
-            }, 50);
-        }
-
-        // =========================
-        // PASSWORD TOGGLE
-        // =========================
-
-        function togglePass(id, btn) {
-
-            const input = document.getElementById(id);
-
-            if (!input) return;
-
-            input.type =
-                input.type === 'password'
-                ? 'text'
-                : 'password';
-
-            btn.innerText =
-                input.type === 'password'
-                ? 'Показать'
-                : 'Скрыть';
-        }
-
-        // =========================
-        // LOGIN VALIDATION
-        // =========================
-
-        rLogin.addEventListener('input', function () {
-
-            this.value =
-                this.value.replace(/[^A-Za-z0-9]/g, '');
-
-            const valid =
-                this.value.length >= 3;
-
-            updateHint('login_hint', valid);
-        });
-
-        // =========================
-        // PASSWORD VALIDATION
-        // =========================
-
-        rPwd.addEventListener('input', function () {
-
-            const val = this.value;
-
-            const checks = {
-
-                len:
-                    val.length >= 8,
-
-                upper:
-                    /[A-Z]/.test(val),
-
-                lower:
-                    /[a-z]/.test(val),
-
-                number:
-                    /[0-9]/.test(val),
-
-                eng:
-                    /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(val)
-            };
-
-            updateHint('len_hint', checks.len);
-            updateHint('upper_hint', checks.upper);
-            updateHint('lower_hint', checks.lower);
-            updateHint('number_hint', checks.number);
-            updateHint('eng_hint', checks.eng);
-
-            const isValid =
-                Object.values(checks).every(Boolean);
-
-            regBtn.disabled = !isValid;
-
-            this.style.borderColor =
-                val.length === 0
-                ? '#ddd'
-                : isValid
-                    ? '#25d366'
-                    : '#d9534f';
-        });
-
-        // =========================
-        // UPDATE HINT
-        // =========================
-
-        function updateHint(id, valid) {
-
-            const el = document.getElementById(id);
-
-            if (!el) return;
-
-            el.classList.remove('success', 'invalid');
-
-            el.classList.add(
-                valid ? 'success' : 'invalid'
-            );
-        }
-
-        // =========================
-        // LOADING STATES
-        // =========================
-
-        function handleLoginSubmit(event) {
-
-            const btn =
-                document.getElementById('loginBtn');
-
-            btn.disabled = true;
-
-            btn.innerText = 'Вход...';
-        }
-
-        function handleRegisterSubmit(event) {
-
-            const btn =
-                document.getElementById('regBtn');
-
-            btn.disabled = true;
-
-            btn.innerText = 'Создание...';
-        }
-
-    </script>
-
+    function handleRegisterSubmit() {
+        regBtn.disabled = true; regBtn.innerText = 'Создание...';
+        setTimeout(function() { regBtn.disabled = false; regBtn.innerText = 'Создать аккаунт'; }, 5000);
+    }
+</script>
 </body>
 </html>
