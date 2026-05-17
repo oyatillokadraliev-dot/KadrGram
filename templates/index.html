@@ -973,6 +973,134 @@
     var _inp = document.getElementById('textInp');
     if (_inp) _inp.focus();
 
+    // --- Звук (генерируем через Web Audio API, без файлов) ---
+    function playNotifSound() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    // --- Push-уведомления браузера ---
+    function requestNotifPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function showPushNotif(senderName, text) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission !== 'granted') return;
+        if (!document.hidden) return; // только если вкладка неактивна
+
+        var notif = new Notification('KadrGram — ' + senderName, {
+            body: text || '📷 Фото',
+            icon: '/static/icon.png', // можешь добавить иконку в static/
+            tag:  'kadrgram-msg'      // tag не даёт спамить — заменяет предыдущее
+        });
+
+        // Клик по уведомлению — фокус на вкладку
+        notif.onclick = function() {
+            window.focus();
+            notif.close();
+        };
+
+        // Авто-закрытие через 4 сек
+        setTimeout(function() { notif.close(); }, 4000);
+    }
+
+    // --- Favicon с бейджем ---
+    var totalUnread = 0;
+
+    function updateFavicon(count) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        var ctx = canvas.getContext('2d');
+
+        // Рисуем базовый кружок — логотип KadrGram
+        ctx.beginPath();
+        ctx.arc(16, 16, 15, 0, Math.PI * 2);
+        ctx.fillStyle = '#0088cc';
+        ctx.fill();
+
+        ctx.font = 'bold 18px Arial';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('K', 16, 17);
+
+        if (count > 0) {
+            // Красный бейдж
+            ctx.beginPath();
+            ctx.arc(24, 8, 9, 0, Math.PI * 2);
+            ctx.fillStyle = '#e53935';
+            ctx.fill();
+
+            ctx.font = 'bold 10px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(count > 99 ? '99+' : String(count), 24, 8);
+        }
+
+        // Обновляем favicon
+        var link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = canvas.toDataURL('image/png');
+    }
+
+    function updateTitle(count) {
+        if (count > 0) {
+            document.title = '(' + count + ') KadrGram';
+        } else {
+            document.title = 'KadrGram';
+        }
+    }
+
+    // Сбрасываем счётчик когда вкладка снова активна
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            totalUnread = 0;
+            updateFavicon(0);
+            updateTitle(0);
+        }
+    });
+
+    // Запрашиваем разрешение сразу при загрузке
+    requestNotifPermission();
+
+    // =========================
+    // ПАТЧИМ updateBadge — добавляем счётчик и уведомления
+    // =========================
+    var _originalUpdateBadge = updateBadge;
+    updateBadge = function(userId) {
+        _originalUpdateBadge(userId);
+
+        // Имя отправителя из сайдбара
+        var nameEl = document.querySelector('#user-' + userId + ' .user-name');
+        var senderName = nameEl ? nameEl.innerText : 'Новое сообщение';
+
+        totalUnread++;
+        updateFavicon(totalUnread);
+        updateTitle(totalUnread);
+        playNotifSound();
+        showPushNotif(senderName, '');
+    };
+
 </script>
 </body>
 </html>
