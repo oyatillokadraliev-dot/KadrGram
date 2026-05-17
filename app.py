@@ -282,23 +282,45 @@ def search():
 @socketio.on("connect")
 def on_connect():
     uid = session.get("user_id")
+
     if not uid:
         disconnect()
         return
-    if users is not None:
-        users.update_one({"_id": oid(uid)}, {"$set": {"online": True}})
+
+    users.update_one(
+        {"_id": oid(uid)},
+        {"$set": {"online": True}}
+    )
+
     join_room(uid)
+
+    emit(
+        "user_online",
+        {"user_id": uid},
+        broadcast=True
+    )
 
 
 @socketio.on("disconnect")
 def on_disconnect():
     uid = session.get("user_id")
-    if uid and users is not None:
-        users.update_one({"_id": oid(uid)}, {"$set": {"online": False}})
+
+    if uid:
+        users.update_one(
+            {"_id": oid(uid)},
+            {"$set": {"online": False}}
+        )
+
+        emit(
+            "user_offline",
+            {"user_id": uid},
+            broadcast=True
+        )
 
 
 @socketio.on("new_message")
-def new_message(data):
+def э
+new_message(data):
     user = get_user()
     if not user:
         return
