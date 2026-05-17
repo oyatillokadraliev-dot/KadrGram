@@ -1,269 +1,235 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>KadrGram</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegram 2.0 Chat</title>
 
-    <style>
-        * { box-sizing: border-box; }
+<style>
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{margin:0;display:flex;height:100dvh;background:#0f0f0f}
 
-        body {
-            display: flex;
-            height: 100dvh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #f0f2f5;
-            overflow: hidden;
-        }
+/* LEFT */
+.sidebar{
+width:320px;background:#17212b;color:#fff;display:flex;flex-direction:column
+}
+.user{
+padding:14px;cursor:pointer;border-bottom:1px solid #222;
+display:flex;justify-content:space-between
+}
+.user:hover{background:#202b36}
+.active{background:#2b5278}
 
-        /* ---- SIDEBAR ---- */
-        .sidebar {
-            width: 350px;
-            border-right: 1px solid #ddd;
-            display: flex;
-            flex-direction: column;
-            background: white;
-        }
+/* RIGHT */
+.chat{
+flex:1;display:flex;flex-direction:column;background:#0e1621
+}
 
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-        }
+/* HEADER */
+.header{
+padding:12px;background:#17212b;color:#fff
+}
 
-        .logo { color: #0088cc; margin: 0; }
-        .search-link { font-size: 20px; color: #0088cc; text-decoration: none; }
+/* MSGS */
+.messages{
+flex:1;overflow:auto;padding:15px;
+display:flex;flex-direction:column;gap:8px
+}
 
-        .user-list { flex: 1; overflow-y: auto; }
+.msg{
+max-width:70%;
+padding:10px 12px;
+border-radius:12px;
+background:#182533;
+color:#fff;
+position:relative;
+word-break:break-word
+}
 
-        .user-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            cursor: pointer;
-        }
+.me{align-self:flex-end;background:#2b5278}
 
-        .user-item:hover { background: #f5f5f5; }
-        .user-item.active { background: #e8f4fd; }
+/* reply */
+.reply{
+font-size:12px;
+opacity:.7;
+border-left:2px solid #4ea4ff;
+padding-left:6px;
+margin-bottom:5px
+}
 
-        .online-dot {
-            width: 9px; height: 9px;
-            border-radius: 50%;
-            background: #25d366;
-            display: inline-block;
-        }
+/* image */
+.msg img{
+max-width:100%;
+border-radius:10px;
+margin-top:5px
+}
 
-        .unread-badge {
-            background: #25d366;
-            color: white;
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 12px;
-        }
+/* footer */
+.footer{
+display:flex;
+justify-content:flex-end;
+font-size:10px;
+opacity:.6;
+margin-top:5px;
+gap:4px
+}
 
-        .sidebar-footer {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-        }
+/* input */
+.input{
+display:flex;
+padding:10px;
+background:#17212b;
+gap:10px
+}
+.input input{
+flex:1;padding:10px;border-radius:20px;border:none;outline:none
+}
 
-        /* ---- CHAT ---- */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #e5ddd5;
-        }
+/* typing */
+.typing{
+font-size:12px;
+color:#aaa;
+padding:5px 15px
+}
 
-        .chat-header {
-            padding: 10px 15px;
-            background: white;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-user-name { font-weight: bold; }
-        .chat-status { font-size: 12px; color: #888; }
-
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .msg {
-            background: white;
-            padding: 8px 12px;
-            border-radius: 12px;
-            max-width: 75%;
-        }
-
-        .my-msg {
-            align-self: flex-end;
-            background: #dcf8c6;
-        }
-
-        .msg-text { font-size: 15px; }
-
-        .msg-footer {
-            font-size: 10px;
-            color: #999;
-            display: flex;
-            justify-content: flex-end;
-            gap: 4px;
-        }
-
-        /* ---- INPUT ---- */
-        .input-area {
-            background: white;
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            outline: none;
-        }
-
-        .send-btn {
-            font-size: 22px;
-            border: none;
-            background: none;
-            color: #0088cc;
-            cursor: pointer;
-        }
-
-        /* ---- MOBILE ---- */
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; }
-            .chat-area { width: 100%; }
-        }
-    </style>
+/* mobile */
+@media(max-width:768px){
+.sidebar{position:absolute;z-index:10;width:100%;height:100%}
+.chat{width:100%}
+.hidden{display:none}
+}
+</style>
 </head>
 
 <body>
 
 <!-- SIDEBAR -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2 class="logo">KadrGram</h2>
-        <a class="search-link" href="/search">🔍</a>
-    </div>
-
-    <div class="user-list">
-        {% for u in all_users %}
-        <div class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
-             onclick="location.href='/?chat_with={{ u.id }}'">
-
-            <div>
-                {{ u.name }}
-                {% if u.online %}
-                    <span class="online-dot"></span>
-                {% endif %}
-            </div>
-
-            {% if u.unread > 0 %}
-            <span class="unread-badge">{{ u.unread }}</span>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-
-    <div class="sidebar-footer">
-        <b>{{ user.name }}</b>
-        <a href="/logout">Выход</a>
-    </div>
+<div class="sidebar" id="side">
+{% for u in all_users %}
+<div class="user" onclick="openChat('{{u.id}}')">
+<span>{{u.name}}</span>
+</div>
+{% endfor %}
 </div>
 
 <!-- CHAT -->
-<div class="chat-area">
+<div class="chat">
 
-    {% if target_user %}
+<div class="header" id="title">Chat</div>
 
-    <div class="chat-header">
-        <div>
-            <div class="chat-user-name">{{ target_user.name }}</div>
-            <div class="chat-status">
-                {{ 'в сети' if target_user.online else target_user.last_seen_str }}
-            </div>
-        </div>
-    </div>
+<div class="messages" id="box"></div>
 
-    <div class="messages" id="msgBox"></div>
+<div class="typing" id="typing"></div>
 
-    <div class="input-area">
-        <input id="textInp" class="message-input" placeholder="Напишите сообщение..." />
-        <button class="send-btn" onclick="sendMsg()">➤</button>
-    </div>
-
-    {% else %}
-    <div style="margin:auto;color:#888;">Выберите чат</div>
-    {% endif %}
+<div class="input">
+<input id="inp" placeholder="Сообщение...">
+<button onclick="send()">➤</button>
+</div>
 
 </div>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
 <script>
-var socket = io();
-var TARGET_ID = "{{ target_user.id if target_user else '' }}";
-var MY_ID = "{{ my_id }}";
 
-function addMsg(m){
-    var box = document.getElementById("msgBox");
-    if(!box) return;
+var socket=io();
+var TARGET=null;
+var ME="{{my_id}}";
 
-    var div = document.createElement("div");
-    div.className = "msg" + (m.sender === MY_ID ? " my-msg" : "");
+var reply=null;
+var edit=null;
 
-    div.innerHTML =
-        `<div class="msg-text">${escapeHtml(m.text || "")}</div>
-         <div class="msg-footer">${m.time ? new Date(m.time).toLocaleTimeString().slice(0,5) : ""}</div>`;
+/* OPEN CHAT */
+function openChat(id){
+TARGET=id;
+document.getElementById("box").innerHTML="";
+fetch("/get_messages?with="+id)
+.then(r=>r.json())
+.then(d=>d.forEach(draw));
 
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
+document.getElementById("title").innerText="Chat "+id;
+
+/* mobile */
+document.getElementById("side").classList.add("hidden");
 }
 
-function escapeHtml(t){
-    return (t||"").replaceAll("&","&amp;")
-                  .replaceAll("<","&lt;")
-                  .replaceAll(">","&gt;");
+/* DRAW */
+function draw(m){
+let box=document.getElementById("box");
+
+let d=document.createElement("div");
+d.className="msg"+(m.sender==ME?" me":"");
+
+/* reply */
+if(m.reply_text){
+let r=document.createElement("div");
+r.className="reply";
+r.innerText=m.reply_text;
+d.appendChild(r);
 }
 
-function sendMsg(){
-    var inp = document.getElementById("textInp");
-    if(!inp.value.trim()) return;
-
-    socket.emit("new_message", {
-        receiver_id: TARGET_ID,
-        text: inp.value
-    });
-
-    inp.value = "";
+/* image */
+if(m.image){
+let img=document.createElement("img");
+img.src=m.image;
+d.appendChild(img);
 }
 
-socket.on("receive_message", function(msg){
-    addMsg(msg);
+/* text */
+if(m.text){
+let t=document.createElement("div");
+t.innerText=m.text;
+d.appendChild(t);
+}
+
+/* footer */
+let f=document.createElement("div");
+f.className="footer";
+f.innerText=(m.read?"✓✓":"✓");
+d.appendChild(f);
+
+box.appendChild(d);
+box.scrollTop=box.scrollHeight;
+}
+
+/* SEND */
+function send(){
+let inp=document.getElementById("inp");
+if(!inp.value) return;
+
+socket.emit("new_message",{
+receiver_id:TARGET,
+text:inp.value,
+reply_to:reply
 });
 
-if(TARGET_ID){
-    fetch("/get_messages?with=" + TARGET_ID)
-        .then(r => r.json())
-        .then(data => data.forEach(addMsg));
+inp.value="";
 }
-</script>
 
+/* RECEIVE */
+socket.on("receive_message",m=>{
+if(m.sender==TARGET||m.receiver==TARGET) draw(m);
+});
+
+/* TYPING */
+socket.on("typing",d=>{
+document.getElementById("typing").innerText=
+d.typing?"печатает...":"";
+});
+
+document.addEventListener("input",e=>{
+if(e.target.id=="inp"){
+socket.emit("typing",{receiver_id:TARGET,typing:true});
+setTimeout(()=>socket.emit("typing",{receiver_id:TARGET,typing:false}),800);
+}
+});
+
+/* LOAD */
+if(TARGET){
+fetch("/get_messages?with="+TARGET)
+.then(r=>r.json())
+.then(d=>d.forEach(draw));
+}
+
+</script>
 </body>
 </html>
