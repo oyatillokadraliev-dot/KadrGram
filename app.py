@@ -13,7 +13,8 @@ from flask import Flask, render_template, request, redirect, session, jsonify
 from flask_socketio import SocketIO, emit, join_room, disconnect
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -21,9 +22,12 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+cloudinary.config(
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key    = os.getenv("CLOUDINARY_API_KEY"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+)
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 socketio = SocketIO(
@@ -127,9 +131,9 @@ def serialize_message(m):
         "read": m.get("read", False),
         "edited": m.get("edited", False),
         "deleted": m.get("deleted", False),
-        "reply_to": m.get("reply_to"),        # id сообщения на которое отвечаем
-        "reply_text": m.get("reply_text"),    # текст того сообщения (кэш)
-        "reply_sender": m.get("reply_sender"), # имя отправителя
+        "reply_to": m.get("reply_to"),
+        "reply_text": m.get("reply_text"),
+        "reply_sender": m.get("reply_sender"),
         "time": m["created_at"].isoformat()
     }
 
@@ -260,15 +264,21 @@ def upload_image():
     f = request.files["image"]
     if f.filename == "" or not allowed_file(f.filename):
         return jsonify({"error": "invalid file"}), 400
-    # Ограничение 5 МБ
     f.seek(0, 2)
     size = f.tell()
     f.seek(0)
     if size > 5 * 1024 * 1024:
         return jsonify({"error": "too large"}), 400
-    filename = secure_filename(f"{datetime.utcnow().timestamp()}_{f.filename}")
-    f.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-    return jsonify({"url": f"/static/uploads/{filename}"})
+    try:
+        result = cloudinary.uploader.upload(
+            f,
+            folder="kadrgram",
+            transformation=[{"quality": "auto", "fetch_format": "auto"}]
+        )
+        return jsonify({"url": result["secure_url"]})
+    except Exception as e:
+        logging.error(f"Cloudinary upload error: {e}")
+        return jsonify({"error": "upload failed"}), 500
 
 # =========================
 # SEARCH
@@ -338,7 +348,7 @@ def new_message(data):
     my_id = str(user["_id"])
     to_id = data.get("receiver_id")
     text = bleach.clean(data.get("text", "").strip())
-    image = data.get("image")  # url уже загруженного фото
+    image = data.get("image")
     reply_to = data.get("reply_to")
 
     if not to_id or (not text and not image):
@@ -363,7 +373,6 @@ def new_message(data):
         "created_at": now,
     }
 
-    # Reply — сохраняем кэш текста и имени
     if reply_to:
         orig = messages.find_one({"_id": oid(reply_to)})
         if orig and not orig.get("deleted"):
@@ -420,7 +429,6 @@ def delete_message(data):
 
 @socketio.on("mark_read")
 def mark_read(data):
-    """Клиент сообщает что прочитал сообщения от sender_id"""
     user = get_user()
     if not user:
         return
@@ -432,7 +440,6 @@ def mark_read(data):
         {"sender": sender_id, "receiver": my_id, "read": False},
         {"$set": {"read": True}}
     )
-    # Уведомляем отправителя что его сообщения прочитаны
     emit("messages_read", {"by": my_id}, room=sender_id)
 
 
