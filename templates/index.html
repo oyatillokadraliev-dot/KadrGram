@@ -5,221 +5,353 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --accent:      #6c63ff;
+            --accent2:     #48cfad;
+            --accent-dark: #5a52d5;
+            --bg:          #0f0f1a;
+            --bg2:         #16162a;
+            --bg3:         #1e1e35;
+            --bg4:         #252542;
+            --border:      rgba(255,255,255,0.07);
+            --text:        #f0f0ff;
+            --text2:       #9999bb;
+            --my-msg:      linear-gradient(135deg, #6c63ff, #48cfad);
+            --their-msg:   #1e1e35;
+            --online:      #48cfad;
+            --danger:      #ff6b6b;
+            --shadow:      0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
             display: flex;
             height: 100dvh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             overflow: hidden;
         }
 
+        /* ===================== SCROLLBAR ===================== */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
         /* ===================== SIDEBAR ===================== */
         .sidebar {
-            width: 360px;
-            border-right: 1px solid #eee;
+            width: 340px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            background: white;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
             z-index: 2;
-            flex-shrink: 0;
         }
 
         .sidebar-header {
-            padding: 14px 16px;
-            background: #0088cc;
+            padding: 18px 16px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            safe-area-inset-top: env(safe-area-inset-top);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
         }
 
-        .logo { margin: 0; color: white; font-size: 20px; }
-
-        .search-link {
-            color: white;
-            text-decoration: none;
+        .logo {
             font-size: 22px;
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .header-actions { display: flex; gap: 4px; }
+
+        .header-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover { background: var(--bg4); color: var(--text); }
+
+        .user-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+        /* Разделитель закреплённых */
+        .pin-section-label {
+            padding: 6px 16px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
 
         .user-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: background 0.15s;
-            min-height: 72px;
+            border-radius: 12px;
+            margin: 2px 8px;
+            transition: all 0.15s;
+            position: relative;
         }
 
-        .user-item:active { background: #f0f0f0; }
-        .user-item.active { background: #e8f4fd; }
+        .user-item:hover { background: var(--bg3); }
+        .user-item.active { background: var(--bg4); }
+        .user-item.pinned-item { border-left: 2px solid var(--accent); }
 
-        /* Аватарка */
         .avatar {
-            width: 50px; height: 50px;
+            width: 48px; height: 48px;
             border-radius: 50%;
-            background: #0088cc;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 19px;
+            font-weight: 700;
             flex-shrink: 0;
             position: relative;
+            box-shadow: 0 4px 12px rgba(108,99,255,0.3);
         }
 
         .avatar-online {
             position: absolute;
             bottom: 1px; right: 1px;
-            width: 13px; height: 13px;
-            background: #25d366;
+            width: 12px; height: 12px;
+            background: var(--online);
             border-radius: 50%;
-            border: 2px solid white;
+            border: 2px solid var(--bg2);
+            box-shadow: 0 0 6px var(--online);
         }
 
         .user-meta { flex: 1; min-width: 0; }
 
+        .user-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .user-name {
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+
+        .pin-icon {
+            font-size: 11px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: var(--text2);
+            margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .user-status {
-            font-size: 13px;
-            color: #aaa;
-            margin-top: 2px;
-        }
-
         .unread-badge {
-            background: #25d366;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
-            border-radius: 12px;
-            padding: 3px 8px;
-            font-size: 13px;
-            font-weight: bold;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 700;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(108,99,255,0.4);
         }
 
         .sidebar-footer {
             padding: 12px 16px;
             padding-bottom: max(12px, env(safe-area-inset-bottom));
-            border-top: 1px solid #eee;
-            background: #fafafa;
+            border-top: 1px solid var(--border);
+            background: var(--bg2);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .my-name { font-weight: 600; font-size: 15px; }
-        .logout-link { color: #d9534f; text-decoration: none; font-size: 14px; font-weight: 600; padding: 8px; }
+        .my-name { font-weight: 600; font-size: 14px; color: var(--text); }
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255,107,107,0.1);
+            transition: background 0.2s;
+        }
+        .logout-link:hover { background: rgba(255,107,107,0.2); }
 
-        /* ===================== CHAT ===================== */
+        /* ===================== CHAT AREA ===================== */
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #e5ddd5;
+            background: var(--bg);
             position: relative;
             min-width: 0;
         }
 
+        /* Фоновый паттерн */
+        .chat-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(108,99,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(72,207,173,0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
         .chat-header {
-            padding: 10px 14px;
-            padding-top: max(10px, env(safe-area-inset-top));
-            background: #0088cc;
+            padding: 12px 16px;
+            padding-top: max(12px, env(safe-area-inset-top));
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-shrink: 0;
+            backdrop-filter: blur(20px);
+            z-index: 1;
         }
 
         .back-btn {
             display: none;
-            color: white;
-            font-size: 28px;
+            color: var(--accent);
+            font-size: 26px;
             text-decoration: none;
-            width: 44px; height: 44px;
+            width: 40px; height: 40px;
             align-items: center; justify-content: center;
             flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--bg3);
+            transition: background 0.2s;
         }
 
+        .back-btn:hover { background: var(--bg4); }
+
         .chat-header-avatar {
-            width: 40px; height: 40px;
+            width: 42px; height: 42px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
             display: flex; align-items: center; justify-content: center;
             font-size: 17px;
-            font-weight: bold;
+            font-weight: 700;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(108,99,255,0.3);
         }
 
         .chat-header-info { flex: 1; min-width: 0; }
-        .chat-user-name { font-weight: bold; font-size: 16px; color: white; }
-        .chat-status { font-size: 12px; color: rgba(255,255,255,0.85); margin-top: 1px; }
+        .chat-user-name { font-weight: 700; font-size: 16px; color: var(--text); }
+        .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
+        .chat-status.online { color: var(--online); }
 
         /* ===================== MESSAGES ===================== */
         .messages {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 10px 12px;
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
+            position: relative;
+            z-index: 0;
         }
 
         .msg {
-            background: white;
-            padding: 7px 12px 5px;
+            padding: 9px 13px 6px;
             border-radius: 18px;
-            max-width: 82%;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+            max-width: 78%;
             word-wrap: break-word;
             overflow-wrap: break-word;
             position: relative;
+            animation: msgIn 0.2s ease;
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .their-msg {
+            align-self: flex-start;
+            background: var(--their-msg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            color: var(--text);
         }
 
         .my-msg {
             align-self: flex-end;
-            background: #dcf8c6;
+            background: var(--my-msg);
             border-bottom-right-radius: 4px;
+            color: white;
+            box-shadow: 0 4px 16px rgba(108,99,255,0.35);
         }
 
-        .their-msg { border-bottom-left-radius: 4px; }
+        .my-msg .msg-time { color: rgba(255,255,255,0.6); }
+        .my-msg .msg-ticks { color: rgba(255,255,255,0.7); }
+        .my-msg .msg-ticks.read { color: white; }
+        .my-msg .msg-edited { color: rgba(255,255,255,0.5); }
 
         .msg-reply {
-            background: rgba(0,136,204,0.08);
-            border-left: 3px solid #0088cc;
-            border-radius: 6px;
-            padding: 4px 8px;
-            margin-bottom: 5px;
+            background: rgba(108,99,255,0.15);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            padding: 5px 9px;
+            margin-bottom: 6px;
             font-size: 12px;
-            color: #555;
+            color: var(--text2);
             cursor: pointer;
         }
 
-        .msg-reply b { color: #0088cc; display: block; font-size: 11px; }
-        .msg-text { font-size: 15px; line-height: 1.4; }
-        .msg-deleted { font-size: 14px; color: #aaa; font-style: italic; }
-        .msg-edited { font-size: 10px; color: #aaa; }
+        .my-msg .msg-reply {
+            background: rgba(255,255,255,0.15);
+            border-left-color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .msg-reply b { color: var(--accent); display: block; font-size: 11px; }
+        .my-msg .msg-reply b { color: white; }
+
+        .msg-text { font-size: 15px; line-height: 1.45; }
+
+        .msg-deleted { font-size: 13px; color: var(--text2); font-style: italic; }
+        .my-msg .msg-deleted { color: rgba(255,255,255,0.5); }
+
+        .msg-edited { font-size: 10px; color: var(--text2); }
 
         .msg-image {
             max-width: 100%;
-            max-height: 240px;
+            max-height: 260px;
             border-radius: 12px;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             cursor: pointer;
         }
 
@@ -228,28 +360,41 @@
             justify-content: flex-end;
             align-items: center;
             gap: 3px;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
-        .msg-time { font-size: 11px; color: #aaa; line-height: 1; }
-        .msg-ticks { font-size: 13px; color: #aaa; line-height: 1; }
-        .msg-ticks.read { color: #4fc3f7; }
+        .msg-time { font-size: 10px; color: var(--text2); line-height: 1; }
+        .msg-ticks { font-size: 12px; color: var(--text2); line-height: 1; }
+        .msg-ticks.read { color: var(--accent2); }
 
         .load-more-label {
             text-align: center;
-            color: #aaa;
+            color: var(--text2);
             font-size: 12px;
             padding: 8px;
+        }
+
+        /* Date separator */
+        .date-label {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text2);
+            padding: 4px 12px;
+            background: var(--bg3);
+            border-radius: 12px;
+            align-self: center;
+            margin: 4px 0;
         }
 
         /* ===================== TYPING ===================== */
         .typing-indicator {
             display: none;
             align-self: flex-start;
-            background: white;
+            background: var(--their-msg);
+            border: 1px solid var(--border);
             padding: 10px 14px;
             border-radius: 18px;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+            border-bottom-left-radius: 4px;
             margin-bottom: 4px;
         }
 
@@ -257,7 +402,7 @@
 
         .typing-dots span {
             width: 7px; height: 7px;
-            background: #aaa;
+            background: var(--text2);
             border-radius: 50%;
             animation: bounce 1.2s infinite;
         }
@@ -272,7 +417,8 @@
 
         /* ===================== INPUT ===================== */
         .input-area {
-            background: #f0f0f0;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -287,15 +433,16 @@
         }
 
         .photo-preview-wrap img {
-            max-height: 100px;
-            border-radius: 8px;
+            max-height: 90px;
+            border-radius: 10px;
             display: block;
+            border: 2px solid var(--border);
         }
 
         .photo-preview-cancel {
             position: absolute;
             top: 4px; right: 10px;
-            background: rgba(0,0,0,0.55);
+            background: rgba(0,0,0,0.7);
             color: white;
             border-radius: 50%;
             width: 22px; height: 22px;
@@ -306,31 +453,31 @@
 
         .reply-preview {
             display: none;
-            background: white;
-            border-left: 3px solid #0088cc;
-            padding: 6px 36px 6px 12px;
+            background: var(--bg3);
+            border-left: 3px solid var(--accent);
+            padding: 7px 36px 7px 12px;
             font-size: 13px;
-            color: #555;
+            color: var(--text2);
             position: relative;
-            margin: 6px 10px 0;
-            border-radius: 8px;
+            margin: 8px 12px 0;
+            border-radius: 10px;
         }
 
-        .reply-preview b { color: #0088cc; display: block; font-size: 12px; }
+        .reply-preview b { color: var(--accent); display: block; font-size: 12px; margin-bottom: 2px; }
 
         .reply-cancel {
             position: absolute;
             right: 10px; top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #999;
-            font-size: 20px;
+            color: var(--text2);
+            font-size: 18px;
             line-height: 1;
             padding: 4px;
         }
 
         .input-row {
-            padding: 8px 10px;
+            padding: 10px 12px;
             display: flex;
             align-items: flex-end;
             gap: 8px;
@@ -338,89 +485,112 @@
 
         .message-input {
             flex: 1;
-            padding: 10px 14px;
-            border: none;
-            border-radius: 22px;
+            padding: 11px 16px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
             outline: none;
-            font-size: 16px;
-            background: white;
+            font-size: 15px;
+            background: var(--bg3);
+            color: var(--text);
             resize: none;
             max-height: 120px;
             line-height: 1.4;
             font-family: inherit;
+            transition: border-color 0.2s;
         }
+
+        .message-input::placeholder { color: var(--text2); }
+        .message-input:focus { border-color: var(--accent); }
 
         .send-btn {
             width: 44px; height: 44px;
-            background: #0088cc;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             border: none;
             border-radius: 50%;
             color: white;
+            font-size: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 14px rgba(108,99,255,0.4);
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(108,99,255,0.5); }
+        .send-btn:active { transform: scale(0.96); }
+
+        .photo-btn {
+            width: 40px; height: 40px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text2);
             font-size: 20px;
             cursor: pointer;
             flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.15s;
+            transition: all 0.2s;
         }
 
-        .send-btn:active { background: #0077bb; }
-
-        .photo-btn {
-            width: 44px; height: 44px;
-            background: none;
-            border: none;
-            color: #0088cc;
-            font-size: 24px;
-            cursor: pointer;
-            flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .photo-btn:hover { background: var(--bg4); color: var(--text); }
 
         /* ===================== CTX MENU ===================== */
         .ctx-menu {
             position: fixed;
-            background: white;
+            background: var(--bg3);
+            border: 1px solid var(--border);
             border-radius: 14px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            box-shadow: var(--shadow);
             z-index: 1000;
-            min-width: 180px;
+            min-width: 190px;
             overflow: hidden;
             display: none;
+            backdrop-filter: blur(20px);
         }
 
         .ctx-item {
-            padding: 14px 18px;
+            padding: 13px 18px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
+            color: var(--text);
             transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .ctx-item:active { background: #f0f0f0; }
-        .ctx-item.danger { color: #d9534f; }
+        .ctx-item:hover { background: var(--bg4); }
+        .ctx-item + .ctx-item { border-top: 1px solid var(--border); }
+        .ctx-item.danger { color: var(--danger); }
 
         /* ===================== LIGHTBOX ===================== */
         .lightbox {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(10px);
         }
 
         .lightbox.open { display: flex; }
-        .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 8px; }
+        .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 12px; box-shadow: var(--shadow); }
 
         .lightbox-close {
             position: absolute;
             top: max(20px, env(safe-area-inset-top));
             right: 20px;
             color: white;
-            font-size: 36px;
+            font-size: 32px;
             cursor: pointer;
             line-height: 1;
             padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            width: 46px; height: 46px;
+            display: flex; align-items: center; justify-content: center;
         }
 
         /* ===================== EMPTY ===================== */
@@ -430,24 +600,40 @@
             justify-content: center;
             align-items: center;
             height: 100%;
-            color: #888;
-            gap: 10px;
+            gap: 14px;
+            position: relative;
+            z-index: 0;
         }
 
-        .empty-chat-icon { font-size: 56px; }
-        .empty-chat-text { font-size: 16px; }
+        .empty-chat-icon {
+            font-size: 64px;
+            filter: drop-shadow(0 0 20px rgba(108,99,255,0.4));
+        }
+
+        .empty-chat-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .empty-chat-sub { font-size: 14px; color: var(--text2); }
 
         /* ===================== CONNECTION ===================== */
         .connection-status {
             position: absolute;
-            top: 10px; right: 15px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 6px 12px;
+            top: 12px; right: 16px;
+            background: rgba(255,107,107,0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255,107,107,0.3);
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 12px;
             display: none;
             z-index: 10;
+            backdrop-filter: blur(10px);
         }
 
         /* ===================== MOBILE ===================== */
@@ -467,14 +653,9 @@
 
             .back-btn { display: flex !important; }
 
-            /* Чтобы клавиатура не перекрывала инпут */
-            .input-area {
-                position: sticky;
-                bottom: 0;
-            }
+            .input-area { position: sticky; bottom: 0; }
         }
 
-        /* ===================== DESKTOP ===================== */
         @media (min-width: 769px) {
             .sidebar { position: relative; }
         }
@@ -486,11 +667,46 @@
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2 class="logo">KadrGram</h2>
-        <a href="/search" class="search-link" title="Поиск">🔍</a>
+        <div class="header-actions">
+            <a href="/search" class="header-btn" title="Поиск">🔍</a>
+        </div>
     </div>
 
     <div class="user-list">
-        {% for u in all_users %}
+        {% set pinned_users = all_users | selectattr('pinned') | list %}
+        {% set regular_users = all_users | rejectattr('pinned') | list %}
+
+        {% if pinned_users %}
+        <div class="pin-section-label">📌 Закреплённые</div>
+        {% for u in pinned_users %}
+        <div
+            class="user-item pinned-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
+            id="user-{{ u.id }}"
+            onclick="location.href='/?chat_with={{ u.id }}'"
+        >
+            <div class="avatar" id="avatar-{{ u.id }}">
+                {{ u.name[0]|upper }}
+                {% if u.online %}<div class="avatar-online"></div>{% endif %}
+            </div>
+            <div class="user-meta">
+                <div class="user-name-row">
+                    <span class="user-name">{{ u.name }}</span>
+                    <span class="pin-icon">📌</span>
+                </div>
+                <div class="user-status" id="status-{{ u.id }}">
+                    {{ 'в сети' if u.online else u.last_seen_str }}
+                </div>
+            </div>
+            <span class="unread-badge" id="badge-{{ u.id }}"
+                  {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
+        </div>
+        {% endfor %}
+        {% if regular_users %}
+        <div class="pin-section-label" style="margin-top:6px;">Все чаты</div>
+        {% endif %}
+        {% endif %}
+
+        {% for u in regular_users %}
         <div
             class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
             id="user-{{ u.id }}"
@@ -498,12 +714,12 @@
         >
             <div class="avatar" id="avatar-{{ u.id }}">
                 {{ u.name[0]|upper }}
-                {% if u.online %}
-                <div class="avatar-online"></div>
-                {% endif %}
+                {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
             <div class="user-meta">
-                <div class="user-name">{{ u.name }}</div>
+                <div class="user-name-row">
+                    <span class="user-name">{{ u.name }}</span>
+                </div>
                 <div class="user-status" id="status-{{ u.id }}">
                     {{ 'в сети' if u.online else u.last_seen_str }}
                 </div>
@@ -522,17 +738,15 @@
 
 <!-- CHAT -->
 <div class="chat-area">
-
-    <div class="connection-status" id="connStatus">Нет соединения</div>
+    <div class="connection-status" id="connStatus">⚠ Нет соединения</div>
 
     {% if target_user %}
-
     <div class="chat-header">
         <a href="/" class="back-btn" id="backBtn">‹</a>
         <div class="chat-header-avatar">{{ target_user.name[0]|upper }}</div>
         <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
-            <div id="chatStatus" class="chat-status">
+            <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">
                 {{ 'в сети' if target_user.online else target_user.last_seen_str }}
             </div>
         </div>
@@ -557,13 +771,7 @@
         <div class="input-row">
             <button class="photo-btn" onclick="document.getElementById('photoInput').click()">📎</button>
             <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="onPhotoSelected(this)" />
-            <textarea
-                id="textInp"
-                class="message-input"
-                placeholder="Сообщение..."
-                autocomplete="off"
-                rows="1"
-            ></textarea>
+            <textarea id="textInp" class="message-input" placeholder="Сообщение..." autocomplete="off" rows="1"></textarea>
             <button class="send-btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
@@ -571,10 +779,10 @@
     {% else %}
     <div class="empty-chat">
         <div class="empty-chat-icon">💬</div>
-        <div class="empty-chat-text">Выберите чат</div>
+        <div class="empty-chat-title">KadrGram</div>
+        <div class="empty-chat-sub">Выберите чат чтобы начать общение</div>
     </div>
     {% endif %}
-
 </div>
 
 <!-- Контекстное меню -->
@@ -582,6 +790,12 @@
     <div class="ctx-item" onclick="ctxReply()">↩️ Ответить</div>
     <div class="ctx-item" id="ctxEditBtn" onclick="ctxEdit()">✏️ Редактировать</div>
     <div class="ctx-item danger" id="ctxDeleteBtn" onclick="ctxDelete()">🗑️ Удалить</div>
+</div>
+
+<!-- Контекстное меню чата -->
+<div class="ctx-menu" id="chatCtxMenu">
+    <div class="ctx-item" id="pinChatBtn" onclick="ctxPinChat()">📌 Закрепить</div>
+    <div class="ctx-item" id="unpinChatBtn" onclick="ctxUnpinChat()">📌 Открепить</div>
 </div>
 
 <!-- Лайтбокс -->
@@ -592,7 +806,6 @@
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-
     var TARGET_ID     = "{{ target_user.id if target_user else '' }}";
     var MY_ID         = "{{ my_id }}";
 
@@ -600,10 +813,15 @@
     var editingMsgId  = null;
     var ctxMsgEl      = null;
     var pendingPhoto  = null;
+    var ctxChatUserId = null;
 
     var oldestMsgId   = null;
     var isLoadingMore = false;
     var noMoreMsgs    = false;
+
+    // Закреплённые — читаем из DOM
+    var pinnedIds = [];
+    {% for u in all_users %}{% if u.pinned %}pinnedIds.push("{{ u.id }}");{% endif %}{% endfor %}
 
     // =========================
     // TEXTAREA AUTO-RESIZE
@@ -626,13 +844,8 @@
     }
 
     function formatTime(isoStr) {
-        if (isoStr && !isoStr.endsWith('Z') && !isoStr.includes('+'))
-            isoStr += 'Z';
+        if (isoStr && !isoStr.endsWith('Z') && !isoStr.includes('+')) isoStr += 'Z';
         return new Date(isoStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function getInitial(name) {
-        return (name || '?')[0].toUpperCase();
     }
 
     // =========================
@@ -682,8 +895,7 @@
 
         if (m.edited && !m.deleted) {
             var ed = document.createElement('span');
-            ed.className = 'msg-edited';
-            ed.innerText = 'изм. ';
+            ed.className = 'msg-edited'; ed.innerText = 'изм. ';
             footer.appendChild(ed);
         }
 
@@ -777,7 +989,7 @@
     }
 
     // =========================
-    // СВАЙП НАЗАД (мобиле)
+    // СВАЙП НАЗАД
     // =========================
     var swipeStartX = 0;
     document.addEventListener('touchstart', function(e) {
@@ -786,35 +998,94 @@
 
     document.addEventListener('touchend', function(e) {
         var dx = e.changedTouches[0].clientX - swipeStartX;
-        if (dx > 80 && swipeStartX < 40 && TARGET_ID) {
+        if (dx > 80 && swipeStartX < 40 && TARGET_ID)
             window.location.href = '/';
-        }
     }, { passive: true });
 
     // =========================
-    // КОНТЕКСТНОЕ МЕНЮ
+    // КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЯ
     // =========================
     function openCtxMenu(e, el) {
         ctxMsgEl = el;
+        document.getElementById('chatCtxMenu').style.display = 'none';
         var menu = document.getElementById('ctxMenu');
         var isMy = (el.dataset.sender === MY_ID);
         var isDeleted = el.querySelector('.msg-deleted') !== null;
 
         document.getElementById('ctxEditBtn').style.display =
-            (isMy && !isDeleted && el.dataset.text) ? 'block' : 'none';
+            (isMy && !isDeleted && el.dataset.text) ? 'flex' : 'none';
         document.getElementById('ctxDeleteBtn').style.display =
-            (isMy && !isDeleted) ? 'block' : 'none';
+            (isMy && !isDeleted) ? 'flex' : 'none';
 
         var x = e.clientX || e.pageX;
         var y = e.clientY || e.pageY;
-        menu.style.left = Math.min(x, window.innerWidth  - 200) + 'px';
-        menu.style.top  = Math.min(y, window.innerHeight - 160) + 'px';
+        menu.style.left = Math.min(x, window.innerWidth  - 210) + 'px';
+        menu.style.top  = Math.min(y, window.innerHeight - 180) + 'px';
         menu.style.display = 'block';
     }
 
+    // =========================
+    // КОНТЕКСТНОЕ МЕНЮ ЧАТА (долгое нажатие на user-item)
+    // =========================
+    document.querySelectorAll('.user-item').forEach(function(el) {
+        var timer = null;
+        var userId = el.id.replace('user-', '');
+
+        el.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            openChatCtxMenu(e, userId);
+        });
+
+        el.addEventListener('touchstart', function(e) {
+            timer = setTimeout(function() {
+                openChatCtxMenu(e.touches[0], userId);
+            }, 600);
+        }, { passive: true });
+
+        el.addEventListener('touchend',  function() { clearTimeout(timer); });
+        el.addEventListener('touchmove', function() { clearTimeout(timer); });
+    });
+
+    function openChatCtxMenu(e, userId) {
+        ctxChatUserId = userId;
+        document.getElementById('ctxMenu').style.display = 'none';
+        var menu = document.getElementById('chatCtxMenu');
+        var isPinned = pinnedIds.indexOf(userId) !== -1;
+        document.getElementById('pinChatBtn').style.display   = isPinned ? 'none' : 'flex';
+        document.getElementById('unpinChatBtn').style.display = isPinned ? 'flex' : 'none';
+
+        var x = e.clientX || e.pageX;
+        var y = e.clientY || e.pageY;
+        menu.style.left = Math.min(x, window.innerWidth  - 210) + 'px';
+        menu.style.top  = Math.min(y, window.innerHeight - 120) + 'px';
+        menu.style.display = 'block';
+    }
+
+    function ctxPinChat() {
+        if (!ctxChatUserId) return;
+        document.getElementById('chatCtxMenu').style.display = 'none';
+        fetch('/pin_chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: ctxChatUserId, action: 'pin' })
+        }).then(function() { location.reload(); });
+    }
+
+    function ctxUnpinChat() {
+        if (!ctxChatUserId) return;
+        document.getElementById('chatCtxMenu').style.display = 'none';
+        fetch('/pin_chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: ctxChatUserId, action: 'unpin' })
+        }).then(function() { location.reload(); });
+    }
+
     document.addEventListener('click', function(e) {
-        var menu = document.getElementById('ctxMenu');
-        if (!menu.contains(e.target)) menu.style.display = 'none';
+        var m1 = document.getElementById('ctxMenu');
+        var m2 = document.getElementById('chatCtxMenu');
+        if (!m1.contains(e.target)) m1.style.display = 'none';
+        if (!m2.contains(e.target)) m2.style.display = 'none';
     });
 
     function ctxReply() {
@@ -913,7 +1184,7 @@
 
     socket.on('disconnect', function() {
         var s = document.getElementById('connStatus');
-        if (s) { s.innerText = 'Нет соединения'; s.style.display = 'block'; }
+        if (s) { s.innerText = '⚠ Нет соединения'; s.style.display = 'block'; }
     });
 
     // =========================
@@ -928,10 +1199,9 @@
         }
         var st = document.getElementById('status-' + data.user_id);
         if (st) st.innerText = 'в сети';
-
         if (TARGET_ID === data.user_id) {
             var s = document.getElementById('chatStatus');
-            if (s) s.innerText = 'в сети';
+            if (s) { s.innerText = 'в сети'; s.classList.add('online'); }
         }
     });
 
@@ -940,10 +1210,9 @@
         if (av) { var dot = av.querySelector('.avatar-online'); if (dot) dot.remove(); }
         var st = document.getElementById('status-' + data.user_id);
         if (st) st.innerText = data.last_seen_str || 'был(а) недавно';
-
         if (TARGET_ID === data.user_id) {
             var s = document.getElementById('chatStatus');
-            if (s) s.innerText = data.last_seen_str || 'был(а) недавно';
+            if (s) { s.innerText = data.last_seen_str || 'был(а) недавно'; s.classList.remove('online'); }
         }
     });
 
@@ -1035,7 +1304,9 @@
         var del = document.createElement('div');
         del.className = 'msg-deleted'; del.innerText = '🚫 Сообщение удалено';
         el.appendChild(del);
-        el.appendChild(document.createElement('div')).className = 'msg-footer';
+        var f = document.createElement('div');
+        f.className = 'msg-footer';
+        el.appendChild(f);
     });
 
     // =========================
@@ -1043,7 +1314,6 @@
     // =========================
     function sendMsg() {
         if (!textarea || !TARGET_ID) return;
-
         var val = textarea.value.trim();
         if (!val && !pendingPhoto) return;
 
@@ -1082,11 +1352,9 @@
         cancelPhoto();
     }
 
-    // Enter отправляет только на десктопе, на телефоне — перенос строки
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
-            e.preventDefault();
-            sendMsg();
+            e.preventDefault(); sendMsg();
         }
         if (e.key === 'Escape') {
             cancelReply();
@@ -1107,9 +1375,6 @@
         badge.innerText = (parseInt(badge.innerText) || 0) + 1;
     }
 
-    // =========================
-    // AUTO FOCUS (только десктоп)
-    // =========================
     if (textarea && window.innerWidth > 768) textarea.focus();
 
     // =========================
@@ -1150,13 +1415,13 @@
         canvas.width = 32; canvas.height = 32;
         var ctx = canvas.getContext('2d');
         ctx.beginPath(); ctx.arc(16, 16, 15, 0, Math.PI * 2);
-        ctx.fillStyle = '#0088cc'; ctx.fill();
+        ctx.fillStyle = '#6c63ff'; ctx.fill();
         ctx.font = 'bold 18px Arial'; ctx.fillStyle = 'white';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('K', 16, 17);
         if (count > 0) {
             ctx.beginPath(); ctx.arc(24, 8, 9, 0, Math.PI * 2);
-            ctx.fillStyle = '#e53935'; ctx.fill();
+            ctx.fillStyle = '#ff6b6b'; ctx.fill();
             ctx.font = 'bold 10px Arial'; ctx.fillStyle = 'white';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(count > 99 ? '99+' : String(count), 24, 8);
@@ -1186,7 +1451,6 @@
         playNotifSound();
         showPushNotif(nameEl ? nameEl.innerText : 'Новое сообщение', '');
     };
-
 </script>
 </body>
 </html>
