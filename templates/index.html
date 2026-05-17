@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             display: flex;
@@ -16,129 +16,175 @@
             overflow: hidden;
         }
 
+        /* ===================== SIDEBAR ===================== */
         .sidebar {
-            width: 350px;
-            border-right: 1px solid #ddd;
+            width: 360px;
+            border-right: 1px solid #eee;
             display: flex;
             flex-direction: column;
             background: white;
             z-index: 2;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
-            padding: 20px;
-            background: white;
-            border-bottom: 1px solid #eee;
+            padding: 14px 16px;
+            background: #0088cc;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            safe-area-inset-top: env(safe-area-inset-top);
         }
 
-        .logo { margin: 0; color: #0088cc; }
-        .search-link { color: #0088cc; text-decoration: none; font-size: 20px; }
-        .user-list { flex: 1; overflow-y: auto; }
+        .logo { margin: 0; color: white; font-size: 20px; }
+
+        .search-link {
+            color: white;
+            text-decoration: none;
+            font-size: 22px;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .user-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
         .user-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
+            gap: 12px;
+            transition: background 0.15s;
+            min-height: 72px;
         }
 
-        .user-item:hover { background: #f5f5f5; }
+        .user-item:active { background: #f0f0f0; }
         .user-item.active { background: #e8f4fd; }
-        .user-info { display: flex; align-items: center; gap: 6px; }
-        .user-name { font-weight: 500; }
 
-        .online-dot {
-            width: 9px; height: 9px;
+        /* Аватарка */
+        .avatar {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: #0088cc;
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .avatar-online {
+            position: absolute;
+            bottom: 1px; right: 1px;
+            width: 13px; height: 13px;
             background: #25d366;
             border-radius: 50%;
-            display: inline-block;
-            flex-shrink: 0;
+            border: 2px solid white;
+        }
+
+        .user-meta { flex: 1; min-width: 0; }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-status {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 2px;
         }
 
         .unread-badge {
             background: #25d366;
             color: white;
             border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 12px;
+            padding: 3px 8px;
+            font-size: 13px;
             font-weight: bold;
+            flex-shrink: 0;
         }
 
         .sidebar-footer {
-            padding: 15px;
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
             border-top: 1px solid #eee;
-            background: #f9f9f9;
+            background: #fafafa;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .logout-link { color: #d9534f; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .my-name { font-weight: 600; font-size: 15px; }
+        .logout-link { color: #d9534f; text-decoration: none; font-size: 14px; font-weight: 600; padding: 8px; }
 
+        /* ===================== CHAT ===================== */
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: #e5ddd5;
             position: relative;
+            min-width: 0;
         }
 
         .chat-header {
-            padding: 10px 15px;
-            background: white;
-            border-bottom: 1px solid #ddd;
+            padding: 10px 14px;
+            padding-top: max(10px, env(safe-area-inset-top));
+            background: #0088cc;
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
-        .back-btn { display: none; text-decoration: none; color: #0088cc; font-size: 24px; }
-        .chat-user-name { font-weight: bold; font-size: 16px; }
-        .chat-status { font-size: 12px; color: #888; transition: color 0.3s; }
-
-        .reply-preview {
+        .back-btn {
             display: none;
-            background: #f0f8ff;
-            border-left: 3px solid #0088cc;
-            padding: 6px 12px;
-            font-size: 13px;
-            color: #555;
-            position: relative;
+            color: white;
+            font-size: 28px;
+            text-decoration: none;
+            width: 44px; height: 44px;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
 
-        .reply-preview b { color: #0088cc; display: block; font-size: 12px; }
-
-        .reply-cancel {
-            position: absolute;
-            right: 10px; top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #999;
-            font-size: 18px;
-            line-height: 1;
+        .chat-header-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
+        .chat-header-info { flex: 1; min-width: 0; }
+        .chat-user-name { font-weight: bold; font-size: 16px; color: white; }
+        .chat-status { font-size: 12px; color: rgba(255,255,255,0.85); margin-top: 1px; }
+
+        /* ===================== MESSAGES ===================== */
         .messages {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
 
         .msg {
             background: white;
-            padding: 6px 12px 4px;
-            border-radius: 15px;
-            max-width: 78%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding: 7px 12px 5px;
+            border-radius: 18px;
+            max-width: 82%;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
             word-wrap: break-word;
             overflow-wrap: break-word;
             position: relative;
@@ -147,8 +193,10 @@
         .my-msg {
             align-self: flex-end;
             background: #dcf8c6;
-            border-bottom-right-radius: 3px;
+            border-bottom-right-radius: 4px;
         }
+
+        .their-msg { border-bottom-left-radius: 4px; }
 
         .msg-reply {
             background: rgba(0,136,204,0.08);
@@ -161,15 +209,15 @@
             cursor: pointer;
         }
 
-        .msg-reply b { color: #0088cc; display: block; }
-        .msg-text { font-size: 15px; }
+        .msg-reply b { color: #0088cc; display: block; font-size: 11px; }
+        .msg-text { font-size: 15px; line-height: 1.4; }
         .msg-deleted { font-size: 14px; color: #aaa; font-style: italic; }
         .msg-edited { font-size: 10px; color: #aaa; }
 
         .msg-image {
             max-width: 100%;
-            max-height: 260px;
-            border-radius: 10px;
+            max-height: 240px;
+            border-radius: 12px;
             display: block;
             margin-bottom: 4px;
             cursor: pointer;
@@ -183,11 +231,10 @@
             margin-top: 2px;
         }
 
-        .msg-time { font-size: 10px; color: #aaa; line-height: 1; }
-        .msg-ticks { font-size: 12px; color: #aaa; line-height: 1; }
+        .msg-time { font-size: 11px; color: #aaa; line-height: 1; }
+        .msg-ticks { font-size: 13px; color: #aaa; line-height: 1; }
         .msg-ticks.read { color: #4fc3f7; }
 
-        /* Плашка "загрузка" вверху */
         .load-more-label {
             text-align: center;
             color: #aaa;
@@ -195,34 +242,15 @@
             padding: 8px;
         }
 
-        .ctx-menu {
-            position: fixed;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 160px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .ctx-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.15s;
-        }
-
-        .ctx-item:hover { background: #f5f5f5; }
-        .ctx-item.danger { color: #d9534f; }
-
+        /* ===================== TYPING ===================== */
         .typing-indicator {
             display: none;
             align-self: flex-start;
             background: white;
             padding: 10px 14px;
-            border-radius: 15px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-radius: 18px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+            margin-bottom: 4px;
         }
 
         .typing-dots { display: flex; gap: 4px; align-items: center; }
@@ -242,97 +270,160 @@
             30%            { transform: translateY(-5px); }
         }
 
+        /* ===================== INPUT ===================== */
         .input-area {
-            background: white;
-            border-top: 1px solid #ddd;
+            background: #f0f0f0;
             display: flex;
             flex-direction: column;
-        }
-
-        .input-row {
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-            font-size: 16px;
-        }
-
-        .message-input:focus { border-color: #0088cc; }
-
-        .send-btn {
-            background: none;
-            border: none;
-            color: #0088cc;
-            font-size: 28px;
-            cursor: pointer;
             flex-shrink: 0;
-        }
-
-        .photo-btn {
-            background: none;
-            border: none;
-            color: #0088cc;
-            font-size: 22px;
-            cursor: pointer;
-            flex-shrink: 0;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .photo-preview-wrap {
             display: none;
-            padding: 8px 15px;
+            padding: 8px 14px 0;
             position: relative;
             width: fit-content;
         }
 
         .photo-preview-wrap img {
-            max-height: 120px;
+            max-height: 100px;
             border-radius: 8px;
             display: block;
         }
 
         .photo-preview-cancel {
             position: absolute;
-            top: 4px; right: 12px;
-            background: rgba(0,0,0,0.5);
+            top: 4px; right: 10px;
+            background: rgba(0,0,0,0.55);
             color: white;
             border-radius: 50%;
-            width: 20px; height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
         }
 
+        .reply-preview {
+            display: none;
+            background: white;
+            border-left: 3px solid #0088cc;
+            padding: 6px 36px 6px 12px;
+            font-size: 13px;
+            color: #555;
+            position: relative;
+            margin: 6px 10px 0;
+            border-radius: 8px;
+        }
+
+        .reply-preview b { color: #0088cc; display: block; font-size: 12px; }
+
+        .reply-cancel {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .input-row {
+            padding: 8px 10px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 22px;
+            outline: none;
+            font-size: 16px;
+            background: white;
+            resize: none;
+            max-height: 120px;
+            line-height: 1.4;
+            font-family: inherit;
+        }
+
+        .send-btn {
+            width: 44px; height: 44px;
+            background: #0088cc;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .send-btn:active { background: #0077bb; }
+
+        .photo-btn {
+            width: 44px; height: 44px;
+            background: none;
+            border: none;
+            color: #0088cc;
+            font-size: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ===================== CTX MENU ===================== */
+        .ctx-menu {
+            position: fixed;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            z-index: 1000;
+            min-width: 180px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .ctx-item {
+            padding: 14px 18px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.15s;
+        }
+
+        .ctx-item:active { background: #f0f0f0; }
+        .ctx-item.danger { color: #d9534f; }
+
+        /* ===================== LIGHTBOX ===================== */
         .lightbox {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             z-index: 2000;
             justify-content: center;
             align-items: center;
         }
 
         .lightbox.open { display: flex; }
-        .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+        .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 8px; }
+
         .lightbox-close {
             position: absolute;
-            top: 20px; right: 24px;
+            top: max(20px, env(safe-area-inset-top));
+            right: 20px;
             color: white;
             font-size: 36px;
             cursor: pointer;
             line-height: 1;
+            padding: 8px;
         }
 
+        /* ===================== EMPTY ===================== */
         .empty-chat {
             display: flex;
             flex-direction: column;
@@ -340,44 +431,64 @@
             align-items: center;
             height: 100%;
             color: #888;
+            gap: 10px;
         }
 
-        .empty-chat-icon { font-size: 50px; margin-bottom: 10px; }
+        .empty-chat-icon { font-size: 56px; }
+        .empty-chat-text { font-size: 16px; }
 
+        /* ===================== CONNECTION ===================== */
         .connection-status {
             position: absolute;
             top: 10px; right: 15px;
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 6px 10px;
-            border-radius: 10px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 12px;
             display: none;
             z-index: 10;
         }
 
+        /* ===================== MOBILE ===================== */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
-                position: absolute;
-                height: 100%;
+                position: fixed;
+                inset: 0;
                 display: {{ 'none' if target_user else 'flex' }};
+                z-index: 10;
             }
+
             .chat-area {
                 width: 100%;
                 display: {{ 'flex' if target_user else 'none' }};
             }
-            .back-btn { display: block !important; }
+
+            .back-btn { display: flex !important; }
+
+            /* Чтобы клавиатура не перекрывала инпут */
+            .input-area {
+                position: sticky;
+                bottom: 0;
+            }
+        }
+
+        /* ===================== DESKTOP ===================== */
+        @media (min-width: 769px) {
+            .sidebar { position: relative; }
         }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2 class="logo">KadrGram</h2>
         <a href="/search" class="search-link" title="Поиск">🔍</a>
     </div>
+
     <div class="user-list">
         {% for u in all_users %}
         <div
@@ -385,35 +496,43 @@
             id="user-{{ u.id }}"
             onclick="location.href='/?chat_with={{ u.id }}'"
         >
-            <div class="user-info">
-                <span class="user-name">{{ u.name }}</span>
-                <span id="dot-{{ u.id }}">
-                    {% if u.online %}<span class="online-dot"></span>{% endif %}
-                </span>
+            <div class="avatar" id="avatar-{{ u.id }}">
+                {{ u.name[0]|upper }}
+                {% if u.online %}
+                <div class="avatar-online"></div>
+                {% endif %}
+            </div>
+            <div class="user-meta">
+                <div class="user-name">{{ u.name }}</div>
+                <div class="user-status" id="status-{{ u.id }}">
+                    {{ 'в сети' if u.online else u.last_seen_str }}
+                </div>
             </div>
             <span class="unread-badge" id="badge-{{ u.id }}"
                   {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
         </div>
         {% endfor %}
     </div>
+
     <div class="sidebar-footer">
-        <b style="font-size:14px;">{{ user.name }}</b>
+        <span class="my-name">{{ user.name }}</span>
         <a href="/logout" class="logout-link">Выход</a>
     </div>
 </div>
 
+<!-- CHAT -->
 <div class="chat-area">
 
-    <div class="connection-status" id="connStatus">Подключение...</div>
+    <div class="connection-status" id="connStatus">Нет соединения</div>
 
     {% if target_user %}
 
     <div class="chat-header">
-        <a href="/" class="back-btn">←</a>
-        <div>
+        <a href="/" class="back-btn" id="backBtn">‹</a>
+        <div class="chat-header-avatar">{{ target_user.name[0]|upper }}</div>
+        <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
-            <div id="chatStatus" class="chat-status"
-                 style="color:{{ '#25d366' if target_user.online else '#888' }};">
+            <div id="chatStatus" class="chat-status">
                 {{ 'в сети' if target_user.online else target_user.last_seen_str }}
             </div>
         </div>
@@ -438,7 +557,13 @@
         <div class="input-row">
             <button class="photo-btn" onclick="document.getElementById('photoInput').click()">📎</button>
             <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="onPhotoSelected(this)" />
-            <input type="text" id="textInp" class="message-input" placeholder="Напишите сообщение..." autocomplete="off" />
+            <textarea
+                id="textInp"
+                class="message-input"
+                placeholder="Сообщение..."
+                autocomplete="off"
+                rows="1"
+            ></textarea>
             <button class="send-btn" onclick="sendMsg()">➤</button>
         </div>
     </div>
@@ -446,18 +571,20 @@
     {% else %}
     <div class="empty-chat">
         <div class="empty-chat-icon">💬</div>
-        <div>Выберите чат, чтобы начать общение</div>
+        <div class="empty-chat-text">Выберите чат</div>
     </div>
     {% endif %}
 
 </div>
 
+<!-- Контекстное меню -->
 <div class="ctx-menu" id="ctxMenu">
     <div class="ctx-item" onclick="ctxReply()">↩️ Ответить</div>
     <div class="ctx-item" id="ctxEditBtn" onclick="ctxEdit()">✏️ Редактировать</div>
     <div class="ctx-item danger" id="ctxDeleteBtn" onclick="ctxDelete()">🗑️ Удалить</div>
 </div>
 
+<!-- Лайтбокс -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close">✕</span>
     <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
@@ -474,10 +601,20 @@
     var ctxMsgEl      = null;
     var pendingPhoto  = null;
 
-    // Пагинация
     var oldestMsgId   = null;
     var isLoadingMore = false;
     var noMoreMsgs    = false;
+
+    // =========================
+    // TEXTAREA AUTO-RESIZE
+    // =========================
+    var textarea = document.getElementById('textInp');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    }
 
     // =========================
     // UTILS
@@ -494,6 +631,10 @@
         return new Date(isoStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function getInitial(name) {
+        return (name || '?')[0].toUpperCase();
+    }
+
     // =========================
     // BUILD MSG ELEMENT
     // =========================
@@ -501,7 +642,7 @@
         var isMy = (m.sender === MY_ID);
 
         var wrap = document.createElement('div');
-        wrap.className = 'msg' + (isMy ? ' my-msg' : '');
+        wrap.className = 'msg' + (isMy ? ' my-msg' : ' their-msg');
         wrap.dataset.id     = m.id || '';
         wrap.dataset.sender = m.sender;
         wrap.dataset.text   = m.text || '';
@@ -562,16 +703,15 @@
 
         wrap.addEventListener('contextmenu', function(e) { e.preventDefault(); openCtxMenu(e, wrap); });
         var pressTimer = null;
-        wrap.addEventListener('touchstart', function(e) { pressTimer = setTimeout(function() { openCtxMenu(e.touches[0], wrap); }, 500); });
-        wrap.addEventListener('touchend',   function()  { clearTimeout(pressTimer); });
-        wrap.addEventListener('touchmove',  function()  { clearTimeout(pressTimer); });
+        wrap.addEventListener('touchstart', function(e) {
+            pressTimer = setTimeout(function() { openCtxMenu(e.touches[0], wrap); }, 500);
+        }, { passive: true });
+        wrap.addEventListener('touchend',  function() { clearTimeout(pressTimer); });
+        wrap.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
 
         return wrap;
     }
 
-    // =========================
-    // DRAW MESSAGE (append)
-    // =========================
     function drawMessage(m, optimistic) {
         var box = document.getElementById('msgBox');
         if (!box) return;
@@ -579,13 +719,12 @@
         var indicator = document.getElementById('typingIndicator');
         box.insertBefore(wrap, indicator);
         box.scrollTop = box.scrollHeight;
-
         if (!optimistic && m.id && (!oldestMsgId || m.id < oldestMsgId))
             oldestMsgId = m.id;
     }
 
     // =========================
-    // LOAD MESSAGES (пагинация)
+    // LOAD MESSAGES
     // =========================
     function loadMessages(beforeId, prepend) {
         if (isLoadingMore || noMoreMsgs) return;
@@ -617,32 +756,40 @@
                     if (box) box.scrollTop = box.scrollHeight;
                 } else {
                     var prevHeight = box.scrollHeight;
-                    // Вставляем в начало в правильном порядке
-                    for (var i = msgs.length - 1; i >= 0; i--) {
+                    for (var i = msgs.length - 1; i >= 0; i--)
                         box.insertBefore(buildMsgEl(msgs[i], false), box.firstChild);
-                    }
                     box.scrollTop = box.scrollHeight - prevHeight;
                 }
 
                 if (msgs[0] && msgs[0].id) oldestMsgId = msgs[0].id;
             })
-            .catch(function(e) {
-                isLoadingMore = false;
-                console.error('История:', e);
-            });
+            .catch(function(e) { isLoadingMore = false; console.error(e); });
     }
 
     if (TARGET_ID) loadMessages(null, false);
 
-    // Скролл вверх — подгружаем старые сообщения
     var msgBox = document.getElementById('msgBox');
     if (msgBox) {
         msgBox.addEventListener('scroll', function() {
-            if (msgBox.scrollTop < 60 && oldestMsgId && !isLoadingMore && !noMoreMsgs) {
+            if (msgBox.scrollTop < 60 && oldestMsgId && !isLoadingMore && !noMoreMsgs)
                 loadMessages(oldestMsgId, true);
-            }
         });
     }
+
+    // =========================
+    // СВАЙП НАЗАД (мобиле)
+    // =========================
+    var swipeStartX = 0;
+    document.addEventListener('touchstart', function(e) {
+        swipeStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].clientX - swipeStartX;
+        if (dx > 80 && swipeStartX < 40 && TARGET_ID) {
+            window.location.href = '/';
+        }
+    }, { passive: true });
 
     // =========================
     // КОНТЕКСТНОЕ МЕНЮ
@@ -660,8 +807,8 @@
 
         var x = e.clientX || e.pageX;
         var y = e.clientY || e.pageY;
-        menu.style.left = Math.min(x, window.innerWidth  - 180) + 'px';
-        menu.style.top  = Math.min(y, window.innerHeight - 150) + 'px';
+        menu.style.left = Math.min(x, window.innerWidth  - 200) + 'px';
+        menu.style.top  = Math.min(y, window.innerHeight - 160) + 'px';
         menu.style.display = 'block';
     }
 
@@ -679,17 +826,20 @@
         document.getElementById('replyName').innerText = senderName;
         document.getElementById('replyText').innerText = text.length > 60 ? text.slice(0, 60) + '…' : text;
         document.getElementById('replyPreview').style.display = 'block';
-        document.getElementById('textInp').focus();
+        if (textarea) textarea.focus();
     }
 
     function ctxEdit() {
         if (!ctxMsgEl) return;
         document.getElementById('ctxMenu').style.display = 'none';
         editingMsgId = ctxMsgEl.dataset.id;
-        var inp = document.getElementById('textInp');
-        inp.value = ctxMsgEl.dataset.text;
-        inp.focus();
-        inp.placeholder = 'Редактирование...';
+        if (textarea) {
+            textarea.value = ctxMsgEl.dataset.text;
+            textarea.focus();
+            textarea.placeholder = 'Редактирование...';
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
     }
 
     function ctxDelete() {
@@ -726,9 +876,9 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.url) pendingPhoto = data.url;
-                else { alert('Ошибка загрузки фото'); cancelPhoto(); }
+                else { alert('Ошибка загрузки'); cancelPhoto(); }
             })
-            .catch(function() { alert('Ошибка загрузки фото'); cancelPhoto(); });
+            .catch(function() { alert('Ошибка загрузки'); cancelPhoto(); });
         inp.value = '';
     }
 
@@ -770,21 +920,30 @@
     // ONLINE / OFFLINE
     // =========================
     socket.on('user_online', function(data) {
-        var dw = document.getElementById('dot-' + data.user_id);
-        if (dw && !dw.querySelector('.online-dot'))
-            dw.innerHTML = '<span class="online-dot"></span>';
+        var av = document.getElementById('avatar-' + data.user_id);
+        if (av && !av.querySelector('.avatar-online')) {
+            var dot = document.createElement('div');
+            dot.className = 'avatar-online';
+            av.appendChild(dot);
+        }
+        var st = document.getElementById('status-' + data.user_id);
+        if (st) st.innerText = 'в сети';
+
         if (TARGET_ID === data.user_id) {
             var s = document.getElementById('chatStatus');
-            if (s) { s.innerText = 'в сети'; s.style.color = '#25d366'; }
+            if (s) s.innerText = 'в сети';
         }
     });
 
     socket.on('user_offline', function(data) {
-        var dw = document.getElementById('dot-' + data.user_id);
-        if (dw) dw.innerHTML = '';
+        var av = document.getElementById('avatar-' + data.user_id);
+        if (av) { var dot = av.querySelector('.avatar-online'); if (dot) dot.remove(); }
+        var st = document.getElementById('status-' + data.user_id);
+        if (st) st.innerText = data.last_seen_str || 'был(а) недавно';
+
         if (TARGET_ID === data.user_id) {
             var s = document.getElementById('chatStatus');
-            if (s) { s.innerText = data.last_seen_str || 'был(а) недавно'; s.style.color = '#888'; }
+            if (s) s.innerText = data.last_seen_str || 'был(а) недавно';
         }
     });
 
@@ -837,50 +996,35 @@
 
         if (msg.sender === MY_ID) {
             var opt = box.querySelector('[data-optimistic="1"]');
-            if (opt) {
-                opt.dataset.id = msg.id;
-                opt.removeAttribute('data-optimistic');
-                return;
-            }
+            if (opt) { opt.dataset.id = msg.id; opt.removeAttribute('data-optimistic'); return; }
         }
 
         var ind = document.getElementById('typingIndicator');
         if (ind) ind.style.display = 'none';
-
         drawMessage(msg, false);
 
         if (msg.sender === TARGET_ID)
             socket.emit('mark_read', { sender_id: TARGET_ID });
     });
 
-    // =========================
-    // ГАЛОЧКИ
-    // =========================
     socket.on('messages_read', function(data) {
         if (data.by !== TARGET_ID) return;
-        var ticks = document.querySelectorAll('#msgBox .msg-ticks');
-        ticks.forEach(function(t) {
-            t.innerText = '✓✓';
-            t.classList.add('read');
+        document.querySelectorAll('#msgBox .msg-ticks').forEach(function(t) {
+            t.innerText = '✓✓'; t.classList.add('read');
         });
     });
 
-    // =========================
-    // EDIT / DELETE
-    // =========================
     socket.on('message_edited', function(data) {
         var el = document.querySelector('[data-id="' + data.msg_id + '"]');
         if (!el) return;
         el.dataset.text = data.text;
         var txt = el.querySelector('.msg-text');
         if (txt) txt.innerHTML = escapeHtml(data.text);
-        var ed = el.querySelector('.msg-edited');
-        if (!ed) {
-            ed = document.createElement('span');
-            ed.className = 'msg-edited';
-            ed.innerText = 'изм. ';
-            var footer = el.querySelector('.msg-footer');
-            if (footer) footer.insertBefore(ed, footer.firstChild);
+        if (!el.querySelector('.msg-edited')) {
+            var ed = document.createElement('span');
+            ed.className = 'msg-edited'; ed.innerText = 'изм. ';
+            var f = el.querySelector('.msg-footer');
+            if (f) f.insertBefore(ed, f.firstChild);
         }
     });
 
@@ -889,30 +1033,27 @@
         if (!el) return;
         el.innerHTML = '';
         var del = document.createElement('div');
-        del.className = 'msg-deleted';
-        del.innerText = '🚫 Сообщение удалено';
+        del.className = 'msg-deleted'; del.innerText = '🚫 Сообщение удалено';
         el.appendChild(del);
-        var footer = document.createElement('div');
-        footer.className = 'msg-footer';
-        el.appendChild(footer);
+        el.appendChild(document.createElement('div')).className = 'msg-footer';
     });
 
     // =========================
     // SEND
     // =========================
     function sendMsg() {
-        var inp = document.getElementById('textInp');
-        if (!inp || !TARGET_ID) return;
+        if (!textarea || !TARGET_ID) return;
 
-        var val = inp.value.trim();
+        var val = textarea.value.trim();
         if (!val && !pendingPhoto) return;
 
         if (editingMsgId) {
             if (!val) return;
             socket.emit('edit_message', { msg_id: editingMsgId, text: val });
             editingMsgId = null;
-            inp.value = '';
-            inp.placeholder = 'Напишите сообщение...';
+            textarea.value = '';
+            textarea.style.height = 'auto';
+            textarea.placeholder = 'Сообщение...';
             return;
         }
 
@@ -926,34 +1067,32 @@
         drawMessage({
             id: '', sender: MY_ID, receiver: TARGET_ID,
             text: val, image: pendingPhoto,
-            reply_to:     replyTo ? replyTo.id          : null,
-            reply_text:   replyTo ? replyTo.text         : null,
-            reply_sender: replyTo ? replyTo.sender_name  : null,
+            reply_to:     replyTo ? replyTo.id         : null,
+            reply_text:   replyTo ? replyTo.text        : null,
+            reply_sender: replyTo ? replyTo.sender_name : null,
             read: false, edited: false, deleted: false,
             time: new Date().toISOString()
         }, true);
 
         socket.emit('new_message', payload);
-        inp.value = '';
-        inp.focus();
+        textarea.value = '';
+        textarea.style.height = 'auto';
+        textarea.focus();
         cancelReply();
         cancelPhoto();
     }
 
-    // =========================
-    // ENTER / ESCAPE
-    // =========================
-    document.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMsg();
-    });
-
+    // Enter отправляет только на десктопе, на телефоне — перенос строки
     document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
+            e.preventDefault();
+            sendMsg();
+        }
         if (e.key === 'Escape') {
             cancelReply();
             if (editingMsgId) {
                 editingMsgId = null;
-                var inp = document.getElementById('textInp');
-                if (inp) { inp.value = ''; inp.placeholder = 'Напишите сообщение...'; }
+                if (textarea) { textarea.value = ''; textarea.placeholder = 'Сообщение...'; textarea.style.height = 'auto'; }
             }
         }
     });
@@ -969,10 +1108,9 @@
     }
 
     // =========================
-    // AUTO FOCUS
+    // AUTO FOCUS (только десктоп)
     // =========================
-    var _inp = document.getElementById('textInp');
-    if (_inp) _inp.focus();
+    if (textarea && window.innerWidth > 768) textarea.focus();
 
     // =========================
     // УВЕДОМЛЕНИЯ
@@ -982,14 +1120,12 @@
             var ctx = new (window.AudioContext || window.webkitAudioContext)();
             var osc = ctx.createOscillator();
             var gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+            osc.connect(gain); gain.connect(ctx.destination);
             osc.frequency.setValueAtTime(880, ctx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.3, ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
         } catch(e) {}
     }
 
@@ -999,13 +1135,9 @@
     }
 
     function showPushNotif(senderName, text) {
-        if (!('Notification' in window)) return;
-        if (Notification.permission !== 'granted') return;
-        if (!document.hidden) return;
+        if (!('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
         var notif = new Notification('KadrGram — ' + senderName, {
-            body: text || '📷 Фото',
-            icon: '/static/icon.png',
-            tag:  'kadrgram-msg'
+            body: text || '📷 Фото', icon: '/static/icon.png', tag: 'kadrgram-msg'
         });
         notif.onclick = function() { window.focus(); notif.close(); };
         setTimeout(function() { notif.close(); }, 4000);
@@ -1017,24 +1149,16 @@
         var canvas = document.createElement('canvas');
         canvas.width = 32; canvas.height = 32;
         var ctx = canvas.getContext('2d');
-        ctx.beginPath();
-        ctx.arc(16, 16, 15, 0, Math.PI * 2);
-        ctx.fillStyle = '#0088cc';
-        ctx.fill();
-        ctx.font = 'bold 18px Arial';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        ctx.beginPath(); ctx.arc(16, 16, 15, 0, Math.PI * 2);
+        ctx.fillStyle = '#0088cc'; ctx.fill();
+        ctx.font = 'bold 18px Arial'; ctx.fillStyle = 'white';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('K', 16, 17);
         if (count > 0) {
-            ctx.beginPath();
-            ctx.arc(24, 8, 9, 0, Math.PI * 2);
-            ctx.fillStyle = '#e53935';
-            ctx.fill();
-            ctx.font = 'bold 10px Arial';
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.beginPath(); ctx.arc(24, 8, 9, 0, Math.PI * 2);
+            ctx.fillStyle = '#e53935'; ctx.fill();
+            ctx.font = 'bold 10px Arial'; ctx.fillStyle = 'white';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(count > 99 ? '99+' : String(count), 24, 8);
         }
         var link = document.querySelector("link[rel~='icon']");
@@ -1052,16 +1176,15 @@
 
     requestNotifPermission();
 
-    var _originalUpdateBadge = updateBadge;
+    var _orig = updateBadge;
     updateBadge = function(userId) {
-        _originalUpdateBadge(userId);
+        _orig(userId);
         var nameEl = document.querySelector('#user-' + userId + ' .user-name');
-        var senderName = nameEl ? nameEl.innerText : 'Новое сообщение';
         totalUnread++;
         updateFavicon(totalUnread);
         updateTitle(totalUnread);
         playNotifSound();
-        showPushNotif(senderName, '');
+        showPushNotif(nameEl ? nameEl.innerText : 'Новое сообщение', '');
     };
 
 </script>
