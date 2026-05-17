@@ -16,7 +16,6 @@
             overflow: hidden;
         }
 
-        /* ---- SIDEBAR ---- */
         .sidebar {
             width: 350px;
             border-right: 1px solid #ddd;
@@ -82,7 +81,6 @@
 
         .logout-link { color: #d9534f; text-decoration: none; font-size: 14px; font-weight: bold; }
 
-        /* ---- CHAT ---- */
         .chat-area {
             flex: 1;
             display: flex;
@@ -104,7 +102,6 @@
         .chat-user-name { font-weight: bold; font-size: 16px; }
         .chat-status { font-size: 12px; color: #888; transition: color 0.3s; }
 
-        /* ---- REPLY PREVIEW (над инпутом) ---- */
         .reply-preview {
             display: none;
             background: #f0f8ff;
@@ -127,7 +124,6 @@
             line-height: 1;
         }
 
-        /* ---- MESSAGES ---- */
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -154,7 +150,6 @@
             border-bottom-right-radius: 3px;
         }
 
-        /* Reply внутри сообщения */
         .msg-reply {
             background: rgba(0,136,204,0.08);
             border-left: 3px solid #0088cc;
@@ -167,14 +162,10 @@
         }
 
         .msg-reply b { color: #0088cc; display: block; }
-
         .msg-text { font-size: 15px; }
-
         .msg-deleted { font-size: 14px; color: #aaa; font-style: italic; }
-
         .msg-edited { font-size: 10px; color: #aaa; }
 
-        /* Фото в сообщении */
         .msg-image {
             max-width: 100%;
             max-height: 260px;
@@ -184,7 +175,6 @@
             cursor: pointer;
         }
 
-        /* Нижняя строка: время + галочки */
         .msg-footer {
             display: flex;
             justify-content: flex-end;
@@ -194,12 +184,17 @@
         }
 
         .msg-time { font-size: 10px; color: #aaa; line-height: 1; }
-
-        /* Галочки */
         .msg-ticks { font-size: 12px; color: #aaa; line-height: 1; }
         .msg-ticks.read { color: #4fc3f7; }
 
-        /* Контекстное меню */
+        /* Плашка "загрузка" вверху */
+        .load-more-label {
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+            padding: 8px;
+        }
+
         .ctx-menu {
             position: fixed;
             background: white;
@@ -221,7 +216,6 @@
         .ctx-item:hover { background: #f5f5f5; }
         .ctx-item.danger { color: #d9534f; }
 
-        /* ---- TYPING ---- */
         .typing-indicator {
             display: none;
             align-self: flex-start;
@@ -248,7 +242,6 @@
             30%            { transform: translateY(-5px); }
         }
 
-        /* ---- INPUT ---- */
         .input-area {
             background: white;
             border-top: 1px solid #ddd;
@@ -292,7 +285,6 @@
             flex-shrink: 0;
         }
 
-        /* Превью загружаемого фото */
         .photo-preview-wrap {
             display: none;
             padding: 8px 15px;
@@ -320,7 +312,6 @@
             font-size: 12px;
         }
 
-        /* Лайтбокс для просмотра фото */
         .lightbox {
             display: none;
             position: fixed;
@@ -342,7 +333,6 @@
             line-height: 1;
         }
 
-        /* ---- EMPTY ---- */
         .empty-chat {
             display: flex;
             flex-direction: column;
@@ -354,7 +344,6 @@
 
         .empty-chat-icon { font-size: 50px; margin-bottom: 10px; }
 
-        /* ---- CONNECTION ---- */
         .connection-status {
             position: absolute;
             top: 10px; right: 15px;
@@ -367,7 +356,6 @@
             z-index: 10;
         }
 
-        /* ---- MOBILE ---- */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -385,7 +373,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-header">
         <h2 class="logo">KadrGram</h2>
@@ -415,7 +402,6 @@
     </div>
 </div>
 
-<!-- CHAT -->
 <div class="chat-area">
 
     <div class="connection-status" id="connStatus">Подключение...</div>
@@ -440,12 +426,10 @@
     </div>
 
     <div class="input-area">
-        <!-- Превью фото -->
         <div class="photo-preview-wrap" id="photoPreviewWrap">
             <img id="photoPreviewImg" src="" alt="" />
             <div class="photo-preview-cancel" onclick="cancelPhoto()">✕</div>
         </div>
-        <!-- Reply preview -->
         <div class="reply-preview" id="replyPreview">
             <b id="replyName"></b>
             <span id="replyText"></span>
@@ -468,14 +452,12 @@
 
 </div>
 
-<!-- Контекстное меню -->
 <div class="ctx-menu" id="ctxMenu">
     <div class="ctx-item" onclick="ctxReply()">↩️ Ответить</div>
     <div class="ctx-item" id="ctxEditBtn" onclick="ctxEdit()">✏️ Редактировать</div>
     <div class="ctx-item danger" id="ctxDeleteBtn" onclick="ctxDelete()">🗑️ Удалить</div>
 </div>
 
-<!-- Лайтбокс -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close">✕</span>
     <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
@@ -484,14 +466,18 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
 
-    var TARGET_ID = "{{ target_user.id if target_user else '' }}";
-    var MY_ID     = "{{ my_id }}";
+    var TARGET_ID     = "{{ target_user.id if target_user else '' }}";
+    var MY_ID         = "{{ my_id }}";
 
-    // Состояние
-    var replyTo       = null;  // {id, text, sender_name}
+    var replyTo       = null;
     var editingMsgId  = null;
-    var ctxMsgEl      = null;  // элемент на котором открыто меню
-    var pendingPhoto  = null;  // url уже загруженного фото
+    var ctxMsgEl      = null;
+    var pendingPhoto  = null;
+
+    // Пагинация
+    var oldestMsgId   = null;
+    var isLoadingMore = false;
+    var noMoreMsgs    = false;
 
     // =========================
     // UTILS
@@ -509,47 +495,39 @@
     }
 
     // =========================
-    // DRAW MESSAGE
+    // BUILD MSG ELEMENT
     // =========================
-    function drawMessage(m, optimistic) {
-        var box = document.getElementById('msgBox');
-        if (!box) return;
-
+    function buildMsgEl(m, optimistic) {
         var isMy = (m.sender === MY_ID);
 
         var wrap = document.createElement('div');
         wrap.className = 'msg' + (isMy ? ' my-msg' : '');
-        wrap.dataset.id = m.id || '';
+        wrap.dataset.id     = m.id || '';
         wrap.dataset.sender = m.sender;
-        wrap.dataset.text = m.text || '';
+        wrap.dataset.text   = m.text || '';
         if (optimistic) wrap.dataset.optimistic = '1';
 
-        // Reply block
         if (m.reply_to && !m.deleted) {
             var rb = document.createElement('div');
             rb.className = 'msg-reply';
-            rb.innerHTML = '<b>' + escapeHtml(m.reply_sender || '') + '</b>' +
-                           escapeHtml(m.reply_text || '');
-            rb.onclick = function() { scrollToMsg(m.reply_to); };
+            rb.innerHTML = '<b>' + escapeHtml(m.reply_sender || '') + '</b>' + escapeHtml(m.reply_text || '');
+            rb.onclick = (function(rid) { return function() { scrollToMsg(rid); }; })(m.reply_to);
             wrap.appendChild(rb);
         }
 
-        // Удалённое
         if (m.deleted) {
             var del = document.createElement('div');
             del.className = 'msg-deleted';
             del.innerText = '🚫 Сообщение удалено';
             wrap.appendChild(del);
         } else {
-            // Фото
             if (m.image) {
                 var img = document.createElement('img');
                 img.className = 'msg-image';
                 img.src = m.image;
-                img.onclick = function() { openLightbox(m.image); };
+                img.onclick = (function(src) { return function() { openLightbox(src); }; })(m.image);
                 wrap.appendChild(img);
             }
-            // Текст
             if (m.text) {
                 var txt = document.createElement('div');
                 txt.className = 'msg-text';
@@ -558,7 +536,6 @@
             }
         }
 
-        // Footer: время + (для своих) галочки + "изменено"
         var footer = document.createElement('div');
         footer.className = 'msg-footer';
 
@@ -583,22 +560,88 @@
 
         wrap.appendChild(footer);
 
-        // Долгое нажатие / правый клик → контекстное меню
-        wrap.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            openCtxMenu(e, wrap);
-        });
-
+        wrap.addEventListener('contextmenu', function(e) { e.preventDefault(); openCtxMenu(e, wrap); });
         var pressTimer = null;
-        wrap.addEventListener('touchstart', function(e) {
-            pressTimer = setTimeout(function() { openCtxMenu(e.touches[0], wrap); }, 500);
-        });
-        wrap.addEventListener('touchend', function() { clearTimeout(pressTimer); });
-        wrap.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+        wrap.addEventListener('touchstart', function(e) { pressTimer = setTimeout(function() { openCtxMenu(e.touches[0], wrap); }, 500); });
+        wrap.addEventListener('touchend',   function()  { clearTimeout(pressTimer); });
+        wrap.addEventListener('touchmove',  function()  { clearTimeout(pressTimer); });
 
+        return wrap;
+    }
+
+    // =========================
+    // DRAW MESSAGE (append)
+    // =========================
+    function drawMessage(m, optimistic) {
+        var box = document.getElementById('msgBox');
+        if (!box) return;
+        var wrap = buildMsgEl(m, optimistic);
         var indicator = document.getElementById('typingIndicator');
         box.insertBefore(wrap, indicator);
         box.scrollTop = box.scrollHeight;
+
+        if (!optimistic && m.id && (!oldestMsgId || m.id < oldestMsgId))
+            oldestMsgId = m.id;
+    }
+
+    // =========================
+    // LOAD MESSAGES (пагинация)
+    // =========================
+    function loadMessages(beforeId, prepend) {
+        if (isLoadingMore || noMoreMsgs) return;
+        isLoadingMore = true;
+
+        var url = '/get_messages?with=' + TARGET_ID;
+        if (beforeId) url += '&before_id=' + beforeId;
+
+        fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(msgs) {
+                isLoadingMore = false;
+                var box = document.getElementById('msgBox');
+
+                if (msgs.length === 0 || msgs.length < 50) noMoreMsgs = true;
+
+                if (msgs.length === 0) {
+                    if (prepend && box) {
+                        var label = document.createElement('div');
+                        label.className = 'load-more-label';
+                        label.innerText = '— начало переписки —';
+                        box.insertBefore(label, box.firstChild);
+                    }
+                    return;
+                }
+
+                if (!prepend) {
+                    msgs.forEach(function(m) { drawMessage(m, false); });
+                    if (box) box.scrollTop = box.scrollHeight;
+                } else {
+                    var prevHeight = box.scrollHeight;
+                    // Вставляем в начало в правильном порядке
+                    for (var i = msgs.length - 1; i >= 0; i--) {
+                        box.insertBefore(buildMsgEl(msgs[i], false), box.firstChild);
+                    }
+                    box.scrollTop = box.scrollHeight - prevHeight;
+                }
+
+                if (msgs[0] && msgs[0].id) oldestMsgId = msgs[0].id;
+            })
+            .catch(function(e) {
+                isLoadingMore = false;
+                console.error('История:', e);
+            });
+    }
+
+    if (TARGET_ID) loadMessages(null, false);
+
+    // Скролл вверх — подгружаем старые сообщения
+    var msgBox = document.getElementById('msgBox');
+    if (msgBox) {
+        msgBox.addEventListener('scroll', function() {
+            if (msgBox.scrollTop < 60 && oldestMsgId && !isLoadingMore && !noMoreMsgs) {
+                loadMessages(oldestMsgId, true);
+            }
+        });
     }
 
     // =========================
@@ -615,10 +658,9 @@
         document.getElementById('ctxDeleteBtn').style.display =
             (isMy && !isDeleted) ? 'block' : 'none';
 
-        // Позиционирование
         var x = e.clientX || e.pageX;
         var y = e.clientY || e.pageY;
-        menu.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+        menu.style.left = Math.min(x, window.innerWidth  - 180) + 'px';
         menu.style.top  = Math.min(y, window.innerHeight - 150) + 'px';
         menu.style.display = 'block';
     }
@@ -631,12 +673,9 @@
     function ctxReply() {
         if (!ctxMsgEl) return;
         document.getElementById('ctxMenu').style.display = 'none';
-
         var senderName = ctxMsgEl.dataset.sender === MY_ID ? 'Вы' : "{{ target_user.name if target_user else '' }}";
         var text = ctxMsgEl.dataset.text || '📷 Фото';
-
         replyTo = { id: ctxMsgEl.dataset.id, text: text, sender_name: senderName };
-
         document.getElementById('replyName').innerText = senderName;
         document.getElementById('replyText').innerText = text.length > 60 ? text.slice(0, 60) + '…' : text;
         document.getElementById('replyPreview').style.display = 'block';
@@ -646,7 +685,6 @@
     function ctxEdit() {
         if (!ctxMsgEl) return;
         document.getElementById('ctxMenu').style.display = 'none';
-
         editingMsgId = ctxMsgEl.dataset.id;
         var inp = document.getElementById('textInp');
         inp.value = ctxMsgEl.dataset.text;
@@ -673,18 +711,15 @@
     // =========================
     // ФОТО
     // =========================
-    function onPhotoSelected(input) {
-        var file = input.files[0];
+    function onPhotoSelected(inp) {
+        var file = inp.files[0];
         if (!file) return;
-
         var reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('photoPreviewImg').src = e.target.result;
             document.getElementById('photoPreviewWrap').style.display = 'block';
         };
         reader.readAsDataURL(file);
-
-        // Загружаем на сервер
         var fd = new FormData();
         fd.append('image', file);
         fetch('/upload_image', { method: 'POST', body: fd })
@@ -694,8 +729,7 @@
                 else { alert('Ошибка загрузки фото'); cancelPhoto(); }
             })
             .catch(function() { alert('Ошибка загрузки фото'); cancelPhoto(); });
-
-        input.value = '';
+        inp.value = '';
     }
 
     function cancelPhoto() {
@@ -724,7 +758,6 @@
     socket.on('connect', function() {
         var s = document.getElementById('connStatus');
         if (s) s.style.display = 'none';
-        // Помечаем сообщения собеседника как прочитанные
         if (TARGET_ID) socket.emit('mark_read', { sender_id: TARGET_ID });
     });
 
@@ -805,7 +838,6 @@
         if (msg.sender === MY_ID) {
             var opt = box.querySelector('[data-optimistic="1"]');
             if (opt) {
-                // Обновляем data-id у оптимистичного пузыря
                 opt.dataset.id = msg.id;
                 opt.removeAttribute('data-optimistic');
                 return;
@@ -817,17 +849,15 @@
 
         drawMessage(msg, false);
 
-        // Помечаем прочитанным если это сообщение собеседника
         if (msg.sender === TARGET_ID)
             socket.emit('mark_read', { sender_id: TARGET_ID });
     });
 
     // =========================
-    // ГАЛОЧКИ — прочитано
+    // ГАЛОЧКИ
     // =========================
     socket.on('messages_read', function(data) {
         if (data.by !== TARGET_ID) return;
-        // Обновляем все галочки своих сообщений
         var ticks = document.querySelectorAll('#msgBox .msg-ticks');
         ticks.forEach(function(t) {
             t.innerText = '✓✓';
@@ -836,7 +866,7 @@
     });
 
     // =========================
-    // EDIT / DELETE EVENTS
+    // EDIT / DELETE
     // =========================
     socket.on('message_edited', function(data) {
         var el = document.querySelector('[data-id="' + data.msg_id + '"]');
@@ -857,7 +887,6 @@
     socket.on('message_deleted', function(data) {
         var el = document.querySelector('[data-id="' + data.msg_id + '"]');
         if (!el) return;
-        // Очищаем содержимое, ставим плашку
         el.innerHTML = '';
         var del = document.createElement('div');
         del.className = 'msg-deleted';
@@ -865,26 +894,8 @@
         el.appendChild(del);
         var footer = document.createElement('div');
         footer.className = 'msg-footer';
-        var ts = document.createElement('span');
-        ts.className = 'msg-time';
-        ts.innerText = '';
-        footer.appendChild(ts);
         el.appendChild(footer);
     });
-
-    // =========================
-    // LOAD HISTORY
-    // =========================
-    if (TARGET_ID) {
-        fetch('/get_messages?with=' + TARGET_ID)
-            .then(function(r) { return r.json(); })
-            .then(function(msgs) {
-                msgs.forEach(function(m) { drawMessage(m, false); });
-                var box = document.getElementById('msgBox');
-                if (box) box.scrollTop = box.scrollHeight;
-            })
-            .catch(function(e) { console.error('История:', e); });
-    }
 
     // =========================
     // SEND
@@ -896,7 +907,6 @@
         var val = inp.value.trim();
         if (!val && !pendingPhoto) return;
 
-        // Режим редактирования
         if (editingMsgId) {
             if (!val) return;
             socket.emit('edit_message', { msg_id: editingMsgId, text: val });
@@ -906,32 +916,24 @@
             return;
         }
 
-        // Сбрасываем typing
         clearTimeout(myTypingTimer);
         if (isTyping) { isTyping = false; socket.emit('typing', { receiver_id: TARGET_ID, typing: false }); }
 
         var payload = { receiver_id: TARGET_ID, text: val };
-        if (pendingPhoto)  payload.image = pendingPhoto;
-        if (replyTo)       payload.reply_to = replyTo.id;
+        if (pendingPhoto) payload.image = pendingPhoto;
+        if (replyTo)      payload.reply_to = replyTo.id;
 
-        // Оптимистичное сообщение
         drawMessage({
-            id: '',
-            sender: MY_ID,
-            receiver: TARGET_ID,
-            text: val,
-            image: pendingPhoto,
-            reply_to: replyTo ? replyTo.id : null,
-            reply_text: replyTo ? replyTo.text : null,
-            reply_sender: replyTo ? replyTo.sender_name : null,
-            read: false,
-            edited: false,
-            deleted: false,
+            id: '', sender: MY_ID, receiver: TARGET_ID,
+            text: val, image: pendingPhoto,
+            reply_to:     replyTo ? replyTo.id          : null,
+            reply_text:   replyTo ? replyTo.text         : null,
+            reply_sender: replyTo ? replyTo.sender_name  : null,
+            read: false, edited: false, deleted: false,
             time: new Date().toISOString()
         }, true);
 
         socket.emit('new_message', payload);
-
         inp.value = '';
         inp.focus();
         cancelReply();
@@ -939,13 +941,12 @@
     }
 
     // =========================
-    // ENTER
+    // ENTER / ESCAPE
     // =========================
     document.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') sendMsg();
     });
 
-    // Escape — отменить reply / edit
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             cancelReply();
@@ -973,7 +974,9 @@
     var _inp = document.getElementById('textInp');
     if (_inp) _inp.focus();
 
-    // --- Звук (генерируем через Web Audio API, без файлов) ---
+    // =========================
+    // УВЕДОМЛЕНИЯ
+    // =========================
     function playNotifSound() {
         try {
             var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -990,110 +993,70 @@
         } catch(e) {}
     }
 
-    // --- Push-уведомления браузера ---
     function requestNotifPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
+        if ('Notification' in window && Notification.permission === 'default')
             Notification.requestPermission();
-        }
     }
 
     function showPushNotif(senderName, text) {
         if (!('Notification' in window)) return;
         if (Notification.permission !== 'granted') return;
-        if (!document.hidden) return; // только если вкладка неактивна
-
+        if (!document.hidden) return;
         var notif = new Notification('KadrGram — ' + senderName, {
             body: text || '📷 Фото',
-            icon: '/static/icon.png', // можешь добавить иконку в static/
-            tag:  'kadrgram-msg'      // tag не даёт спамить — заменяет предыдущее
+            icon: '/static/icon.png',
+            tag:  'kadrgram-msg'
         });
-
-        // Клик по уведомлению — фокус на вкладку
-        notif.onclick = function() {
-            window.focus();
-            notif.close();
-        };
-
-        // Авто-закрытие через 4 сек
+        notif.onclick = function() { window.focus(); notif.close(); };
         setTimeout(function() { notif.close(); }, 4000);
     }
 
-    // --- Favicon с бейджем ---
     var totalUnread = 0;
 
     function updateFavicon(count) {
         var canvas = document.createElement('canvas');
-        canvas.width = 32;
-        canvas.height = 32;
+        canvas.width = 32; canvas.height = 32;
         var ctx = canvas.getContext('2d');
-
-        // Рисуем базовый кружок — логотип KadrGram
         ctx.beginPath();
         ctx.arc(16, 16, 15, 0, Math.PI * 2);
         ctx.fillStyle = '#0088cc';
         ctx.fill();
-
         ctx.font = 'bold 18px Arial';
         ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('K', 16, 17);
-
         if (count > 0) {
-            // Красный бейдж
             ctx.beginPath();
             ctx.arc(24, 8, 9, 0, Math.PI * 2);
             ctx.fillStyle = '#e53935';
             ctx.fill();
-
             ctx.font = 'bold 10px Arial';
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(count > 99 ? '99+' : String(count), 24, 8);
         }
-
-        // Обновляем favicon
         var link = document.querySelector("link[rel~='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
+        if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
         link.href = canvas.toDataURL('image/png');
     }
 
     function updateTitle(count) {
-        if (count > 0) {
-            document.title = '(' + count + ') KadrGram';
-        } else {
-            document.title = 'KadrGram';
-        }
+        document.title = count > 0 ? '(' + count + ') KadrGram' : 'KadrGram';
     }
 
-    // Сбрасываем счётчик когда вкладка снова активна
     document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            totalUnread = 0;
-            updateFavicon(0);
-            updateTitle(0);
-        }
+        if (!document.hidden) { totalUnread = 0; updateFavicon(0); updateTitle(0); }
     });
 
-    // Запрашиваем разрешение сразу при загрузке
     requestNotifPermission();
 
-    // =========================
-    // ПАТЧИМ updateBadge — добавляем счётчик и уведомления
-    // =========================
     var _originalUpdateBadge = updateBadge;
     updateBadge = function(userId) {
         _originalUpdateBadge(userId);
-
-        // Имя отправителя из сайдбара
         var nameEl = document.querySelector('#user-' + userId + ' .user-name');
         var senderName = nameEl ? nameEl.innerText : 'Новое сообщение';
-
         totalUnread++;
         updateFavicon(totalUnread);
         updateTitle(totalUnread);
