@@ -282,46 +282,24 @@ def search():
 @socketio.on("connect")
 def on_connect():
     uid = session.get("user_id")
-
     if not uid:
         disconnect()
         return
-
-    users.update_one(
-        {"_id": oid(uid)},
-        {"$set": {"online": True}}
-    )
-
+    if users is not None:
+        users.update_one({"_id": oid(uid)}, {"$set": {"online": True}})
     join_room(uid)
-
-    emit(
-        "user_online",
-        {"user_id": uid},
-        broadcast=True
-    )
 
 
 @socketio.on("disconnect")
 def on_disconnect():
     uid = session.get("user_id")
-
-    if uid:
-        users.update_one(
-            {"_id": oid(uid)},
-            {"$set": {"online": False}}
-        )
-
-        emit(
-            "user_offline",
-            {"user_id": uid},
-            broadcast=True
-        )
+    if uid and users is not None:
+        users.update_one({"_id": oid(uid)}, {"$set": {"online": False}})
 
 
 @socketio.on("new_message")
 def new_message(data):
     user = get_user()
-
     if not user:
         return
 
@@ -335,15 +313,12 @@ def new_message(data):
     if my_id == to_id:
         return
 
+    # ИСПРАВЛЕНО: проверяем, что получатель существует
     if users is None or not users.find_one({"_id": oid(to_id)}):
         return
 
     if not rate_limit(my_id):
-        emit(
-            "error",
-            {"message": "Слишком быстро"},
-            room=my_id
-        )
+        emit("error", {"message": "Слишком быстро, подождите"}, room=my_id)  # ИСПРАВЛЕНО: уведомление клиенту
         return
 
     msg = {
@@ -366,6 +341,7 @@ def new_message(data):
 
     emit("receive_message", payload, room=to_id)
     emit("receive_message", payload, room=my_id)
+
 
 # =========================
 # ERROR HANDLER — ИСПРАВЛЕНО: перенесён до if __name__
