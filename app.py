@@ -230,9 +230,6 @@ def home():
         my_id=my_id
     )
 
-# =========================
-# MESSAGES API
-# =========================
 @app.route("/get_messages")
 def get_messages():
     user = get_user()
@@ -242,18 +239,22 @@ def get_messages():
     if not other:
         return jsonify([])
     my_id = str(user["_id"])
-    msgs = list(messages.find({
+
+    # Пагинация — before_id позволяет грузить сообщения старше указанного
+    before_id = request.args.get("before_id")
+    query = {
         "$or": [
             {"sender": my_id, "receiver": other},
             {"sender": other, "receiver": my_id}
         ]
-    }).sort("created_at", DESCENDING).limit(50))
+    }
+    if before_id:
+        query["_id"] = {"$lt": oid(before_id)}
+
+    msgs = list(messages.find(query).sort("created_at", DESCENDING).limit(50))
     msgs.reverse()
     return jsonify([serialize_message(m) for m in msgs])
 
-# =========================
-# UPLOAD PHOTO
-# =========================
 @app.route("/upload_image", methods=["POST"])
 def upload_image():
     user = get_user()
