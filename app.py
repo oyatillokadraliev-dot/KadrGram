@@ -319,9 +319,9 @@ def on_disconnect():
 
 
 @socketio.on("new_message")
-def э
-new_message(data):
+def new_message(data):
     user = get_user()
+
     if not user:
         return
 
@@ -335,12 +335,15 @@ new_message(data):
     if my_id == to_id:
         return
 
-    # ИСПРАВЛЕНО: проверяем, что получатель существует
     if users is None or not users.find_one({"_id": oid(to_id)}):
         return
 
     if not rate_limit(my_id):
-        emit("error", {"message": "Слишком быстро, подождите"}, room=my_id)  # ИСПРАВЛЕНО: уведомление клиенту
+        emit(
+            "error",
+            {"message": "Слишком быстро"},
+            room=my_id
+        )
         return
 
     msg = {
@@ -363,7 +366,6 @@ new_message(data):
 
     emit("receive_message", payload, room=to_id)
     emit("receive_message", payload, room=my_id)
-
 
 # =========================
 # ERROR HANDLER — ИСПРАВЛЕНО: перенесён до if __name__
