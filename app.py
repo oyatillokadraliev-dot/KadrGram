@@ -13,12 +13,18 @@ from flask import Flask, render_template, request, redirect, session, jsonify
 from flask_socketio import SocketIO, emit, join_room, disconnect
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 socketio = SocketIO(
     app,
@@ -83,6 +89,9 @@ def get_user():
         return None
     return users.find_one({"_id": oid(uid)})
 
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def format_last_seen(last_seen):
     if not last_seen:
         return "не был(а) в сети"
@@ -106,6 +115,22 @@ def serialize_user(u):
         "login": u.get("login", ""),
         "online": u.get("online", False),
         "last_seen_str": format_last_seen(u.get("last_seen")),
+    }
+
+def serialize_message(m):
+    return {
+        "id": str(m["_id"]),
+        "sender": m["sender"],
+        "receiver": m["receiver"],
+        "text": m.get("text", ""),
+        "image": m.get("image"),
+        "read": m.get("read", False),
+        "edited": m.get("edited", False),
+        "deleted": m.get("deleted", False),
+        "reply_to": m.get("reply_to"),        # id сообщения на которое отвечаем
+        "reply_text": m.get("reply_text"),    # текст того сообщения (кэш)
+        "reply_sender": m.get("reply_sender"), # имя отправителя
+        "time": m["created_at"].isoformat()
     }
 
 # =========================
@@ -220,13 +245,30 @@ def get_messages():
         ]
     }).sort("created_at", DESCENDING).limit(50))
     msgs.reverse()
-    return jsonify([{
-        "sender": m["sender"],
-        "receiver": m["receiver"],
-        "text": m["text"],
-        "read": m.get("read", False),
-        "time": m["created_at"].isoformat()
-    } for m in msgs])
+    return jsonify([serialize_message(m) for m in msgs])
+
+# =========================
+# UPLOAD PHOTO
+# =========================
+@app.route("/upload_image", methods=["POST"])
+def upload_image():
+    user = get_user()
+    if not user:
+        return jsonify({"error": "unauthorized"}), 401
+    if "image" not in request.files:
+        return jsonify({"error": "no file"}), 400
+    f = request.files["image"]
+    if f.filename == "" or not allowed_file(f.filename):
+        return jsonify({"error": "invalid file"}), 400
+    # Ограничение 5 МБ
+    f.seek(0, 2)
+    size = f.tell()
+    f.seek(0)
+    if size > 5 * 1024 * 1024:
+        return jsonify({"error": "too large"}), 400
+    filename = secure_filename(f"{datetime.utcnow().timestamp()}_{f.filename}")
+    f.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    return jsonify({"url": f"/static/uploads/{filename}"})
 
 # =========================
 # SEARCH
@@ -270,16 +312,11 @@ def on_disconnect():
     uid = session.get("user_id")
     if uid and users is not None:
         now = datetime.utcnow()
-        users.update_one(
-            {"_id": oid(uid)},
-            {"$set": {"online": False, "last_seen": now}}
-        )
+        users.update_one({"_id": oid(uid)}, {"$set": {"online": False, "last_seen": now}})
         u = users.find_one({"_id": oid(uid)})
         last_seen_str = format_last_seen(u.get("last_seen")) if u else "был(а) только что"
-        emit("user_offline", {
-            "user_id": uid,
-            "last_seen_str": last_seen_str
-        }, broadcast=True, include_self=False)
+        emit("user_offline", {"user_id": uid, "last_seen_str": last_seen_str},
+             broadcast=True, include_self=False)
 
 
 @socketio.on("typing")
@@ -290,10 +327,7 @@ def on_typing(data):
     to_id = data.get("receiver_id")
     if not to_id or to_id == uid:
         return
-    emit("typing", {
-        "sender_id": uid,
-        "typing": bool(data.get("typing", False))
-    }, room=to_id)
+    emit("typing", {"sender_id": uid, "typing": bool(data.get("typing", False))}, room=to_id)
 
 
 @socketio.on("new_message")
@@ -304,7 +338,10 @@ def new_message(data):
     my_id = str(user["_id"])
     to_id = data.get("receiver_id")
     text = bleach.clean(data.get("text", "").strip())
-    if not to_id or not text:
+    image = data.get("image")  # url уже загруженного фото
+    reply_to = data.get("reply_to")
+
+    if not to_id or (not text and not image):
         return
     if my_id == to_id:
         return
@@ -313,14 +350,90 @@ def new_message(data):
     if not rate_limit(my_id):
         emit("error", {"message": "Слишком быстро, подождите"}, room=my_id)
         return
+
     now = datetime.utcnow()
-    msg = {"sender": my_id, "receiver": to_id, "text": text, "read": False, "created_at": now}
-    messages.insert_one(msg)
-    payload = {"sender": my_id, "receiver": to_id, "text": text, "read": False, "time": now.isoformat()}
+    msg = {
+        "sender": my_id,
+        "receiver": to_id,
+        "text": text,
+        "image": image,
+        "read": False,
+        "edited": False,
+        "deleted": False,
+        "created_at": now,
+    }
+
+    # Reply — сохраняем кэш текста и имени
+    if reply_to:
+        orig = messages.find_one({"_id": oid(reply_to)})
+        if orig and not orig.get("deleted"):
+            orig_sender = users.find_one({"_id": oid(orig["sender"])})
+            msg["reply_to"] = reply_to
+            msg["reply_text"] = orig.get("text", "📷 Фото")[:80]
+            msg["reply_sender"] = orig_sender.get("name", "") if orig_sender else ""
+
+    result = messages.insert_one(msg)
+    msg["_id"] = result.inserted_id
+
+    payload = serialize_message(msg)
     emit("receive_message", payload, room=to_id)
     emit("receive_message", payload, room=my_id)
-    # Сбрасываем "печатает" после отправки
     emit("typing", {"sender_id": my_id, "typing": False}, room=to_id)
+
+
+@socketio.on("edit_message")
+def edit_message(data):
+    user = get_user()
+    if not user:
+        return
+    my_id = str(user["_id"])
+    msg_id = data.get("msg_id")
+    new_text = bleach.clean(data.get("text", "").strip())
+    if not msg_id or not new_text:
+        return
+    msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
+    if not msg or msg.get("deleted"):
+        return
+    messages.update_one({"_id": oid(msg_id)}, {"$set": {"text": new_text, "edited": True}})
+    payload = {"msg_id": msg_id, "text": new_text}
+    emit("message_edited", payload, room=my_id)
+    emit("message_edited", payload, room=msg["receiver"])
+
+
+@socketio.on("delete_message")
+def delete_message(data):
+    user = get_user()
+    if not user:
+        return
+    my_id = str(user["_id"])
+    msg_id = data.get("msg_id")
+    if not msg_id:
+        return
+    msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
+    if not msg:
+        return
+    messages.update_one({"_id": oid(msg_id)}, {"$set": {"deleted": True, "text": ""}})
+    payload = {"msg_id": msg_id}
+    emit("message_deleted", payload, room=my_id)
+    emit("message_deleted", payload, room=msg["receiver"])
+
+
+@socketio.on("mark_read")
+def mark_read(data):
+    """Клиент сообщает что прочитал сообщения от sender_id"""
+    user = get_user()
+    if not user:
+        return
+    my_id = str(user["_id"])
+    sender_id = data.get("sender_id")
+    if not sender_id:
+        return
+    messages.update_many(
+        {"sender": sender_id, "receiver": my_id, "read": False},
+        {"$set": {"read": True}}
+    )
+    # Уведомляем отправителя что его сообщения прочитаны
+    emit("messages_read", {"by": my_id}, room=sender_id)
 
 
 @app.errorhandler(Exception)
