@@ -354,10 +354,14 @@
     // =========================
     // ВРЕМЯ — форматируем красиво
     // =========================
-    function formatTime(isoStr) {
-        var d = new Date(isoStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function formatTime(isoStr) {
+    // Если строка без 'Z' — MongoDB отдаёт UTC без суффикса, добавляем вручную
+    if (isoStr && !isoStr.endsWith('Z') && !isoStr.includes('+')) {
+        isoStr = isoStr + 'Z';
     }
+    var d = new Date(isoStr);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
     // =========================
     // DRAW MESSAGE
