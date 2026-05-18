@@ -1527,40 +1527,112 @@
     </a>
 
 </div>
-<script>
 
+<!-- ================= MODALS (ИСПРАВЛЕНО) ================= -->
+
+<div class="modal" id="modal-name">
+    <div class="modal-content">
+        <h3>Новое имя</h3>
+        <input class="input" id="newName" placeholder="Введите имя">
+        <div id="nameError" class="error"></div>
+        <button class="send-btn" style="width:100%" onclick="saveName()">Сохранить</button>
+        <button class="close-btn" onclick="closeModal('modal-name')">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="modal-login">
+    <div class="modal-content">
+        <h3>Новый логин</h3>
+        <input class="input" id="newLogin" placeholder="Введите логин">
+        <div id="loginError" class="error"></div>
+        <button class="send-btn" style="width:100%" onclick="saveLogin()">Сохранить</button>
+        <button class="close-btn" onclick="closeModal('modal-login')">Отмена</button>
+    </div>
+</div>
+
+<div class="modal" id="modal-password">
+    <div class="modal-content">
+        <h3>Новый пароль</h3>
+
+        <input class="input" id="pass1" type="password" placeholder="Новый пароль">
+        <input class="input" id="pass2" type="password" placeholder="Повторите пароль">
+
+        <div id="passError" class="error"></div>
+
+        <button class="send-btn" style="width:100%" onclick="savePassword()">Сохранить</button>
+        <button class="close-btn" onclick="closeModal('modal-password')">Отмена</button>
+    </div>
+</div>
+
+<!-- ================= FIXED MODAL JS ================= -->
+
+<script>
 function openModal(id) {
-    document.getElementById(id).style.display = 'flex';
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
 }
 
 function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
 }
 
 function validatePasswords() {
-
     const p1 = document.getElementById('pass1').value;
     const p2 = document.getElementById('pass2').value;
-
     const error = document.getElementById('passError');
 
+    error.innerText = '';
+
     if (p1 !== p2) {
-
         error.innerText = 'Пароли не совпадают';
-
         return false;
     }
 
     if (p1.length < 8) {
-
         error.innerText = 'Минимум 8 символов';
-
         return false;
     }
 
     return true;
 }
 
+/* ====== ЗАГЛУШКИ (чтобы не было "ничего не происходит") ====== */
+
+function saveName() {
+    const name = document.getElementById('newName').value.trim();
+    if (!name) return;
+
+    fetch('/update_name', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+    }).then(() => location.reload());
+}
+
+function saveLogin() {
+    const login = document.getElementById('newLogin').value.trim();
+    if (!login) return;
+
+    fetch('/update_login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({login})
+    }).then(() => location.reload());
+}
+
+function savePassword() {
+    if (!validatePasswords()) return;
+
+    const password = document.getElementById('pass1').value;
+
+    fetch('/update_password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({password})
+    }).then(() => location.reload());
+}
 </script>
+    
 </body>
 </html>
