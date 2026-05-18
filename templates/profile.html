@@ -2,298 +2,330 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KadrGram | Профиль</title>
-
     <style>
+        @import url('https://googleapis.com');
+
+        :root {
+            --primary: #0088cc;
+            --primary2: #00b4d8;
+            --danger: #ff6b6b;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e8ecf0;
+            --text: #1a1a2e;
+            --text2: #7a8a9a;
+            --shadow-md: 0 8px 24px rgba(0, 136, 204, 0.15);
+            --shadow-lg: 0 16px 48px rgba(0, 136, 204, 0.2);
+        }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            margin: 0;
-            font-family: sans-serif;
-            background: #f0f2f5;
-            padding-bottom: 90px;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px 100px 20px; /* Отступ снизу под тулбар */
         }
 
-        .container {
-            max-width: 500px;
-            margin: auto;
+        /* КАРТОЧКА ПРОФИЛЯ */
+        .profile-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px 24px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            border: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        .avatar-main {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135 deg, var(--primary), var(--primary2));
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-username {
+            font-size: 14px;
+            color: var(--text2);
+            margin-bottom: 24px;
+        }
+
+        /* КНОПКИ */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135 deg, var(--primary), var(--primary2));
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.2);
+        }
+
+        .btn-blue:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(0, 136, 204, 0.3);
+        }
+
+        .btn-red {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+
+        .btn-red:hover {
+            background: rgba(255, 107, 107, 0.18);
+            transform: scale(1.02);
+        }
+
+        /* МОДАЛЬНЫЕ ОКНА (ФОРМЫ) */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 26, 46, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
             padding: 20px;
         }
 
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        }
-
-        .avatar {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background: #3390ec;
-            color: white;
-
+        .modal.active {
             display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 40px;
-            font-weight: bold;
-
-            margin: auto;
-            margin-bottom: 20px;
         }
 
-        .name {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .login {
-            text-align: center;
-            color: gray;
-            margin-top: 5px;
-            margin-bottom: 25px;
-        }
-
-        .btn {
+        .modal-content {
+            background: var(--white);
             width: 100%;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            margin-bottom: 12px;
+            max-width: 380px;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-            background: #3390ec;
-            color: white;
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             font-size: 15px;
-            font-weight: bold;
-
-            cursor: pointer;
+            outline: none;
+            background: #f8fafc;
+            margin-bottom: 16px;
+            transition: all 0.2s;
         }
 
-        .logout {
-            background: #ff4d4d;
+        .form-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0, 136, 204, 0.1);
         }
 
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons .btn {
+            margin-bottom: 0;
+            padding: 12px;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e1;
+        }
+
+        /* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (ТУЛБАР) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-
             height: 70px;
-
-            background: white;
-            border-top: 1px solid #eee;
-
+            background: var(--white);
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
             align-items: center;
+            z-index: 999;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
         }
 
         .nav-item {
             text-decoration: none;
-            color: #777;
-
+            color: var(--text2);
             display: flex;
             flex-direction: column;
             align-items: center;
-
+            gap: 4px;
             font-size: 12px;
+            font-weight: 500;
+            flex: 1;
+            padding: 8px 0;
+            transition: color 0.2s;
+        }
+
+        .nav-item svg, .nav-item span.icon {
+            font-size: 20px;
         }
 
         .nav-item.active {
-            color: #3390ec;
+            color: var(--primary);
         }
-
     </style>
 </head>
 <body>
 
-<div class="container">
+    <!-- ОСНОВНОЙ БЛОК ПРОФИЛЯ -->
+    <div class="profile-container">
+        <!-- Используем Jinja2 переменные вашего проекта -->
+        <div class="avatar-main">{{ user.name[0]|upper }}</div>
+        <div class="profile-name">{{ user.name }}</div>
+        <div class="profile-username">@{{ user.username }}</div>
 
-    <div class="card">
+        <button class="btn btn-blue" onclick="openModal('nameModal')">Изменить имя</button>
+        <button class="btn btn-blue" onclick="openModal('loginModal')">Изменить логин</button>
+        <button class="btn btn-blue" onclick="openModal('passwordModal')">Сменить пароль</button>
+        
+        <a href="/logout" class="btn btn-red">Выйти</a>
+    </div>
 
-        <div class="avatar">
-            {{ user.name[0] }}
+    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ИМЯ -->
+    <div id="nameModal" class="modal" onclick="closeModalOnOutsideClick(event, 'nameModal')">
+        <div class="modal-content">
+            <div class="modal-title">Новое имя</div>
+            <!-- Направление на ваш Flask бэкенд обработки формы -->
+            <form action="/update_name" method="POST">
+                <input type="text" name="new_name" class="form-input" placeholder="Введите имя" required autocomplete="off">
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
+                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="name">
-            {{ user.name }}
+    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ЛОГИН -->
+    <div id="loginModal" class="modal" onclick="closeModalOnOutsideClick(event, 'loginModal')">
+        <div class="modal-content">
+            <div class="modal-title">Новый логин</div>
+            <form action="/update_username" method="POST">
+                <input type="text" name="new_username" class="form-input" placeholder="Введите логин" required autocomplete="off">
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
+                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="login">
-            @{{ user.login }}
+    <!-- МОДАЛЬНОЕ ОКНО: СМЕНИТЬ ПАРОЛЬ -->
+    <div id="passwordModal" class="modal" onclick="closeModalOnOutsideClick(event, 'passwordModal')">
+        <div class="modal-content">
+            <div class="modal-title">Смена пароля</div>
+            <form action="/update_password" method="POST">
+                <input type="password" name="old_password" class="form-input" placeholder="Текущий пароль" required>
+                <input type="password" name="new_password" class="form-input" placeholder="Новый пароль" required>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
+                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-<form action="/change_name" method="POST">
-
-    <input
-        type="text"
-        name="name"
-        placeholder="Новое имя"
-        required
-        class="input"
-    >
-
-<button class="btn" onclick="openModal('nameModal')">
-    Изменить имя
-</button>
-
-<button class="btn" onclick="openModal('loginModal')">
-    Изменить логин
-</button>
-
-<button class="btn" onclick="openModal('passwordModal')">
-    Сменить пароль
-</button>
-
-</form>
-
-        <a href="/logout">
-            <button class="btn logout">
-                Выйти
-            </button>
+    <!-- НИЖНИЙ ТУЛБАР НАВИГАЦИИ -->
+    <div class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="icon">💬</span>
+            <div>Чаты</div>
         </a>
-
+        <a href="/search" class="nav-item">
+            <span class="icon">🔍</span>
+            <div>Поиск</div>
+        </a>
+        <a href="/profile" class="nav-item active">
+            <span class="icon">👤</span>
+            <div>Профиль</div>
+        </a>
     </div>
 
-</div>
+    <!-- СКРИПТЫ УПРАВЛЕНИЯ ИНТЕРФЕЙСОМ -->
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
 
-<!-- NAME MODAL -->
-<div class="modal" id="nameModal">
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
 
-    <div class="modal-content">
-
-        <h3>Новое имя</h3>
-
-        <form action="/change_name" method="POST">
-
-            <input
-                type="text"
-                name="name"
-                placeholder="Введите имя"
-                required
-                class="input"
-            >
-
-            <button class="btn">
-                Сохранить
-            </button>
-
-        </form>
-
-        <button class="close-btn" onclick="closeModal('nameModal')">
-            Отмена
-        </button>
-
-    </div>
-
-</div>
-
-
-<!-- LOGIN MODAL -->
-<div class="modal" id="loginModal">
-
-    <div class="modal-content">
-
-        <h3>Новый логин</h3>
-
-        <form action="/change_login" method="POST">
-
-            <input
-                type="text"
-                name="login"
-                placeholder="Введите логин"
-                required
-                class="input"
-            >
-
-            <button class="btn">
-                Сохранить
-            </button>
-
-        </form>
-
-        <button class="close-btn" onclick="closeModal('loginModal')">
-            Отмена
-        </button>
-
-    </div>
-
-</div>
-
-
-<!-- PASSWORD MODAL -->
-<div class="modal" id="passwordModal">
-
-    <div class="modal-content">
-
-        <h3>Новый пароль</h3>
-
-        <form onsubmit="return validatePasswords()" action="/change_password" method="POST">
-
-            <input
-                type="password"
-                name="password"
-                id="pass1"
-                placeholder="Новый пароль"
-                required
-                class="input"
-                minlength="8"
-            >
-
-            <input
-                type="password"
-                id="pass2"
-                placeholder="Повторите пароль"
-                required
-                class="input"
-                minlength="8"
-            >
-
-            <div id="passError" class="error"></div>
-
-            <button class="btn">
-                Сохранить
-            </button>
-
-        </form>
-
-        <button class="close-btn" onclick="closeModal('passwordModal')">
-            Отмена
-        </button>
-
-    </div>
-
-</div>
-
-<div class="bottom-nav">
-
-    <a href="/" class="nav-item">
-        <div>💬</div>
-        <span>Чаты</span>
-    </a>
-
-    <a href="/search" class="nav-item">
-        <div>🔍</div>
-        <span>Поиск</span>
-    </a>
-
-    <a href="/profile" class="nav-item active">
-        <div>👤</div>
-        <span>Профиль</span>
-    </a>
-
-</div>
-
+        // Закрытие окон при клике на темную область вокруг них
+        function closeModalOnOutsideClick(event, modalId) {
+            if (event.target === document.getElementById(modalId)) {
+                closeModal(modalId);
+            }
+        }
+    </script>
 </body>
 </html>
