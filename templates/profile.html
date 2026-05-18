@@ -9,6 +9,8 @@
 
         :root {
             --primary: #3390ec;
+            --primary2: #00b4d8;
+            --success: #25d366;
             --danger: #ff6b6b;
             --bg: #f0f4f8;
             --white: #ffffff;
@@ -90,6 +92,7 @@
             margin-bottom: 12px;
             text-decoration: none;
             text-align: center;
+            font-family: inherit;
         }
 
         .btn-theme-blue {
@@ -102,17 +105,20 @@
             opacity: 0.9;
         }
 
+        .btn-theme-blue:disabled {
+            background: #e0e8f0;
+            color: var(--text2) !important;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 1;
+        }
+
         .btn-theme-red {
             background: rgba(255, 107, 107, 0.1);
             color: var(--danger) !important;
             border: 1px solid rgba(255, 107, 107, 0.2);
             margin-top: 12px;
             margin-bottom: 0;
-        }
-
-        .btn-theme-red:hover {
-            background: rgba(255, 107, 107, 0.18);
-            transform: scale(1.02);
         }
 
         /* МОДАЛЬНЫЕ ОКНА */
@@ -171,9 +177,42 @@
             background: white;
         }
 
+        /* ПРАВИЛА ВАЛИДАЦИИ (СТИЛИ ИЗ LOGIN.HTML) */
+        .rules { margin: 12px 0; }
+        .hint {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text2);
+            margin-bottom: 7px;
+            transition: all 0.2s;
+            padding: 2px 0;
+        }
+        .status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #dde4ec;
+            border: 1.5px solid #c8d4e0;
+            flex-shrink: 0;
+            transition: all 0.25s;
+        }
+        .hint.success { color: var(--success); }
+        .hint.success .status-dot {
+            background: var(--success);
+            border-color: var(--success);
+            box-shadow: 0 0 6px rgba(37, 211, 102, 0.5);
+        }
+        .hint.invalid { color: var(--danger); }
+        .hint.invalid .status-dot {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
+            margin-top: 14px;
         }
 
         .modal-buttons .profile-btn {
@@ -186,7 +225,7 @@
             color: #475569 !important;
         }
 
-        /* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
+        /* НИЖНИЙ ТУЛБАР */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -223,13 +262,13 @@
 
     <!-- КАРТОЧКА ПРОФИЛЯ -->
     <div class="profile-container">
-        <div class="avatar-main">
-            {% if user and user.name %}
-                {{ user.name|upper }}
-            {% else %}
-                K
-            {% endif %}
-        </div>
+    <div class="avatar-main">
+        {% if user and user.name %}
+            {{ user.name[0]|upper }}
+        {% else %}
+            K
+        {% endif %}
+    </div>
         <div class="profile-name">{{ user.name if user else 'kkk' }}</div>
         <div class="profile-username">@{{ user.login if user else 'Oyatullo' }}</div>
 
@@ -245,38 +284,52 @@
         <div class="modal-content">
             <div class="modal-title">Новое имя</div>
             <form action="/change_name" method="POST">
-                <input type="text" name="name" class="form-input" placeholder="Введите имя" required autocomplete="off" value="{{ user.name if user else '' }}">
+                <input type="text" name="name" id="p_name" class="form-input" placeholder="Введите имя" required autocomplete="off" value="{{ user.name if user else '' }}">
                 <div class="modal-buttons">
                     <button type="button" class="profile-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
-                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
+                    <button type="submit" id="nameBtn" class="profile-btn btn-theme-blue">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ЛОГИН -->
+    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ЛОГИН (С ИНДИКАТОРОМ ПРАВИЛ) -->
     <div id="loginModal" class="modal" onclick="closeModalOnOutsideClick(event, 'loginModal')">
         <div class="modal-content">
             <div class="modal-title">Новый логин</div>
             <form action="/change_login" method="POST">
-                <input type="text" name="login" class="form-input" placeholder="Введите логин" required autocomplete="off" value="{{ user.login if user else '' }}">
+                <input type="text" name="login" id="p_login" class="form-input" placeholder="Введите логин" required autocomplete="off" maxlength="24" value="{{ user.login if user else '' }}">
+                
+                <!-- Точно такой же блок подсказок, как в login.html -->
+                <div id="login_hint" class="hint"><span class="status-dot"></span> Только английские буквы и цифры, мин. 3</div>
+                
                 <div class="modal-buttons">
                     <button type="button" class="profile-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
-                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
+                    <button type="submit" id="loginBtn" class="profile-btn btn-theme-blue" disabled>Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: СМЕНИТЬ ПАРОЛЬ -->
+    <!-- МОДАЛЬНОЕ ОКНО: СМЕНИТЬ ПАРОЛЬ (С ПОЛНОЙ ПРОВЕРКОЙ ИЗ РЕГИСТРАЦИИ) -->
     <div id="passwordModal" class="modal" onclick="closeModalOnOutsideClick(event, 'passwordModal')">
         <div class="modal-content">
             <div class="modal-title">Смена пароля</div>
             <form action="/change_password" method="POST">
-                <input type="password" name="password" class="form-input" placeholder="Введите новый пароль" required minlength="8">
+                <input type="password" name="password" id="p_pwd" class="form-input" placeholder="Введите новый пароль" required autocomplete="new-password">
+                
+                <!-- Точно такой же блок правил, как в login.html -->
+                <div class="rules">
+                    <div id="len_hint" class="hint"><span class="status-dot"></span> Минимум 8 символов</div>
+                    <div id="upper_hint" class="hint"><span class="status-dot"></span> Минимум 1 заглавная</div>
+                    <div id="lower_hint" class="hint"><span class="status-dot"></span> Минимум 1 строчная</div>
+                    <div id="number_hint" class="hint"><span class="status-dot"></span> Минимум 1 цифра</div>
+                    <div id="eng_hint" class="hint"><span class="status-dot"></span> Только латиница</div>
+                </div>
+
                 <div class="modal-buttons">
                     <button type="button" class="profile-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
-                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
+                    <button type="submit" id="passwordBtn" class="profile-btn btn-theme-blue" disabled>Сохранить</button>
                 </div>
             </form>
         </div>
@@ -298,22 +351,73 @@
         </a>
     </div>
 
+    <!-- СКРИПТЫ ВАЛИДАЦИИ -->
     <script>
+        const pName = document.getElementById('p_name');
+        const pLogin = document.getElementById('p_login');
+        const pPwd = document.getElementById('p_pwd');
+        
+        const nameBtn = document.getElementById('nameBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const passwordBtn = document.getElementById('passwordBtn');
+
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
+            // Перевызываем валидацию для инициализации кнопок при открытии
+            if(modalId === 'loginModal') validateLogin();
         }
 
-        // Закрытие текущего окна
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Закрытие при клике по фону
         function closeModalOnOutsideClick(event, modalId) {
             if (event.target === document.getElementById(modalId)) {
                 closeModal(modalId);
             }
         }
+
+        function updateHint(id, valid) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'hint ' + (valid ? 'success' : 'invalid');
+        }
+
+        // ЖИВАЯ ВАЛИДАЦИЯ ИМЕНИ
+        pName.addEventListener('input', function() {
+            nameBtn.disabled = this.value.trim().length < 2;
+        });
+
+        // ЖИВАЯ ВАЛИДАЦИЯ ЛОГИНА (РЕПЛИКА ИЗ LOGIN.HTML)
+        pLogin.addEventListener('input', function() {
+            this.value = this.value.replace(/[^A-Za-z0-9]/g, '');
+            validateLogin();
+        });
+
+        function validateLogin() {
+            const isValid = pLogin.value.length >= 3;
+            updateHint('login_hint', isValid);
+            loginBtn.disabled = !isValid;
+        }
+
+        // ЖИВАЯ ВАЛИДАЦИЯ ПАРОЛЯ (ТОЧНАЯ КОПИЯ ИЗ LOGIN.HTML)
+        pPwd.addEventListener('input', function() {
+            const v = this.value;
+            const checks = {
+                len: v.length >= 8,
+                upper: /[A-Z]/.test(v),
+                lower: /[a-z]/.test(v),
+                number: /[0-9]/.test(v),
+                eng: /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v)
+            };
+
+            Object.keys(checks).forEach(function(key) {
+                updateHint(key + '_hint', checks[key]);
+            });
+
+            const isPasswordValid = checks.len && checks.upper && checks.lower && checks.number && checks.eng;
+            passwordBtn.disabled = !isPasswordValid;
+        });
     </script>
 </body>
 </html>
