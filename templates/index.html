@@ -1527,5 +1527,40 @@
     </a>
 
 </div>
+<script>
+
+function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+}
+
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+function validatePasswords() {
+
+    const p1 = document.getElementById('pass1').value;
+    const p2 = document.getElementById('pass2').value;
+
+    const error = document.getElementById('passError');
+
+    if (p1 !== p2) {
+
+        error.innerText = 'Пароли не совпадают';
+
+        return false;
+    }
+
+    if (p1.length < 8) {
+
+        error.innerText = 'Минимум 8 символов';
+
+        return false;
+    }
+
+    return true;
+}
+
+</script>
 </body>
 </html>
