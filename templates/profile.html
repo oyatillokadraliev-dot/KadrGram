@@ -144,25 +144,17 @@
         class="input"
     >
 
-    <button class="btn">
-        Изменить имя
-    </button>
+<button class="btn" onclick="openModal('nameModal')">
+    Изменить имя
+</button>
 
-</form>
+<button class="btn" onclick="openModal('loginModal')">
+    Изменить логин
+</button>
 
-<form action="/change_password" method="POST">
-
-    <input
-        type="password"
-        name="password"
-        placeholder="Новый пароль"
-        required
-        class="input"
-    >
-
-    <button class="btn">
-        Сменить пароль
-    </button>
+<button class="btn" onclick="openModal('passwordModal')">
+    Сменить пароль
+</button>
 
 </form>
 
@@ -171,6 +163,114 @@
                 Выйти
             </button>
         </a>
+
+    </div>
+
+</div>
+
+<!-- NAME MODAL -->
+<div class="modal" id="nameModal">
+
+    <div class="modal-content">
+
+        <h3>Новое имя</h3>
+
+        <form action="/change_name" method="POST">
+
+            <input
+                type="text"
+                name="name"
+                placeholder="Введите имя"
+                required
+                class="input"
+            >
+
+            <button class="btn">
+                Сохранить
+            </button>
+
+        </form>
+
+        <button class="close-btn" onclick="closeModal('nameModal')">
+            Отмена
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- LOGIN MODAL -->
+<div class="modal" id="loginModal">
+
+    <div class="modal-content">
+
+        <h3>Новый логин</h3>
+
+        <form action="/change_login" method="POST">
+
+            <input
+                type="text"
+                name="login"
+                placeholder="Введите логин"
+                required
+                class="input"
+            >
+
+            <button class="btn">
+                Сохранить
+            </button>
+
+        </form>
+
+        <button class="close-btn" onclick="closeModal('loginModal')">
+            Отмена
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- PASSWORD MODAL -->
+<div class="modal" id="passwordModal">
+
+    <div class="modal-content">
+
+        <h3>Новый пароль</h3>
+
+        <form onsubmit="return validatePasswords()" action="/change_password" method="POST">
+
+            <input
+                type="password"
+                name="password"
+                id="pass1"
+                placeholder="Новый пароль"
+                required
+                class="input"
+                minlength="8"
+            >
+
+            <input
+                type="password"
+                id="pass2"
+                placeholder="Повторите пароль"
+                required
+                class="input"
+                minlength="8"
+            >
+
+            <div id="passError" class="error"></div>
+
+            <button class="btn">
+                Сохранить
+            </button>
+
+        </form>
+
+        <button class="close-btn" onclick="closeModal('passwordModal')">
+            Отмена
+        </button>
 
     </div>
 
