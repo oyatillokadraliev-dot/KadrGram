@@ -76,8 +76,8 @@
             margin-bottom: 24px;
         }
 
-        /* КНОПКИ НА СТРАНИЦЕ */
-        .action-btn {
+        /* КНОПКИ УПРАВЛЕНИЯ */
+        .profile-btn {
             display: block;
             width: 100%;
             padding: 14px;
@@ -92,17 +92,17 @@
             text-align: center;
         }
 
-        .btn-blue {
+        .btn-theme-blue {
             background: var(--primary);
             color: white !important;
         }
 
-        .btn-blue:hover {
+        .btn-theme-blue:hover {
             transform: scale(1.02);
             opacity: 0.9;
         }
 
-        .btn-red {
+        .btn-theme-red {
             background: rgba(255, 107, 107, 0.1);
             color: var(--danger) !important;
             border: 1px solid rgba(255, 107, 107, 0.2);
@@ -110,7 +110,7 @@
             margin-bottom: 0;
         }
 
-        .btn-red:hover {
+        .btn-theme-red:hover {
             background: rgba(255, 107, 107, 0.18);
             transform: scale(1.02);
         }
@@ -176,7 +176,7 @@
             gap: 10px;
         }
 
-        .modal-buttons .action-btn {
+        .modal-buttons .profile-btn {
             margin-bottom: 0;
             padding: 12px;
         }
@@ -186,7 +186,7 @@
             color: #475569 !important;
         }
 
-        /* НИЖНИЙ ТУЛБАР */
+        /* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -225,7 +225,7 @@
     <div class="profile-container">
         <div class="avatar-main">
             {% if user and user.name %}
-                {{ user.name[0]|upper }}
+                {{ user.name|upper }}
             {% else %}
                 K
             {% endif %}
@@ -233,12 +233,11 @@
         <div class="profile-name">{{ user.name if user else 'kkk' }}</div>
         <div class="profile-username">@{{ user.login if user else 'Oyatullo' }}</div>
 
-        <!-- Кнопки управления теперь имеют уникальный класс .action-btn -->
-        <button type="button" class="action-btn btn-blue" onclick="openModal('nameModal')">Изменить имя</button>
-        <button type="button" class="action-btn btn-blue" onclick="openModal('loginModal')">Изменить логин</button>
-        <button type="button" class="action-btn btn-blue" onclick="openModal('passwordModal')">Сменить пароль</button>
+        <button type="button" class="profile-btn btn-theme-blue" onclick="openModal('nameModal')">Изменить имя</button>
+        <button type="button" class="profile-btn btn-theme-blue" onclick="openModal('loginModal')">Изменить логин</button>
+        <button type="button" class="profile-btn btn-theme-blue" onclick="openModal('passwordModal')">Сменить пароль</button>
         
-        <a href="/logout" class="action-btn btn-red">Выйти</a>
+        <a href="/logout" class="profile-btn btn-theme-red">Выйти</a>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ИМЯ -->
@@ -248,8 +247,8 @@
             <form action="/change_name" method="POST">
                 <input type="text" name="name" class="form-input" placeholder="Введите имя" required autocomplete="off" value="{{ user.name if user else '' }}">
                 <div class="modal-buttons">
-                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
-                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
+                    <button type="button" class="profile-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
+                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -262,8 +261,8 @@
             <form action="/change_login" method="POST">
                 <input type="text" name="login" class="form-input" placeholder="Введите логин" required autocomplete="off" value="{{ user.login if user else '' }}">
                 <div class="modal-buttons">
-                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
-                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
+                    <button type="button" class="profile-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
+                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -276,8 +275,8 @@
             <form action="/change_password" method="POST">
                 <input type="password" name="password" class="form-input" placeholder="Введите новый пароль" required minlength="8">
                 <div class="modal-buttons">
-                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
-                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
+                    <button type="button" class="profile-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
+                    <button type="submit" class="profile-btn btn-theme-blue">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -304,10 +303,12 @@
             document.getElementById(modalId).classList.add('active');
         }
 
+        // Закрытие текущего окна
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
         }
 
+        // Закрытие при клике по фону
         function closeModalOnOutsideClick(event, modalId) {
             if (event.target === document.getElementById(modalId)) {
                 closeModal(modalId);
