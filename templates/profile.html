@@ -134,13 +134,37 @@
             @{{ user.login }}
         </div>
 
-        <button class="btn">
-            Изменить имя
-        </button>
+<form action="/change_name" method="POST">
 
-        <button class="btn">
-            Сменить пароль
-        </button>
+    <input
+        type="text"
+        name="name"
+        placeholder="Новое имя"
+        required
+        class="input"
+    >
+
+    <button class="btn">
+        Изменить имя
+    </button>
+
+</form>
+
+<form action="/change_password" method="POST">
+
+    <input
+        type="password"
+        name="password"
+        placeholder="Новый пароль"
+        required
+        class="input"
+    >
+
+    <button class="btn">
+        Сменить пароль
+    </button>
+
+</form>
 
         <a href="/logout">
             <button class="btn logout">
