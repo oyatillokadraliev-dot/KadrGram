@@ -8,16 +8,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --accent:  #6c63ff;
-            --accent2: #48cfad;
-            --bg:      #0f0f1a;
-            --bg2:     #16162a;
-            --bg3:     #1e1e35;
-            --border:  rgba(255,255,255,0.08);
-            --text:    #f0f0ff;
-            --text2:   #9999bb;
-            --danger:  #ff6b6b;
-            --success: #48cfad;
+            --primary:      #0088cc;
+            --primary2:     #00b4d8;
+            --success:      #25d366;
+            --danger:       #ff6b6b;
+            --bg:           #f0f4f8;
+            --white:        #ffffff;
+            --border:       #e0e8f0;
+            --text:         #1a1a2e;
+            --text2:        #7a8a9a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -31,105 +30,151 @@
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Фоновые круги */
-        body::before, body::after {
+        /* Фоновые декоративные круги */
+        body::before {
             content: '';
             position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,136,204,0.1), transparent 70%);
+            top: -150px; left: -150px;
             border-radius: 50%;
             pointer-events: none;
-        }
-
-        body::before {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(108,99,255,0.12), transparent 70%);
-            top: -100px; left: -100px;
+            animation: bgFloat1 8s ease-in-out infinite;
         }
 
         body::after {
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(72,207,173,0.1), transparent 70%);
-            bottom: -80px; right: -80px;
+            content: '';
+            position: fixed;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(0,180,216,0.08), transparent 70%);
+            bottom: -100px; right: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: bgFloat2 10s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat1 {
+            0%, 100% { transform: translate(0, 0); }
+            50%       { transform: translate(30px, 20px); }
+        }
+
+        @keyframes bgFloat2 {
+            0%, 100% { transform: translate(0, 0); }
+            50%       { transform: translate(-20px, -30px); }
         }
 
         .auth-container {
             width: 100%;
             max-width: 400px;
-            background: var(--bg2);
+            background: var(--white);
             border: 1px solid var(--border);
             padding: 36px 32px;
             border-radius: 24px;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-            animation: fadeUp 0.3s ease;
+            box-shadow:
+                0 4px 16px rgba(0,136,204,0.08),
+                0 24px 60px rgba(0,0,0,0.08);
+            animation: fadeUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             z-index: 1;
         }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .brand-wrap {
-            text-align: center;
-            margin-bottom: 28px;
-        }
+        /* Логотип */
+        .brand-wrap { text-align: center; margin-bottom: 28px; }
 
         .brand-icon {
-            width: 64px; height: 64px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 20px;
+            width: 68px; height: 68px;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            border-radius: 22px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 30px;
+            font-size: 32px;
             margin: 0 auto 14px;
-            box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+            box-shadow:
+                0 8px 24px rgba(0,136,204,0.3),
+                0 2px 8px rgba(0,136,204,0.15);
+            animation: iconPulse 3s ease-in-out infinite;
+            transition: transform 0.2s;
+        }
+
+        .brand-icon:hover { transform: scale(1.05) rotate(3deg); }
+
+        @keyframes iconPulse {
+            0%, 100% { box-shadow: 0 8px 24px rgba(0,136,204,0.3), 0 2px 8px rgba(0,136,204,0.15); }
+            50%       { box-shadow: 0 12px 32px rgba(0,136,204,0.45), 0 4px 12px rgba(0,136,204,0.25); }
         }
 
         .brand-title {
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .subtitle { font-size: 14px; color: var(--text2); margin-top: 6px; }
+        .subtitle { font-size: 14px; color: var(--text2); margin-top: 5px; }
 
-        h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text); }
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
 
+        /* Ошибки */
         .error-box {
-            background: rgba(255,107,107,0.1);
+            background: rgba(255,107,107,0.08);
             color: var(--danger);
-            border: 1px solid rgba(255,107,107,0.25);
+            border: 1px solid rgba(255,107,107,0.2);
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 18px;
             font-size: 14px;
             text-align: center;
+            animation: shake 0.4s ease;
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-6px); }
+            40%       { transform: translateX(6px); }
+            60%       { transform: translateX(-4px); }
+            80%       { transform: translateX(4px); }
+        }
+
+        /* Инпуты */
         .input-group { margin-bottom: 12px; }
 
         input {
             width: 100%;
             padding: 13px 16px;
             border-radius: 12px;
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             outline: none;
             font-size: 15px;
-            background: var(--bg3);
+            background: #f8fafc;
             color: var(--text);
             font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
         }
 
         input::placeholder { color: var(--text2); }
 
+        input:hover { border-color: #c8d8e8; background: white; }
+
         input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(108,99,255,0.12);
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0,136,204,0.1);
+            transform: translateY(-1px);
         }
 
         .pass-group { position: relative; }
@@ -144,42 +189,80 @@
             font-weight: 600;
             user-select: none;
             transition: color 0.2s;
+            padding: 4px;
         }
 
-        .eye-btn:hover { color: var(--text); }
+        .eye-btn:hover { color: var(--primary); }
 
+        /* Кнопка */
         .btn-primary {
             width: 100%;
             padding: 14px;
             border: none;
             border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 8px;
             font-family: inherit;
-            box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+            box-shadow:
+                0 4px 16px rgba(0,136,204,0.35),
+                0 1px 4px rgba(0,136,204,0.2);
             transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.45); }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-primary:disabled { background: var(--bg3); color: var(--text2); box-shadow: none; cursor: not-allowed; transform: none; }
+        /* Блик на кнопке */
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.4s;
+        }
 
+        .btn-primary:hover::after { left: 100%; }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,136,204,0.45), 0 2px 8px rgba(0,136,204,0.25);
+        }
+
+        .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,136,204,0.3); }
+
+        .btn-primary:disabled {
+            background: #e0e8f0;
+            color: var(--text2);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary:disabled::after { display: none; }
+
+        /* Переключатель */
         .toggle {
             margin-top: 20px;
             text-align: center;
-            color: var(--accent);
+            color: var(--primary);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            padding: 8px;
+            border-radius: 8px;
         }
 
-        .toggle:hover { color: var(--accent2); }
+        .toggle:hover {
+            color: var(--primary2);
+            background: rgba(0,136,204,0.05);
+        }
 
+        /* Правила пароля */
         .rules { margin: 12px 0; }
 
         .hint {
@@ -188,30 +271,56 @@
             font-size: 13px;
             color: var(--text2);
             margin-bottom: 7px;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            padding: 2px 0;
         }
 
         .status-dot {
             width: 7px; height: 7px;
             border-radius: 50%;
             margin-right: 8px;
-            background: var(--bg3);
-            border: 1px solid var(--border);
+            background: #dde4ec;
+            border: 1.5px solid #c8d4e0;
             flex-shrink: 0;
-            transition: all 0.2s;
+            transition: all 0.25s;
         }
 
-        .hint.success { color: var(--success); }
-        .hint.success .status-dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 6px var(--success); }
-        .hint.invalid { color: var(--danger); }
-        .hint.invalid .status-dot { background: var(--danger); border-color: var(--danger); }
+        .hint.success {
+            color: var(--success);
+            transform: translateX(2px);
+        }
 
-        .footer-note { margin-top: 20px; text-align: center; color: var(--text2); font-size: 12px; }
+        .hint.success .status-dot {
+            background: var(--success);
+            border-color: var(--success);
+            box-shadow: 0 0 6px rgba(37,211,102,0.5);
+        }
+
+        .hint.invalid { color: var(--danger); }
+
+        .hint.invalid .status-dot {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        /* Login hint */
+        #login_hint {
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .footer-note {
+            margin-top: 22px;
+            text-align: center;
+            color: var(--text2);
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
 <div class="auth-container">
+
     <div class="brand-wrap">
         <div class="brand-icon">💬</div>
         <div class="brand-title">KadrGram</div>
@@ -285,6 +394,11 @@
         var isLogin = loginBox.style.display !== 'none';
         loginBox.style.display = isLogin ? 'none' : 'block';
         regBox.style.display   = isLogin ? 'block' : 'none';
+        // Анимация переключения
+        var target = isLogin ? regBox : loginBox;
+        target.style.animation = 'none';
+        target.offsetHeight; // reflow
+        target.style.animation = 'fadeUp 0.3s cubic-bezier(0.34,1.56,0.64,1)';
         setTimeout(function() {
             var el = isLogin ? document.getElementById('r_login') : document.querySelector('[name="login"]');
             if (el) el.focus();
