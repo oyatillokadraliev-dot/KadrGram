@@ -319,6 +319,53 @@ def profile():
         user=serialize_user(user)
     )
 
+@app.route("/change_name", methods=["POST"])
+def change_name():
+
+    user = get_user()
+
+    if not user:
+        return redirect("/login")
+
+    new_name = bleach.clean(
+        request.form.get("name", "").strip()
+    )
+
+    if len(new_name) < 2:
+        return redirect("/profile")
+
+    users.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"name": new_name}}
+    )
+
+    return redirect("/profile")
+
+
+@app.route("/change_password", methods=["POST"])
+def change_password():
+
+    user = get_user()
+
+    if not user:
+        return redirect("/login")
+
+    new_password = request.form.get("password", "")
+
+    if len(new_password) < 8:
+        return redirect("/profile")
+
+    users.update_one(
+        {"_id": user["_id"]},
+        {
+            "$set": {
+                "password": generate_password_hash(new_password)
+            }
+        }
+    )
+
+    return redirect("/profile")
+
 @app.route("/pin_chat", methods=["POST"])
 def pin_chat():
     user = get_user()
