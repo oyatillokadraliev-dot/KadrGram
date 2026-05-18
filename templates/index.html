@@ -8,21 +8,23 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
-            --accent:      #6c63ff;
-            --accent2:     #48cfad;
-            --accent-dark: #5a52d5;
-            --bg:          #0f0f1a;
-            --bg2:         #16162a;
-            --bg3:         #1e1e35;
-            --bg4:         #252542;
-            --border:      rgba(255,255,255,0.07);
-            --text:        #f0f0ff;
-            --text2:       #9999bb;
-            --my-msg:      linear-gradient(135deg, #6c63ff, #48cfad);
-            --their-msg:   #1e1e35;
-            --online:      #48cfad;
-            --danger:      #ff6b6b;
-            --shadow:      0 8px 32px rgba(0,0,0,0.4);
+            --primary:   #0088cc;
+            --primary2:  #00b4d8;
+            --success:   #25d366;
+            --danger:    #ff6b6b;
+            --bg:        #f0f4f8;
+            --white:     #ffffff;
+            --sidebar-bg:#ffffff;
+            --chat-bg:   #eef2f7;
+            --border:    #e8ecf0;
+            --text:      #1a1a2e;
+            --text2:     #7a8a9a;
+            --my-msg:    linear-gradient(135deg, #0088cc, #00b4d8);
+            --their-msg: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0,136,204,0.08);
+            --shadow-md: 0 8px 24px rgba(0,136,204,0.15);
+            --shadow-lg: 0 16px 48px rgba(0,136,204,0.2);
+            --radius:    18px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -36,10 +38,9 @@
             overflow: hidden;
         }
 
-        /* ===================== SCROLLBAR ===================== */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #d0dae4; border-radius: 4px; }
 
         /* ===================== SIDEBAR ===================== */
         .sidebar {
@@ -47,104 +48,119 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            background: var(--bg2);
+            background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             z-index: 2;
+            box-shadow: 4px 0 20px rgba(0,136,204,0.06);
         }
 
         .sidebar-header {
-            padding: 18px 16px 14px;
+            padding: 16px 16px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--border);
-            background: var(--bg2);
+            background: white;
         }
 
         .logo {
             font-size: 22px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .header-actions { display: flex; gap: 4px; }
-
         .header-btn {
             width: 38px; height: 38px;
             border-radius: 50%;
-            background: var(--bg3);
-            border: 1px solid var(--border);
-            color: var(--text2);
+            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
+            border: none;
+            color: var(--primary);
             font-size: 16px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
         }
 
-        .header-btn:hover { background: var(--bg4); color: var(--text); }
+        .header-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
 
         .user-list { flex: 1; overflow-y: auto; padding: 8px 0; }
 
-        /* Разделитель закреплённых */
         .pin-section-label {
-            padding: 6px 16px 4px;
+            padding: 8px 16px 4px;
             font-size: 11px;
-            font-weight: 600;
-            color: var(--text2);
+            font-weight: 700;
+            color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 0.8px;
+            opacity: 0.7;
         }
 
         .user-item {
-            padding: 10px 16px;
+            padding: 10px 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 12px;
-            border-radius: 12px;
+            border-radius: 14px;
             margin: 2px 8px;
-            transition: all 0.15s;
+            transition: all 0.2s;
             position: relative;
         }
 
-        .user-item:hover { background: var(--bg3); }
-        .user-item.active { background: var(--bg4); }
-        .user-item.pinned-item { border-left: 2px solid var(--accent); }
+        .user-item:hover {
+            background: linear-gradient(135deg, #f0f8ff, #e8f4ff);
+            transform: translateX(2px);
+        }
+
+        .user-item.active {
+            background: linear-gradient(135deg, #e0f0ff, #d0e8ff);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-item.pinned-item {
+            border-left: 3px solid var(--primary);
+            margin-left: 10px;
+        }
 
         .avatar {
             width: 48px; height: 48px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
             display: flex; align-items: center; justify-content: center;
             font-size: 19px;
             font-weight: 700;
             flex-shrink: 0;
             position: relative;
-            box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+            box-shadow: 0 4px 12px rgba(0,136,204,0.3);
+            transition: transform 0.2s;
         }
+
+        .user-item:hover .avatar { transform: scale(1.05); }
 
         .avatar-online {
             position: absolute;
             bottom: 1px; right: 1px;
-            width: 12px; height: 12px;
-            background: var(--online);
+            width: 13px; height: 13px;
+            background: var(--success);
             border-radius: 50%;
-            border: 2px solid var(--bg2);
-            box-shadow: 0 0 6px var(--online);
+            border: 2px solid white;
+            box-shadow: 0 0 6px rgba(37,211,102,0.5);
         }
 
         .user-meta { flex: 1; min-width: 0; }
 
-        .user-name-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .user-name-row { display: flex; align-items: center; gap: 5px; }
 
         .user-name {
             font-weight: 600;
@@ -155,11 +171,7 @@
             color: var(--text);
         }
 
-        .pin-icon {
-            font-size: 11px;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
+        .pin-icon { font-size: 11px; color: var(--primary); flex-shrink: 0; }
 
         .user-status {
             font-size: 12px;
@@ -171,111 +183,123 @@
         }
 
         .unread-badge {
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
             border-radius: 10px;
-            padding: 2px 8px;
+            padding: 3px 8px;
             font-size: 12px;
             font-weight: 700;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(108,99,255,0.4);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.35);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 2px 8px rgba(0,136,204,0.35); }
+            50%       { box-shadow: 0 2px 14px rgba(0,136,204,0.6); }
         }
 
         .sidebar-footer {
             padding: 12px 16px;
             padding-bottom: max(12px, env(safe-area-inset-bottom));
             border-top: 1px solid var(--border);
-            background: var(--bg2);
+            background: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .my-name { font-weight: 600; font-size: 14px; color: var(--text); }
+
         .logout-link {
             color: var(--danger);
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 8px;
-            background: rgba(255,107,107,0.1);
-            transition: background 0.2s;
+            padding: 7px 14px;
+            border-radius: 10px;
+            background: rgba(255,107,107,0.08);
+            border: 1px solid rgba(255,107,107,0.15);
+            transition: all 0.2s;
         }
-        .logout-link:hover { background: rgba(255,107,107,0.2); }
 
-        /* ===================== CHAT AREA ===================== */
+        .logout-link:hover {
+            background: rgba(255,107,107,0.15);
+            transform: scale(1.02);
+        }
+
+        /* ===================== CHAT ===================== */
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--bg);
+            background: var(--chat-bg);
             position: relative;
             min-width: 0;
         }
 
-        /* Фоновый паттерн */
+        /* Лёгкий паттерн фона */
         .chat-area::before {
             content: '';
             position: absolute;
             inset: 0;
             background-image:
-                radial-gradient(circle at 20% 20%, rgba(108,99,255,0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(72,207,173,0.05) 0%, transparent 50%);
+                radial-gradient(circle at 10% 10%, rgba(0,136,204,0.04) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(0,180,216,0.04) 0%, transparent 40%);
             pointer-events: none;
         }
 
         .chat-header {
             padding: 12px 16px;
             padding-top: max(12px, env(safe-area-inset-top));
-            background: var(--bg2);
+            background: white;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 12px;
             flex-shrink: 0;
-            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 12px rgba(0,136,204,0.08);
             z-index: 1;
         }
 
         .back-btn {
             display: none;
-            color: var(--accent);
+            color: var(--primary);
             font-size: 26px;
             text-decoration: none;
             width: 40px; height: 40px;
             align-items: center; justify-content: center;
             flex-shrink: 0;
             border-radius: 50%;
-            background: var(--bg3);
-            transition: background 0.2s;
+            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
+            transition: all 0.2s;
         }
 
-        .back-btn:hover { background: var(--bg4); }
+        .back-btn:hover { transform: scale(1.05); box-shadow: var(--shadow-sm); }
 
         .chat-header-avatar {
             width: 42px; height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
             display: flex; align-items: center; justify-content: center;
             font-size: 17px;
             font-weight: 700;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+            box-shadow: 0 4px 12px rgba(0,136,204,0.3);
         }
 
         .chat-header-info { flex: 1; min-width: 0; }
         .chat-user-name { font-weight: 700; font-size: 16px; color: var(--text); }
         .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
-        .chat-status.online { color: var(--online); }
+        .chat-status.online { color: var(--success); font-weight: 500; }
 
         /* ===================== MESSAGES ===================== */
         .messages {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 16px 12px;
+            padding: 16px 14px;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -285,17 +309,17 @@
 
         .msg {
             padding: 9px 13px 6px;
-            border-radius: 18px;
+            border-radius: var(--radius);
             max-width: 78%;
             word-wrap: break-word;
             overflow-wrap: break-word;
             position: relative;
-            animation: msgIn 0.2s ease;
+            animation: msgIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes msgIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .their-msg {
@@ -304,6 +328,7 @@
             border: 1px solid var(--border);
             border-bottom-left-radius: 4px;
             color: var(--text);
+            box-shadow: var(--shadow-sm);
         }
 
         .my-msg {
@@ -311,39 +336,40 @@
             background: var(--my-msg);
             border-bottom-right-radius: 4px;
             color: white;
-            box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+            box-shadow: var(--shadow-md);
         }
 
-        .my-msg .msg-time { color: rgba(255,255,255,0.6); }
-        .my-msg .msg-ticks { color: rgba(255,255,255,0.7); }
+        .my-msg .msg-time  { color: rgba(255,255,255,0.65); }
+        .my-msg .msg-ticks { color: rgba(255,255,255,0.75); }
         .my-msg .msg-ticks.read { color: white; }
-        .my-msg .msg-edited { color: rgba(255,255,255,0.5); }
+        .my-msg .msg-edited { color: rgba(255,255,255,0.55); }
 
         .msg-reply {
-            background: rgba(108,99,255,0.15);
-            border-left: 3px solid var(--accent);
+            background: rgba(0,136,204,0.08);
+            border-left: 3px solid var(--primary);
             border-radius: 8px;
             padding: 5px 9px;
             margin-bottom: 6px;
             font-size: 12px;
             color: var(--text2);
             cursor: pointer;
+            transition: background 0.15s;
         }
+
+        .msg-reply:hover { background: rgba(0,136,204,0.14); }
 
         .my-msg .msg-reply {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.18);
             border-left-color: rgba(255,255,255,0.7);
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.8);
         }
 
-        .msg-reply b { color: var(--accent); display: block; font-size: 11px; }
+        .msg-reply b { color: var(--primary); display: block; font-size: 11px; }
         .my-msg .msg-reply b { color: white; }
 
         .msg-text { font-size: 15px; line-height: 1.45; }
-
         .msg-deleted { font-size: 13px; color: var(--text2); font-style: italic; }
-        .my-msg .msg-deleted { color: rgba(255,255,255,0.5); }
-
+        .my-msg .msg-deleted { color: rgba(255,255,255,0.55); }
         .msg-edited { font-size: 10px; color: var(--text2); }
 
         .msg-image {
@@ -353,7 +379,10 @@
             display: block;
             margin-bottom: 5px;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+
+        .msg-image:hover { transform: scale(1.02); }
 
         .msg-footer {
             display: flex;
@@ -363,25 +392,17 @@
             margin-top: 3px;
         }
 
-        .msg-time { font-size: 10px; color: var(--text2); line-height: 1; }
+        .msg-time  { font-size: 10px; color: var(--text2); line-height: 1; }
         .msg-ticks { font-size: 12px; color: var(--text2); line-height: 1; }
-        .msg-ticks.read { color: var(--accent2); }
+        .msg-ticks.read { color: var(--primary); }
 
         .load-more-label {
             text-align: center;
             color: var(--text2);
             font-size: 12px;
             padding: 8px;
-        }
-
-        /* Date separator */
-        .date-label {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text2);
-            padding: 4px 12px;
-            background: var(--bg3);
-            border-radius: 12px;
+            background: rgba(0,136,204,0.06);
+            border-radius: 10px;
             align-self: center;
             margin: 4px 0;
         }
@@ -390,19 +411,20 @@
         .typing-indicator {
             display: none;
             align-self: flex-start;
-            background: var(--their-msg);
+            background: white;
             border: 1px solid var(--border);
             padding: 10px 14px;
-            border-radius: 18px;
+            border-radius: var(--radius);
             border-bottom-left-radius: 4px;
-            margin-bottom: 4px;
+            box-shadow: var(--shadow-sm);
+            animation: msgIn 0.2s ease;
         }
 
         .typing-dots { display: flex; gap: 4px; align-items: center; }
 
         .typing-dots span {
             width: 7px; height: 7px;
-            background: var(--text2);
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             border-radius: 50%;
             animation: bounce 1.2s infinite;
         }
@@ -412,17 +434,18 @@
 
         @keyframes bounce {
             0%, 60%, 100% { transform: translateY(0); }
-            30%            { transform: translateY(-5px); }
+            30%            { transform: translateY(-6px); }
         }
 
         /* ===================== INPUT ===================== */
         .input-area {
-            background: var(--bg2);
+            background: white;
             border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
             padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -2px 12px rgba(0,136,204,0.06);
         }
 
         .photo-preview-wrap {
@@ -437,12 +460,13 @@
             border-radius: 10px;
             display: block;
             border: 2px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
 
         .photo-preview-cancel {
             position: absolute;
             top: 4px; right: 10px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.55);
             color: white;
             border-radius: 50%;
             width: 22px; height: 22px;
@@ -453,17 +477,24 @@
 
         .reply-preview {
             display: none;
-            background: var(--bg3);
-            border-left: 3px solid var(--accent);
+            background: linear-gradient(135deg, #f0f8ff, #e8f4ff);
+            border-left: 3px solid var(--primary);
             padding: 7px 36px 7px 12px;
             font-size: 13px;
             color: var(--text2);
             position: relative;
             margin: 8px 12px 0;
             border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+            animation: slideDown 0.2s ease;
         }
 
-        .reply-preview b { color: var(--accent); display: block; font-size: 12px; margin-bottom: 2px; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .reply-preview b { color: var(--primary); display: block; font-size: 12px; margin-bottom: 2px; }
 
         .reply-cancel {
             position: absolute;
@@ -474,7 +505,10 @@
             font-size: 18px;
             line-height: 1;
             padding: 4px;
+            transition: color 0.2s;
         }
+
+        .reply-cancel:hover { color: var(--danger); }
 
         .input-row {
             padding: 10px 12px;
@@ -486,25 +520,30 @@
         .message-input {
             flex: 1;
             padding: 11px 16px;
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: 24px;
             outline: none;
             font-size: 15px;
-            background: var(--bg3);
+            background: var(--bg);
             color: var(--text);
             resize: none;
             max-height: 120px;
             line-height: 1.4;
             font-family: inherit;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         .message-input::placeholder { color: var(--text2); }
-        .message-input:focus { border-color: var(--accent); }
+
+        .message-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(0,136,204,0.1);
+        }
 
         .send-btn {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            width: 46px; height: 46px;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             border: none;
             border-radius: 50%;
             color: white;
@@ -512,19 +551,19 @@
             cursor: pointer;
             flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 14px rgba(108,99,255,0.4);
+            box-shadow: 0 4px 14px rgba(0,136,204,0.4);
             transition: all 0.2s;
         }
 
-        .send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(108,99,255,0.5); }
-        .send-btn:active { transform: scale(0.96); }
+        .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,136,204,0.5); }
+        .send-btn:active { transform: scale(0.94); }
 
         .photo-btn {
-            width: 40px; height: 40px;
-            background: var(--bg3);
-            border: 1px solid var(--border);
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
+            border: 1.5px solid rgba(0,136,204,0.15);
             border-radius: 50%;
-            color: var(--text2);
+            color: var(--primary);
             font-size: 20px;
             cursor: pointer;
             flex-shrink: 0;
@@ -532,20 +571,30 @@
             transition: all 0.2s;
         }
 
-        .photo-btn:hover { background: var(--bg4); color: var(--text); }
+        .photo-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-sm);
+        }
 
         /* ===================== CTX MENU ===================== */
         .ctx-menu {
             position: fixed;
-            background: var(--bg3);
+            background: white;
             border: 1px solid var(--border);
-            border-radius: 14px;
-            box-shadow: var(--shadow);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             min-width: 190px;
             overflow: hidden;
             display: none;
-            backdrop-filter: blur(20px);
+            animation: ctxIn 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes ctxIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to   { opacity: 1; transform: scale(1); }
         }
 
         .ctx-item {
@@ -559,39 +608,55 @@
             gap: 10px;
         }
 
-        .ctx-item:hover { background: var(--bg4); }
+        .ctx-item:hover { background: linear-gradient(135deg, #f0f8ff, #e8f4ff); }
         .ctx-item + .ctx-item { border-top: 1px solid var(--border); }
         .ctx-item.danger { color: var(--danger); }
+        .ctx-item.danger:hover { background: rgba(255,107,107,0.06); }
 
         /* ===================== LIGHTBOX ===================== */
         .lightbox {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.92);
+            background: rgba(0,0,0,0.85);
             z-index: 2000;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.2s ease;
         }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .lightbox.open { display: flex; }
-        .lightbox img { max-width: 95vw; max-height: 90vh; border-radius: 12px; box-shadow: var(--shadow); }
+        .lightbox img {
+            max-width: 95vw; max-height: 90vh;
+            border-radius: 16px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+            animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
 
         .lightbox-close {
             position: absolute;
             top: max(20px, env(safe-area-inset-top));
             right: 20px;
             color: white;
-            font-size: 32px;
+            font-size: 24px;
             cursor: pointer;
-            line-height: 1;
-            padding: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            width: 46px; height: 46px;
+            width: 44px; height: 44px;
             display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
         }
+
+        .lightbox-close:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
 
         /* ===================== EMPTY ===================== */
         .empty-chat {
@@ -600,20 +665,26 @@
             justify-content: center;
             align-items: center;
             height: 100%;
-            gap: 14px;
+            gap: 16px;
             position: relative;
             z-index: 0;
         }
 
         .empty-chat-icon {
-            font-size: 64px;
-            filter: drop-shadow(0 0 20px rgba(108,99,255,0.4));
+            font-size: 72px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 8px 20px rgba(0,136,204,0.25));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-12px); }
         }
 
         .empty-chat-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -625,15 +696,14 @@
         .connection-status {
             position: absolute;
             top: 12px; right: 16px;
-            background: rgba(255,107,107,0.15);
+            background: rgba(255,107,107,0.1);
             color: var(--danger);
-            border: 1px solid rgba(255,107,107,0.3);
+            border: 1px solid rgba(255,107,107,0.25);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 12px;
             display: none;
             z-index: 10;
-            backdrop-filter: blur(10px);
         }
 
         /* ===================== MOBILE ===================== */
@@ -652,7 +722,6 @@
             }
 
             .back-btn { display: flex !important; }
-
             .input-area { position: sticky; bottom: 0; }
         }
 
@@ -667,13 +736,11 @@
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2 class="logo">KadrGram</h2>
-        <div class="header-actions">
-            <a href="/search" class="header-btn" title="Поиск">🔍</a>
-        </div>
+        <a href="/search" class="header-btn" title="Поиск">🔍</a>
     </div>
 
     <div class="user-list">
-        {% set pinned_users = all_users | selectattr('pinned') | list %}
+        {% set pinned_users  = all_users | selectattr('pinned') | list %}
         {% set regular_users = all_users | rejectattr('pinned') | list %}
 
         {% if pinned_users %}
@@ -742,7 +809,7 @@
 
     {% if target_user %}
     <div class="chat-header">
-        <a href="/" class="back-btn" id="backBtn">‹</a>
+        <a href="/" class="back-btn">‹</a>
         <div class="chat-header-avatar">{{ target_user.name[0]|upper }}</div>
         <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
@@ -785,7 +852,7 @@
     {% endif %}
 </div>
 
-<!-- Контекстное меню -->
+<!-- Контекстное меню сообщения -->
 <div class="ctx-menu" id="ctxMenu">
     <div class="ctx-item" onclick="ctxReply()">↩️ Ответить</div>
     <div class="ctx-item" id="ctxEditBtn" onclick="ctxEdit()">✏️ Редактировать</div>
@@ -794,7 +861,7 @@
 
 <!-- Контекстное меню чата -->
 <div class="ctx-menu" id="chatCtxMenu">
-    <div class="ctx-item" id="pinChatBtn" onclick="ctxPinChat()">📌 Закрепить</div>
+    <div class="ctx-item" id="pinChatBtn"   onclick="ctxPinChat()">📌 Закрепить</div>
     <div class="ctx-item" id="unpinChatBtn" onclick="ctxUnpinChat()">📌 Открепить</div>
 </div>
 
@@ -819,13 +886,10 @@
     var isLoadingMore = false;
     var noMoreMsgs    = false;
 
-    // Закреплённые — читаем из DOM
     var pinnedIds = [];
     {% for u in all_users %}{% if u.pinned %}pinnedIds.push("{{ u.id }}");{% endif %}{% endfor %}
 
-    // =========================
-    // TEXTAREA AUTO-RESIZE
-    // =========================
+    // TEXTAREA
     var textarea = document.getElementById('textInp');
     if (textarea) {
         textarea.addEventListener('input', function() {
@@ -834,13 +898,9 @@
         });
     }
 
-    // =========================
-    // UTILS
-    // =========================
     function escapeHtml(t) {
         var d = document.createElement('div');
-        d.innerText = t;
-        return d.innerHTML;
+        d.innerText = t; return d.innerHTML;
     }
 
     function formatTime(isoStr) {
@@ -848,12 +908,9 @@
         return new Date(isoStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // =========================
-    // BUILD MSG ELEMENT
-    // =========================
+    // BUILD MSG
     function buildMsgEl(m, optimistic) {
         var isMy = (m.sender === MY_ID);
-
         var wrap = document.createElement('div');
         wrap.className = 'msg' + (isMy ? ' my-msg' : ' their-msg');
         wrap.dataset.id     = m.id || '';
@@ -877,8 +934,7 @@
         } else {
             if (m.image) {
                 var img = document.createElement('img');
-                img.className = 'msg-image';
-                img.src = m.image;
+                img.className = 'msg-image'; img.src = m.image;
                 img.onclick = (function(src) { return function() { openLightbox(src); }; })(m.image);
                 wrap.appendChild(img);
             }
@@ -892,25 +948,21 @@
 
         var footer = document.createElement('div');
         footer.className = 'msg-footer';
-
         if (m.edited && !m.deleted) {
             var ed = document.createElement('span');
             ed.className = 'msg-edited'; ed.innerText = 'изм. ';
             footer.appendChild(ed);
         }
-
         var ts = document.createElement('span');
         ts.className = 'msg-time';
         ts.innerText = formatTime(m.time || new Date().toISOString());
         footer.appendChild(ts);
-
         if (isMy && !m.deleted) {
             var ticks = document.createElement('span');
             ticks.className = 'msg-ticks' + (m.read ? ' read' : '');
             ticks.innerText = m.read ? '✓✓' : '✓';
             footer.appendChild(ticks);
         }
-
         wrap.appendChild(footer);
 
         wrap.addEventListener('contextmenu', function(e) { e.preventDefault(); openCtxMenu(e, wrap); });
@@ -928,51 +980,41 @@
         var box = document.getElementById('msgBox');
         if (!box) return;
         var wrap = buildMsgEl(m, optimistic);
-        var indicator = document.getElementById('typingIndicator');
-        box.insertBefore(wrap, indicator);
+        box.insertBefore(wrap, document.getElementById('typingIndicator'));
         box.scrollTop = box.scrollHeight;
-        if (!optimistic && m.id && (!oldestMsgId || m.id < oldestMsgId))
-            oldestMsgId = m.id;
+        if (!optimistic && m.id && (!oldestMsgId || m.id < oldestMsgId)) oldestMsgId = m.id;
     }
 
-    // =========================
-    // LOAD MESSAGES
-    // =========================
+    // LOAD
     function loadMessages(beforeId, prepend) {
         if (isLoadingMore || noMoreMsgs) return;
         isLoadingMore = true;
-
         var url = '/get_messages?with=' + TARGET_ID;
         if (beforeId) url += '&before_id=' + beforeId;
-
         fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(msgs) {
                 isLoadingMore = false;
                 var box = document.getElementById('msgBox');
-
                 if (msgs.length === 0 || msgs.length < 50) noMoreMsgs = true;
-
                 if (msgs.length === 0) {
                     if (prepend && box) {
-                        var label = document.createElement('div');
-                        label.className = 'load-more-label';
-                        label.innerText = '— начало переписки —';
-                        box.insertBefore(label, box.firstChild);
+                        var lbl = document.createElement('div');
+                        lbl.className = 'load-more-label';
+                        lbl.innerText = '— начало переписки —';
+                        box.insertBefore(lbl, box.firstChild);
                     }
                     return;
                 }
-
                 if (!prepend) {
                     msgs.forEach(function(m) { drawMessage(m, false); });
                     if (box) box.scrollTop = box.scrollHeight;
                 } else {
-                    var prevHeight = box.scrollHeight;
+                    var prev = box.scrollHeight;
                     for (var i = msgs.length - 1; i >= 0; i--)
                         box.insertBefore(buildMsgEl(msgs[i], false), box.firstChild);
-                    box.scrollTop = box.scrollHeight - prevHeight;
+                    box.scrollTop = box.scrollHeight - prev;
                 }
-
                 if (msgs[0] && msgs[0].id) oldestMsgId = msgs[0].id;
             })
             .catch(function(e) { isLoadingMore = false; console.error(e); });
@@ -988,75 +1030,50 @@
         });
     }
 
-    // =========================
     // СВАЙП НАЗАД
-    // =========================
     var swipeStartX = 0;
-    document.addEventListener('touchstart', function(e) {
-        swipeStartX = e.touches[0].clientX;
-    }, { passive: true });
-
+    document.addEventListener('touchstart', function(e) { swipeStartX = e.touches[0].clientX; }, { passive: true });
     document.addEventListener('touchend', function(e) {
-        var dx = e.changedTouches[0].clientX - swipeStartX;
-        if (dx > 80 && swipeStartX < 40 && TARGET_ID)
+        if (e.changedTouches[0].clientX - swipeStartX > 80 && swipeStartX < 40 && TARGET_ID)
             window.location.href = '/';
     }, { passive: true });
 
-    // =========================
-    // КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЯ
-    // =========================
+    // CTX MENU MSG
     function openCtxMenu(e, el) {
         ctxMsgEl = el;
         document.getElementById('chatCtxMenu').style.display = 'none';
         var menu = document.getElementById('ctxMenu');
-        var isMy = (el.dataset.sender === MY_ID);
-        var isDeleted = el.querySelector('.msg-deleted') !== null;
-
-        document.getElementById('ctxEditBtn').style.display =
-            (isMy && !isDeleted && el.dataset.text) ? 'flex' : 'none';
-        document.getElementById('ctxDeleteBtn').style.display =
-            (isMy && !isDeleted) ? 'flex' : 'none';
-
-        var x = e.clientX || e.pageX;
-        var y = e.clientY || e.pageY;
-        menu.style.left = Math.min(x, window.innerWidth  - 210) + 'px';
+        var isMy = el.dataset.sender === MY_ID;
+        var isDel = !!el.querySelector('.msg-deleted');
+        document.getElementById('ctxEditBtn').style.display   = (isMy && !isDel && el.dataset.text) ? 'flex' : 'none';
+        document.getElementById('ctxDeleteBtn').style.display = (isMy && !isDel) ? 'flex' : 'none';
+        var x = e.clientX || e.pageX, y = e.clientY || e.pageY;
+        menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
         menu.style.top  = Math.min(y, window.innerHeight - 180) + 'px';
         menu.style.display = 'block';
     }
 
-    // =========================
-    // КОНТЕКСТНОЕ МЕНЮ ЧАТА (долгое нажатие на user-item)
-    // =========================
+    // CTX MENU CHAT (долгое нажатие на чат)
     document.querySelectorAll('.user-item').forEach(function(el) {
         var timer = null;
-        var userId = el.id.replace('user-', '');
-
-        el.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            openChatCtxMenu(e, userId);
-        });
-
+        var uid = el.id.replace('user-', '');
+        el.addEventListener('contextmenu', function(e) { e.preventDefault(); openChatCtxMenu(e, uid); });
         el.addEventListener('touchstart', function(e) {
-            timer = setTimeout(function() {
-                openChatCtxMenu(e.touches[0], userId);
-            }, 600);
+            timer = setTimeout(function() { openChatCtxMenu(e.touches[0], uid); }, 600);
         }, { passive: true });
-
         el.addEventListener('touchend',  function() { clearTimeout(timer); });
         el.addEventListener('touchmove', function() { clearTimeout(timer); });
     });
 
-    function openChatCtxMenu(e, userId) {
-        ctxChatUserId = userId;
+    function openChatCtxMenu(e, uid) {
+        ctxChatUserId = uid;
         document.getElementById('ctxMenu').style.display = 'none';
         var menu = document.getElementById('chatCtxMenu');
-        var isPinned = pinnedIds.indexOf(userId) !== -1;
-        document.getElementById('pinChatBtn').style.display   = isPinned ? 'none' : 'flex';
-        document.getElementById('unpinChatBtn').style.display = isPinned ? 'flex' : 'none';
-
-        var x = e.clientX || e.pageX;
-        var y = e.clientY || e.pageY;
-        menu.style.left = Math.min(x, window.innerWidth  - 210) + 'px';
+        var pinned = pinnedIds.indexOf(uid) !== -1;
+        document.getElementById('pinChatBtn').style.display   = pinned ? 'none' : 'flex';
+        document.getElementById('unpinChatBtn').style.display = pinned ? 'flex' : 'none';
+        var x = e.clientX || e.pageX, y = e.clientY || e.pageY;
+        menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
         menu.style.top  = Math.min(y, window.innerHeight - 120) + 'px';
         menu.style.display = 'block';
     }
@@ -1091,10 +1108,10 @@
     function ctxReply() {
         if (!ctxMsgEl) return;
         document.getElementById('ctxMenu').style.display = 'none';
-        var senderName = ctxMsgEl.dataset.sender === MY_ID ? 'Вы' : "{{ target_user.name if target_user else '' }}";
+        var name = ctxMsgEl.dataset.sender === MY_ID ? 'Вы' : "{{ target_user.name if target_user else '' }}";
         var text = ctxMsgEl.dataset.text || '📷 Фото';
-        replyTo = { id: ctxMsgEl.dataset.id, text: text, sender_name: senderName };
-        document.getElementById('replyName').innerText = senderName;
+        replyTo = { id: ctxMsgEl.dataset.id, text: text, sender_name: name };
+        document.getElementById('replyName').innerText = name;
         document.getElementById('replyText').innerText = text.length > 60 ? text.slice(0, 60) + '…' : text;
         document.getElementById('replyPreview').style.display = 'block';
         if (textarea) textarea.focus();
@@ -1124,14 +1141,12 @@
         document.getElementById('replyPreview').style.display = 'none';
     }
 
-    function scrollToMsg(msgId) {
-        var el = document.querySelector('[data-id="' + msgId + '"]');
+    function scrollToMsg(id) {
+        var el = document.querySelector('[data-id="' + id + '"]');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // =========================
     // ФОТО
-    // =========================
     function onPhotoSelected(inp) {
         var file = inp.files[0];
         if (!file) return;
@@ -1145,11 +1160,8 @@
         fd.append('image', file);
         fetch('/upload_image', { method: 'POST', body: fd })
             .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.url) pendingPhoto = data.url;
-                else { alert('Ошибка загрузки'); cancelPhoto(); }
-            })
-            .catch(function() { alert('Ошибка загрузки'); cancelPhoto(); });
+            .then(function(d) { if (d.url) pendingPhoto = d.url; else { alert('Ошибка'); cancelPhoto(); } })
+            .catch(function() { alert('Ошибка'); cancelPhoto(); });
         inp.value = '';
     }
 
@@ -1159,9 +1171,6 @@
         document.getElementById('photoPreviewImg').src = '';
     }
 
-    // =========================
-    // ЛАЙТБОКС
-    // =========================
     function openLightbox(src) {
         document.getElementById('lightboxImg').src = src;
         document.getElementById('lightbox').classList.add('open');
@@ -1171,9 +1180,7 @@
         document.getElementById('lightbox').classList.remove('open');
     }
 
-    // =========================
     // SOCKET
-    // =========================
     var socket = io({ transports: ['websocket', 'polling'] });
 
     socket.on('connect', function() {
@@ -1187,15 +1194,11 @@
         if (s) { s.innerText = '⚠ Нет соединения'; s.style.display = 'block'; }
     });
 
-    // =========================
-    // ONLINE / OFFLINE
-    // =========================
     socket.on('user_online', function(data) {
         var av = document.getElementById('avatar-' + data.user_id);
         if (av && !av.querySelector('.avatar-online')) {
             var dot = document.createElement('div');
-            dot.className = 'avatar-online';
-            av.appendChild(dot);
+            dot.className = 'avatar-online'; av.appendChild(dot);
         }
         var st = document.getElementById('status-' + data.user_id);
         if (st) st.innerText = 'в сети';
@@ -1216,11 +1219,8 @@
         }
     });
 
-    // =========================
     // TYPING
-    // =========================
     var typingTimer = null;
-
     socket.on('typing', function(data) {
         if (data.sender_id !== TARGET_ID) return;
         var ind = document.getElementById('typingIndicator');
@@ -1232,48 +1232,34 @@
             clearTimeout(typingTimer);
             typingTimer = setTimeout(function() { ind.style.display = 'none'; }, 4000);
         } else {
-            clearTimeout(typingTimer);
-            ind.style.display = 'none';
+            clearTimeout(typingTimer); ind.style.display = 'none';
         }
     });
 
-    var myTypingTimer = null;
-    var isTyping = false;
-
+    var myTypingTimer = null, isTyping = false;
     document.addEventListener('input', function(e) {
         if (e.target.id !== 'textInp' || !TARGET_ID) return;
         if (!isTyping) { isTyping = true; socket.emit('typing', { receiver_id: TARGET_ID, typing: true }); }
         clearTimeout(myTypingTimer);
         myTypingTimer = setTimeout(function() {
-            isTyping = false;
-            socket.emit('typing', { receiver_id: TARGET_ID, typing: false });
+            isTyping = false; socket.emit('typing', { receiver_id: TARGET_ID, typing: false });
         }, 2000);
     });
 
-    // =========================
-    // RECEIVE MESSAGE
-    // =========================
     socket.on('receive_message', function(msg) {
         var box = document.getElementById('msgBox');
         if (!box) { updateBadge(msg.sender); return; }
-
-        var isCurrentChat =
-            (msg.sender === TARGET_ID && msg.receiver === MY_ID) ||
-            (msg.sender === MY_ID     && msg.receiver === TARGET_ID);
-
-        if (!isCurrentChat) { updateBadge(msg.sender); return; }
-
+        var isCurrent = (msg.sender === TARGET_ID && msg.receiver === MY_ID) ||
+                        (msg.sender === MY_ID     && msg.receiver === TARGET_ID);
+        if (!isCurrent) { updateBadge(msg.sender); return; }
         if (msg.sender === MY_ID) {
             var opt = box.querySelector('[data-optimistic="1"]');
             if (opt) { opt.dataset.id = msg.id; opt.removeAttribute('data-optimistic'); return; }
         }
-
         var ind = document.getElementById('typingIndicator');
         if (ind) ind.style.display = 'none';
         drawMessage(msg, false);
-
-        if (msg.sender === TARGET_ID)
-            socket.emit('mark_read', { sender_id: TARGET_ID });
+        if (msg.sender === TARGET_ID) socket.emit('mark_read', { sender_id: TARGET_ID });
     });
 
     socket.on('messages_read', function(data) {
@@ -1305,57 +1291,40 @@
         del.className = 'msg-deleted'; del.innerText = '🚫 Сообщение удалено';
         el.appendChild(del);
         var f = document.createElement('div');
-        f.className = 'msg-footer';
-        el.appendChild(f);
+        f.className = 'msg-footer'; el.appendChild(f);
     });
 
-    // =========================
     // SEND
-    // =========================
     function sendMsg() {
         if (!textarea || !TARGET_ID) return;
         var val = textarea.value.trim();
         if (!val && !pendingPhoto) return;
-
         if (editingMsgId) {
             if (!val) return;
             socket.emit('edit_message', { msg_id: editingMsgId, text: val });
             editingMsgId = null;
-            textarea.value = '';
-            textarea.style.height = 'auto';
+            textarea.value = ''; textarea.style.height = 'auto';
             textarea.placeholder = 'Сообщение...';
             return;
         }
-
         clearTimeout(myTypingTimer);
         if (isTyping) { isTyping = false; socket.emit('typing', { receiver_id: TARGET_ID, typing: false }); }
-
         var payload = { receiver_id: TARGET_ID, text: val };
         if (pendingPhoto) payload.image = pendingPhoto;
         if (replyTo)      payload.reply_to = replyTo.id;
-
         drawMessage({
-            id: '', sender: MY_ID, receiver: TARGET_ID,
-            text: val, image: pendingPhoto,
-            reply_to:     replyTo ? replyTo.id         : null,
-            reply_text:   replyTo ? replyTo.text        : null,
+            id: '', sender: MY_ID, receiver: TARGET_ID, text: val, image: pendingPhoto,
+            reply_to: replyTo ? replyTo.id : null, reply_text: replyTo ? replyTo.text : null,
             reply_sender: replyTo ? replyTo.sender_name : null,
-            read: false, edited: false, deleted: false,
-            time: new Date().toISOString()
+            read: false, edited: false, deleted: false, time: new Date().toISOString()
         }, true);
-
         socket.emit('new_message', payload);
-        textarea.value = '';
-        textarea.style.height = 'auto';
-        textarea.focus();
-        cancelReply();
-        cancelPhoto();
+        textarea.value = ''; textarea.style.height = 'auto';
+        textarea.focus(); cancelReply(); cancelPhoto();
     }
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
-            e.preventDefault(); sendMsg();
-        }
+        if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) { e.preventDefault(); sendMsg(); }
         if (e.key === 'Escape') {
             cancelReply();
             if (editingMsgId) {
@@ -1365,9 +1334,6 @@
         }
     });
 
-    // =========================
-    // BADGE
-    // =========================
     function updateBadge(userId) {
         var badge = document.getElementById('badge-' + userId);
         if (!badge) return;
@@ -1377,14 +1343,11 @@
 
     if (textarea && window.innerWidth > 768) textarea.focus();
 
-    // =========================
     // УВЕДОМЛЕНИЯ
-    // =========================
     function playNotifSound() {
         try {
             var ctx = new (window.AudioContext || window.webkitAudioContext)();
-            var osc = ctx.createOscillator();
-            var gain = ctx.createGain();
+            var osc = ctx.createOscillator(), gain = ctx.createGain();
             osc.connect(gain); gain.connect(ctx.destination);
             osc.frequency.setValueAtTime(880, ctx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15);
@@ -1399,41 +1362,37 @@
             Notification.requestPermission();
     }
 
-    function showPushNotif(senderName, text) {
+    function showPushNotif(name, text) {
         if (!('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
-        var notif = new Notification('KadrGram — ' + senderName, {
-            body: text || '📷 Фото', icon: '/static/icon.png', tag: 'kadrgram-msg'
-        });
-        notif.onclick = function() { window.focus(); notif.close(); };
-        setTimeout(function() { notif.close(); }, 4000);
+        var n = new Notification('KadrGram — ' + name, { body: text || '📷 Фото', icon: '/static/icon.png', tag: 'kg' });
+        n.onclick = function() { window.focus(); n.close(); };
+        setTimeout(function() { n.close(); }, 4000);
     }
 
     var totalUnread = 0;
 
     function updateFavicon(count) {
-        var canvas = document.createElement('canvas');
-        canvas.width = 32; canvas.height = 32;
-        var ctx = canvas.getContext('2d');
-        ctx.beginPath(); ctx.arc(16, 16, 15, 0, Math.PI * 2);
-        ctx.fillStyle = '#6c63ff'; ctx.fill();
+        var c = document.createElement('canvas');
+        c.width = c.height = 32;
+        var ctx = c.getContext('2d');
+        ctx.beginPath(); ctx.arc(16,16,15,0,Math.PI*2);
+        ctx.fillStyle = '#0088cc'; ctx.fill();
         ctx.font = 'bold 18px Arial'; ctx.fillStyle = 'white';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('K', 16, 17);
         if (count > 0) {
-            ctx.beginPath(); ctx.arc(24, 8, 9, 0, Math.PI * 2);
+            ctx.beginPath(); ctx.arc(24,8,9,0,Math.PI*2);
             ctx.fillStyle = '#ff6b6b'; ctx.fill();
             ctx.font = 'bold 10px Arial'; ctx.fillStyle = 'white';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(count > 99 ? '99+' : String(count), 24, 8);
         }
-        var link = document.querySelector("link[rel~='icon']");
-        if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-        link.href = canvas.toDataURL('image/png');
+        var lnk = document.querySelector("link[rel~='icon']");
+        if (!lnk) { lnk = document.createElement('link'); lnk.rel = 'icon'; document.head.appendChild(lnk); }
+        lnk.href = c.toDataURL('image/png');
     }
 
-    function updateTitle(count) {
-        document.title = count > 0 ? '(' + count + ') KadrGram' : 'KadrGram';
-    }
+    function updateTitle(n) { document.title = n > 0 ? '(' + n + ') KadrGram' : 'KadrGram'; }
 
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) { totalUnread = 0; updateFavicon(0); updateTitle(0); }
@@ -1442,14 +1401,12 @@
     requestNotifPermission();
 
     var _orig = updateBadge;
-    updateBadge = function(userId) {
-        _orig(userId);
-        var nameEl = document.querySelector('#user-' + userId + ' .user-name');
+    updateBadge = function(uid) {
+        _orig(uid);
+        var el = document.querySelector('#user-' + uid + ' .user-name');
         totalUnread++;
-        updateFavicon(totalUnread);
-        updateTitle(totalUnread);
-        playNotifSound();
-        showPushNotif(nameEl ? nameEl.innerText : 'Новое сообщение', '');
+        updateFavicon(totalUnread); updateTitle(totalUnread);
+        playNotifSound(); showPushNotif(el ? el.innerText : 'Новое сообщение', '');
     };
 </script>
 </body>
