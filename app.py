@@ -319,6 +319,35 @@ def profile():
         user=serialize_user(user)
     )
 
+@app.route("/change_login", methods=["POST"])
+def change_login():
+
+    user = get_user()
+
+    if not user:
+        return redirect("/login")
+
+    new_login = bleach.clean(
+        request.form.get("login", "").strip()
+    )
+
+    if not re.match(r'^[A-Za-z0-9]+$', new_login):
+        return redirect("/profile")
+
+    exists = users.find_one({
+        "login": new_login
+    })
+
+    if exists:
+        return redirect("/profile")
+
+    users.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"login": new_login}}
+    )
+
+    return redirect("/profile")
+
 @app.route("/change_name", methods=["POST"])
 def change_name():
 
