@@ -307,6 +307,18 @@ def search():
         results = [serialize_user(u) for u in raw]
     return render_template("search.html", results=results)
 
+@app.route("/profile")
+def profile():
+    user = get_user()
+
+    if not user:
+        return redirect("/login")
+
+    return render_template(
+        "profile.html",
+        user=serialize_user(user)
+    )
+
 @app.route("/pin_chat", methods=["POST"])
 def pin_chat():
     user = get_user()
