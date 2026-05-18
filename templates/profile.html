@@ -8,16 +8,13 @@
         @import url('https://googleapis.com');
 
         :root {
-            --primary: #0088cc;
-            --primary2: #00b4d8;
+            --primary: #3390ec;
             --danger: #ff6b6b;
             --bg: #f0f4f8;
             --white: #ffffff;
             --border: #e8ecf0;
             --text: #1a1a2e;
             --text2: #7a8a9a;
-            --shadow-md: 0 8px 24px rgba(0, 136, 204, 0.15);
-            --shadow-lg: 0 16px 48px rgba(0, 136, 204, 0.2);
         }
 
         * {
@@ -36,17 +33,17 @@
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            padding: 40px 20px 100px 20px; /* Отступ снизу под тулбар */
+            padding: 40px 20px 100px 20px;
         }
 
-        /* КАРТОЧКА ПРОФИЛЯ */
+        /* ЦЕНТРАЛЬНЫЙ БЛОК ПРОФИЛЯ */
         .profile-container {
             background: var(--white);
             width: 100%;
             max-width: 400px;
             padding: 30px 24px;
             border-radius: 24px;
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
             text-align: center;
             border: 1px solid var(--border);
             margin-top: 20px;
@@ -56,7 +53,7 @@
             width: 90px;
             height: 90px;
             border-radius: 50%;
-            background: linear-gradient(135 deg, var(--primary), var(--primary2));
+            background: var(--primary);
             color: white;
             display: inline-flex;
             align-items: center;
@@ -64,7 +61,7 @@
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 16px;
-            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
+            box-shadow: 0 8px 20px rgba(51, 144, 236, 0.2);
         }
 
         .profile-name {
@@ -79,8 +76,8 @@
             margin-bottom: 24px;
         }
 
-        /* КНОПКИ */
-        .btn {
+        /* КНОПКИ НА СТРАНИЦЕ */
+        .action-btn {
             display: block;
             width: 100%;
             padding: 14px;
@@ -96,19 +93,18 @@
         }
 
         .btn-blue {
-            background: linear-gradient(135 deg, var(--primary), var(--primary2));
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.2);
+            background: var(--primary);
+            color: white !important;
         }
 
         .btn-blue:hover {
             transform: scale(1.02);
-            box-shadow: 0 6px 16px rgba(0, 136, 204, 0.3);
+            opacity: 0.9;
         }
 
         .btn-red {
             background: rgba(255, 107, 107, 0.1);
-            color: var(--danger);
+            color: var(--danger) !important;
             border: 1px solid rgba(255, 107, 107, 0.2);
             margin-top: 12px;
             margin-bottom: 0;
@@ -119,11 +115,11 @@
             transform: scale(1.02);
         }
 
-        /* МОДАЛЬНЫЕ ОКНА (ФОРМЫ) */
+        /* МОДАЛЬНЫЕ ОКНА */
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(26, 26, 46, 0.5);
+            background: rgba(26, 26, 46, 0.4);
             backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
@@ -142,13 +138,14 @@
             max-width: 380px;
             padding: 24px;
             border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+            animation: modalIn 0.2s ease-out;
+            text-align: left;
         }
 
         @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .modal-title {
@@ -172,7 +169,6 @@
         .form-input:focus {
             border-color: var(--primary);
             background: white;
-            box-shadow: 0 0 0 4px rgba(0, 136, 204, 0.1);
         }
 
         .modal-buttons {
@@ -180,21 +176,17 @@
             gap: 10px;
         }
 
-        .modal-buttons .btn {
+        .modal-buttons .action-btn {
             margin-bottom: 0;
             padding: 12px;
         }
 
         .btn-cancel {
             background: #e2e8f0;
-            color: #475569;
+            color: #475569 !important;
         }
 
-        .btn-cancel:hover {
-            background: #cbd5e1;
-        }
-
-        /* НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (ТУЛБАР) */
+        /* НИЖНИЙ ТУЛБАР */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -208,7 +200,6 @@
             align-items: center;
             z-index: 999;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
         }
 
         .nav-item {
@@ -221,12 +212,6 @@
             font-size: 12px;
             font-weight: 500;
             flex: 1;
-            padding: 8px 0;
-            transition: color 0.2s;
-        }
-
-        .nav-item svg, .nav-item span.icon {
-            font-size: 20px;
         }
 
         .nav-item.active {
@@ -236,36 +221,35 @@
 </head>
 <body>
 
-<!-- ОСНОВНОЙ БЛОК ПРОФИЛЯ -->
-<div style="background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 18px; text-align: center; margin: 20px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    
-    <!-- Аватарка -->
-    <div style="width: 80px; height: 80px; border-radius: 50%; background: #3390ec; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin-bottom: 15px;">
-        {{ user.name[0]|upper if user else 'K' }}
-    </div>
-    
-    <!-- Имя и Логин -->
-    <h2 style="margin-bottom: 5px; font-size: 22px;">{{ user.name if user else 'kkk' }}</h2>
-    <p style="color: #777; margin-bottom: 20px; font-size: 14px;">@{{ user.username if user else 'Oyatullo' }}</p>
+    <!-- КАРТОЧКА ПРОФИЛЯ -->
+    <div class="profile-container">
+        <div class="avatar-main">
+            {% if user and user.name %}
+                {{ user.name[0]|upper }}
+            {% else %}
+                K
+            {% endif %}
+        </div>
+        <div class="profile-name">{{ user.name if user else 'kkk' }}</div>
+        <div class="profile-username">@{{ user.login if user else 'Oyatullo' }}</div>
 
-    <!-- Кнопки управления (Оригинальный стиль из вашего первого скрина) -->
-    <button type="button" class="btn btn-blue" onclick="openModal('nameModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Изменить имя</button>
-    <button type="button" class="btn btn-blue" onclick="openModal('loginModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Изменить логин</button>
-    <button type="button" class="btn btn-blue" onclick="openModal('passwordModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Сменить пароль</button>
-    
-    <a href="/logout" style="display: block; width: 100%; padding: 12px; background: #ff6b6b; color: white; border: none; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 15px;">Выйти</a>
-</div>
+        <!-- Кнопки управления теперь имеют уникальный класс .action-btn -->
+        <button type="button" class="action-btn btn-blue" onclick="openModal('nameModal')">Изменить имя</button>
+        <button type="button" class="action-btn btn-blue" onclick="openModal('loginModal')">Изменить логин</button>
+        <button type="button" class="action-btn btn-blue" onclick="openModal('passwordModal')">Сменить пароль</button>
+        
+        <a href="/logout" class="action-btn btn-red">Выйти</a>
+    </div>
 
     <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ИМЯ -->
     <div id="nameModal" class="modal" onclick="closeModalOnOutsideClick(event, 'nameModal')">
         <div class="modal-content">
             <div class="modal-title">Новое имя</div>
-            <!-- Направление на ваш Flask бэкенд обработки формы -->
-            <form action="/update_name" method="POST">
-                <input type="text" name="new_name" class="form-input" placeholder="Введите имя" required autocomplete="off">
+            <form action="/change_name" method="POST">
+                <input type="text" name="name" class="form-input" placeholder="Введите имя" required autocomplete="off" value="{{ user.name if user else '' }}">
                 <div class="modal-buttons">
-                    <button type="button" class="btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
-                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
+                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -275,11 +259,11 @@
     <div id="loginModal" class="modal" onclick="closeModalOnOutsideClick(event, 'loginModal')">
         <div class="modal-content">
             <div class="modal-title">Новый логин</div>
-            <form action="/update_username" method="POST">
-                <input type="text" name="new_username" class="form-input" placeholder="Введите логин" required autocomplete="off">
+            <form action="/change_login" method="POST">
+                <input type="text" name="login" class="form-input" placeholder="Введите логин" required autocomplete="off" value="{{ user.login if user else '' }}">
                 <div class="modal-buttons">
-                    <button type="button" class="btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
-                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
+                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -289,34 +273,32 @@
     <div id="passwordModal" class="modal" onclick="closeModalOnOutsideClick(event, 'passwordModal')">
         <div class="modal-content">
             <div class="modal-title">Смена пароля</div>
-            <form action="/update_password" method="POST">
-                <input type="password" name="old_password" class="form-input" placeholder="Текущий пароль" required>
-                <input type="password" name="new_password" class="form-input" placeholder="Новый пароль" required>
+            <form action="/change_password" method="POST">
+                <input type="password" name="password" class="form-input" placeholder="Введите новый пароль" required minlength="8">
                 <div class="modal-buttons">
-                    <button type="button" class="btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
-                    <button type="submit" class="btn btn-blue">Сохранить</button>
+                    <button type="button" class="action-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
+                    <button type="submit" class="action-btn btn-blue">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- НИЖНИЙ ТУЛБАР НАВИГАЦИИ -->
+    <!-- НИЖНИЙ ТУЛБАР -->
     <div class="bottom-nav">
         <a href="/" class="nav-item">
-            <span class="icon">💬</span>
+            <span>💬</span>
             <div>Чаты</div>
         </a>
         <a href="/search" class="nav-item">
-            <span class="icon">🔍</span>
+            <span>🔍</span>
             <div>Поиск</div>
         </a>
         <a href="/profile" class="nav-item active">
-            <span class="icon">👤</span>
+            <span>👤</span>
             <div>Профиль</div>
         </a>
     </div>
 
-    <!-- СКРИПТЫ УПРАВЛЕНИЯ ИНТЕРФЕЙСОМ -->
     <script>
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
@@ -326,7 +308,6 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Закрытие окон при клике на темную область вокруг них
         function closeModalOnOutsideClick(event, modalId) {
             if (event.target === document.getElementById(modalId)) {
                 closeModal(modalId);
