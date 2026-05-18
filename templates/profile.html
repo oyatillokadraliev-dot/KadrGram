@@ -236,19 +236,25 @@
 </head>
 <body>
 
-    <!-- ОСНОВНОЙ БЛОК ПРОФИЛЯ -->
-    <div class="profile-container">
-        <!-- Используем Jinja2 переменные вашего проекта -->
-        <div class="avatar-main">{{ user.name[0]|upper }}</div>
-        <div class="profile-name">{{ user.name }}</div>
-        <div class="profile-username">@{{ user.username }}</div>
-
-        <button class="btn btn-blue" onclick="openModal('nameModal')">Изменить имя</button>
-        <button class="btn btn-blue" onclick="openModal('loginModal')">Изменить логин</button>
-        <button class="btn btn-blue" onclick="openModal('passwordModal')">Сменить пароль</button>
-        
-        <a href="/logout" class="btn btn-red">Выйти</a>
+<!-- ОСНОВНОЙ БЛОК ПРОФИЛЯ -->
+<div style="background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 18px; text-align: center; margin: 20px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    
+    <!-- Аватарка -->
+    <div style="width: 80px; height: 80px; border-radius: 50%; background: #3390ec; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin-bottom: 15px;">
+        {{ user.name[0]|upper if user else 'K' }}
     </div>
+    
+    <!-- Имя и Логин -->
+    <h2 style="margin-bottom: 5px; font-size: 22px;">{{ user.name if user else 'kkk' }}</h2>
+    <p style="color: #777; margin-bottom: 20px; font-size: 14px;">@{{ user.username if user else 'Oyatullo' }}</p>
+
+    <!-- Кнопки управления (Оригинальный стиль из вашего первого скрина) -->
+    <button type="button" class="btn btn-blue" onclick="openModal('nameModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Изменить имя</button>
+    <button type="button" class="btn btn-blue" onclick="openModal('loginModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Изменить логин</button>
+    <button type="button" class="btn btn-blue" onclick="openModal('passwordModal')" style="width: 100%; padding: 12px; background: #3390ec; color: white; border: none; border-radius: 10px; margin-bottom: 10px; font-weight: 500; cursor: pointer;">Сменить пароль</button>
+    
+    <a href="/logout" style="display: block; width: 100%; padding: 12px; background: #ff6b6b; color: white; border: none; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 15px;">Выйти</a>
+</div>
 
     <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ИМЯ -->
     <div id="nameModal" class="modal" onclick="closeModalOnOutsideClick(event, 'nameModal')">
