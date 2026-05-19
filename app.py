@@ -566,6 +566,155 @@ def handle_error(e):
     print(traceback.format_exc())
     return "SERVER ERROR", 500
 
+    # === ПРОДОЛЖЕНИЕ ТВОЕГО РОУТА /upload_image ===
+    if f and allowed_file(f.filename):
+        try:
+            upload_result = cloudinary.uploader.upload(f, folder="kadrgram_chats")
+            return jsonify({"url": upload_result.get("secure_url")})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return jsonify({"error": "invalid file type"}), 400
 
+# =========================
+# PROFILE & SETTINGS
+# =========================
+@app.route("/profile")
+def profile():
+    user = get_user()
+    if not user:
+        return redirect("/login")
+    
+    # Формируем данные пользователя для передачи в шаблон profile.html
+    user_data = {
+        "name": user.get("name", "kkk"),
+        "login": user.get("login", "Oyatullo"),
+        "avatar": user.get("avatar") # Тянем Base64 строку или None из Atlas
+    }
+    return render_template("profile.html", user=user_data)
+
+@app.route("/update_profile", methods=["POST"])
+def update_profile():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Вы не авторизованы'}), 401
+    
+    data = request.get_json()
+    field = data.get('field')
+    value = data.get('value', '').strip()
+    
+    if not value:
+        return jsonify({'success': False, 'message': 'Поле не может быть пустым'}), 400
+        
+    user_id = oid(session['user_id'])
+    update_data = {}
+    
+    if field == 'name':
+        update_data['name'] = bleach.clean(value)
+    elif field == 'login':
+        # Проверяем уникальность нового логина (как при регистрации)
+        if not re.match(r'^[A-Za-z0-9]+$', value):
+            return jsonify({'success': False, 'message': 'Недопустимые символы'}), 400
+        if users.find_one({"login": value, "_id": {"$ne": user_id}}):
+            return jsonify({'success': False, 'message': 'Этот логин уже занят'}), 400
+        update_data['login'] = value
+    elif field == 'password':
+        if len(value) < 8:
+            return jsonify({'success': False, 'message': 'Пароль слишком короткий'}), 400
+        update_data['password'] = generate_password_hash(value)
+    else:
+        return jsonify({'success': False, 'message': 'Неверный тип поля'}), 400
+
+    users.update_one({'_id': user_id}, {'$set': update_data})
+    return jsonify({'success': True})
+
+@app.route("/upload_avatar", methods=["POST"])
+def upload_avatar():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Вы не авторизованы'}), 401
+    
+    data = request.get_json()
+    base64_image = data.get('image')
+    
+    if not base64_image:
+        return jsonify({'success': False, 'message': 'Данные изображения отсутствуют'}), 400
+        
+    # Защита от перегрузки бесплатной базы Atlas (ограничение 3MB)
+    if len(base64_image) > 3 * 1024 * 1024: 
+        return jsonify({'success': False, 'message': 'Изображение слишком большое'}), 400
+
+    user_id = oid(session['user_id'])
+    users.update_one({'_id': user_id}, {'$set': {'avatar': base64_image}})
+    return jsonify({'success': True})
+
+# =========================
+# SEARCH
+# =========================
+@app.route("/search")
+def search():
+    user = get_user()
+    if not user:
+        return redirect("/login")
+        
+    query = request.args.get('query', '').strip()
+    results = []
+    
+    if query:
+        # Ищем пользователей, исключая себя из выдачи
+        raw_results = users.find({
+            "_id": {"$ne": user["_id"]},
+            "$or": [
+                {"name": {"$regex": query, "$options": "i"}},
+                {"login": {"$regex": query, "$options": "i"}}
+            ]
+        })
+        for r in raw_results:
+            results.append({
+                "id": str(r["_id"]),
+                "name": r.get("name", ""),
+                "login": r.get("login", ""),
+                "avatar": r.get("avatar") # Чтобы аватарки отображались в поиске
+            })
+            
+    return render_template("search.html", results=results)
+
+# =========================
+# SOCKET.IO: APPLE REACTIONS
+# =========================
+@socketio.on('toggle_reaction')
+def handle_toggle_reaction(data):
+    user_id = session.get('user_id')
+    if not user_id:
+        return
+
+    msg_id = data.get('message_id')
+    emoji = data.get('emoji')
+    
+    allowed_emojis = ['👍', '❤️', '🔥', '😂', '👏', '😮', '😢']
+    if emoji not in allowed_emojis:
+        return
+
+    message = messages.find_one({'_id': oid(msg_id)})
+    if not message:
+        return
+
+    reactions = message.get('reactions', {})
+    
+    # Если пользователь повторно нажал на тот же эмодзи — убираем его, иначе — ставим
+    if reactions.get(user_id) == emoji:
+        del reactions[user_id]
+    else:
+        reactions[user_id] = emoji
+        
+    messages.update_one({'_id': oid(msg_id)}, {'$set': {'reactions': reactions}})
+    
+    # Группируем и считаем количество каждой реакции для отправки на фронтенд
+    from collections import Counter
+    reaction_counts = Counter(reactions.values())
+    
+    # Определяем комнату для рассылки (составляем из sender и receiver сообщения)
+    # Так как у тебя сообщения хранят строковые sender и receiver:
+    socketio.emit('update_reactions', {
+        'message_id': msg_id,
+        'reaction_counts': dict(reaction_counts)
+    })
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
