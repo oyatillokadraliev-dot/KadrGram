@@ -117,6 +117,7 @@ def serialize_user(u):
         "id": str(u["_id"]),
         "name": u.get("name", ""),
         "login": u.get("login", ""),
+        "avatar": u.get("avatar"),  # <-- Вот здесь она должна быть
         "online": u.get("online", False),
         "last_seen_str": format_last_seen(u.get("last_seen")),
     }
@@ -328,6 +329,7 @@ def profile():
         "profile.html",
         user=serialize_user(user)
     )
+
 
 @app.route("/change_login", methods=["POST"])
 def change_login():
@@ -585,19 +587,6 @@ def handle_error(e):
 # =========================
 # PROFILE & SETTINGS
 # =========================
-@app.route("/profile")
-def profile():
-    user = get_user()
-    if not user:
-        return redirect("/login")
-    
-    # Формируем данные пользователя для передачи в шаблон profile.html
-    user_data = {
-        "name": user.get("name", "kkk"),
-        "login": user.get("login", "Oyatullo"),
-        "avatar": user.get("avatar") # Тянем Base64 строку или None из Atlas
-    }
-    return render_template("profile.html", user=user_data)
 
 @app.route("/update_profile", methods=["POST"])
 def update_profile():
