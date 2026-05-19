@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>KadrGram | Профиль</title>
     <style>
         @import url('https://googleapis.com');
 
         :root {
-            --primary: #3390ec;
-            --primary2: #00b4d8;
+            --primary: #0088cc;
+            --primary2: #0088cc;
             --success: #25d366;
             --danger: #ff6b6b;
             --bg: #f0f4f8;
@@ -27,7 +28,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
             display: flex;
@@ -240,6 +241,12 @@
             z-index: 999;
             padding-bottom: env(safe-area-inset-bottom);
         }
+
+        @media (min-width: 768px) {
+        .bottom-nav {
+            display: none;
+        }
+    }
 
         .nav-item {
             text-decoration: none;
