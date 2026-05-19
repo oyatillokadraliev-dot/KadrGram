@@ -122,6 +122,11 @@ def serialize_user(u):
     }
 
 def serialize_message(m):
+    # Считаем сумму реакций для первой загрузки истории
+    from collections import Counter
+    reactions_dict = m.get('reactions', {})
+    reaction_counts = Counter(reactions_dict.values())
+
     return {
         "id": str(m["_id"]),
         "sender": m["sender"],
@@ -134,8 +139,10 @@ def serialize_message(m):
         "reply_to": m.get("reply_to"),
         "reply_text": m.get("reply_text"),
         "reply_sender": m.get("reply_sender"),
+        "reactions": dict(reaction_counts), # ДОБАВЬ СЮДА ЭТУ СТРОКУ
         "time": m["created_at"].isoformat()
     }
+
 
 # =========================
 # AUTH
