@@ -233,6 +233,9 @@ def home():
         target_user=target_user,
         my_id=my_id
     )
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
 
 @app.route("/get_messages")
 def get_messages():
