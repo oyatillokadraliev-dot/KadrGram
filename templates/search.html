@@ -1,33 +1,50 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://googleapis.com" rel="stylesheet">
     <title>KadrGram | Поиск</title>
 
     <style>
+        :root {
+            --primary: #0088cc;
+            --success: #25d366;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e8ecf0;
+            --text: #1a1a2e;
+            --text2: #7a8a9a;
+        }
 
-        * { box-sizing: border-box; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            margin: 0;
-            padding: 20px;
-            font-family: sans-serif;
-            background: #f0f2f5;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px 100px 20px; /* Отступ снизу 100px, чтобы контент не перекрывался панелью */
         }
 
         .container {
             width: 100%;
-            max-width: 520px;
-            background: white;
-            border-radius: 18px;
+            max-width: 400px; /* Сделал ширину как в профиле для аккуратного мобильного вида */
+            background: var(--white);
+            border-radius: 24px;
             padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            margin-top: 20px;
         }
 
         .header {
@@ -40,13 +57,14 @@
         .back {
             font-size: 20px;
             text-decoration: none;
-            color: #3390ec;
+            color: var(--primary);
             font-weight: bold;
         }
 
         h2 {
             margin: 0;
             font-size: 20px;
+            font-weight: 700;
         }
 
         form {
@@ -57,76 +75,115 @@
 
         input {
             flex: 1;
-            padding: 12px;
+            padding: 12px 16px;
             border-radius: 10px;
-            border: 1px solid #ddd;
+            border: 1.5px solid var(--border);
             outline: none;
             font-size: 15px;
+            background: #f8fafc;
+            transition: all 0.2s;
         }
 
         input:focus {
-            border-color: #3390ec;
+            border-color: var(--primary);
+            background: white;
         }
 
-        button {
+        button[type="submit"] {
             padding: 10px 16px;
             border: none;
-            background: #3390ec;
+            background: var(--primary);
             color: white;
             border-radius: 10px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            opacity: 0.9;
         }
 
         .user {
             display: flex;
             justify-content: space-between;
             align-items: center;
-
-            padding: 14px;
-            border-bottom: 1px solid #f3f3f3;
-            transition: 0.2s;
-        }
-
-        .user:hover {
-            background: #f9f9f9;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
         }
 
         .name {
-            font-weight: bold;
-            color: #222;
+            font-weight: 600;
+            color: var(--text);
         }
 
         .login {
             font-size: 13px;
-            color: #888;
+            color: var(--text2);
         }
 
         .chat-btn {
-            background: #34a853;
+            background: var(--success);
             color: white;
             text-decoration: none;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-size: 13px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .chat-btn:hover {
+            opacity: 0.9;
         }
 
         .empty {
             text-align: center;
-            color: #888;
+            color: var(--text2);
             margin-top: 25px;
             font-size: 14px;
+            line-height: 1.5;
         }
 
+        /* НИЖНИЙ ТУЛБАР */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--text2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
     </style>
-
 </head>
-
 <body>
 
 <div class="container">
@@ -137,61 +194,50 @@
     </div>
 
     <form action="/search" method="get">
-
         <input
             name="query"
             placeholder="Имя или логин..."
             value="{{ request.args.get('query', '') | e }}"
             required
         />
-
         <button type="submit">Найти</button>
-
     </form>
 
     <div class="results">
-
         {% for r in results %}
-
         <div class="user">
-
             <div class="info">
-
                 <div class="name">
                     {{ r.name | e }}
                 </div>
-
                 <div class="login">
                     @{{ r.login | e }}
                 </div>
-
             </div>
-
             <a class="chat-btn" href="/?chat_with={{ r.id }}">
                 Написать
             </a>
-
         </div>
-
         {% else %}
-
             {% if request.args.get('query') %}
-
                 <div class="empty">
                     Никого не нашли 😔<br><br>
-                    Попробуйте:
-                    <br>• имя
-                    <br>• логин
+                    Попробуйте:<br>
+                    • имя<br>
+                    • логин
                 </div>
-
             {% endif %}
-
         {% endfor %}
-
     </div>
 
 </div>
 
-</body>
+<!-- НИЖНИЙ ТУЛБАР (АКТИВЕН ПОИСК) -->
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">💬 <span>Чаты</span></a>
+    <a href="/search" class="nav-item active">🔍 <span>Поиск</span></a>
+    <a href="/profile" class="nav-item">👤 <span>Профиль</span></a>
+</nav>
 
+</body>
 </html>
