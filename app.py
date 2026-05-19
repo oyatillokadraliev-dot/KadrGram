@@ -642,37 +642,6 @@ def upload_avatar():
     return jsonify({'success': True})
 
 # =========================
-# SEARCH
-# =========================
-@app.route("/search")
-def search():
-    user = get_user()
-    if not user:
-        return redirect("/login")
-        
-    query = request.args.get('query', '').strip()
-    results = []
-    
-    if query:
-        # Ищем пользователей, исключая себя из выдачи
-        raw_results = users.find({
-            "_id": {"$ne": user["_id"]},
-            "$or": [
-                {"name": {"$regex": query, "$options": "i"}},
-                {"login": {"$regex": query, "$options": "i"}}
-            ]
-        })
-        for r in raw_results:
-            results.append({
-                "id": str(r["_id"]),
-                "name": r.get("name", ""),
-                "login": r.get("login", ""),
-                "avatar": r.get("avatar") # Чтобы аватарки отображались в поиске
-            })
-            
-    return render_template("search.html", results=results)
-
-# =========================
 # SOCKET.IO: APPLE REACTIONS
 # =========================
 @socketio.on('toggle_reaction')
