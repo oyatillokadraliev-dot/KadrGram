@@ -27,6 +27,18 @@
             --radius:    18px;
         }
 
+        body.dark-mode {
+            --bg:        #0e1621;
+            --white:     #182533;
+            --sidebar-bg:#182533;
+            --chat-bg:   #0e1621;
+            --border:    #101924;
+            --text:      #ffffff;
+            --text2:     #7f91a4;
+            --their-msg: #243141;
+        }
+
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
@@ -1632,7 +1644,21 @@ function savePassword() {
         body: JSON.stringify({password})
     }).then(() => location.reload());
 }
+
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+}
 </script>
-    
+<!-- Всплывающая панель реакций Apple iOS -->
+<div id="reaction-picker" style="display: none; position: absolute; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 30px; padding: 8px 14px; gap: 10px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.4); align-items: center;">
+    <img src="https://zobj.net" onclick="setReaction('👍')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('❤️')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('🔥')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('😂')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('👏')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('😮')" style="width: 26px; height: 26px; cursor: pointer;">
+    <img src="https://zobj.net" onclick="setReaction('😢')" style="width: 26px; height: 26px; cursor: pointer;">
+</div>
+
 </body>
 </html>
