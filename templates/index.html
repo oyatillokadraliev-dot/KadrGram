@@ -28,17 +28,36 @@
         }
 
         body.dark-mode {
-            --bg:        #0e1621;
-            --white:     #182533;
-            --sidebar-bg:#182533;
-            --chat-bg:   #0e1621;
-            --border:    #101924;
-            --text:      #ffffff;
-            --text2:     #7f91a4;
-            --their-msg: #243141;
+            --bg:          #0e1621; /* Глубокий темный фон */
+            --white:       #182533; /* Фон шапки, футера и инпутов */
+            --sidebar-bg:  #182533; /* Боковая панель */
+            --chat-bg:     #0e1621; /* Фон самого чата */
+            --border:      #101924; /* Темные разделители */
+            --text:        #ffffff; /* Белый текст */
+            --text2:       #7f91a4; /* Серый текст для статусов */
+            --their-msg:   #24303f; /* Цвет облачка входящего сообщения */
         }
-
-
+        
+        /* Точечно проверяем элементы, которые могут не слушаться переменных: */
+        body.dark-mode .sidebar, 
+        body.dark-mode .sidebar-header, 
+        body.dark-mode .sidebar-footer,
+        body.dark-mode .chat-header,
+        body.dark-mode .chat-input-area {
+            background-color: var(--white) !important;
+            border-color: var(--border) !important;
+        }
+        
+        body.dark-mode .user-item:hover {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        
+        body.dark-mode .chat-input {
+            background-color: var(--bg) !important;
+            border-color: var(--border) !important;
+            color: #ffffff !important;
+        }
+        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
