@@ -17,6 +17,14 @@
             --text2: #7a8a9a;
         }
 
+        body.dark-mode {
+            --bg: #0e1621;
+            --white: #182533;
+            --border: #1e2d3d;
+            --text: #ffffff;
+            --text2: #7f91a4;
+        }
+        
         * { 
             box-sizing: border-box; 
             margin: 0;
@@ -238,6 +246,9 @@
     <a href="/search" class="nav-item active">🔍 <span>Поиск</span></a>
     <a href="/profile" class="nav-item">👤 <span>Профиль</span></a>
 </nav>
-
+<script>
+    if (localStorage.getItem('theme') === 'dark')
+        document.body.classList.add('dark-mode');
+</script>
 </body>
 </html>
