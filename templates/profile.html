@@ -277,34 +277,48 @@
         }
 
         .avatar-wrapper { position: relative; display: inline-block; }
+
+        .btn-red:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
 
 <div class="profile-container">
 
-    <div class="avatar-section">
-        <div class="avatar-wrapper">
-            <div class="avatar-main" id="avatarEl">
-                {% if user and user.avatar %}
-                    <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
-                {% else %}
-                    <span id="avatarLetter">{{ user.name[0]|upper if user and user.name else 'K' }}</span>
-                {% endif %}
+        <!-- ОБНОВЛЕННЫЙ БЛОК АВАТАРА -->
+        <div class="avatar-section">
+            <div class="avatar-wrapper">
+                <div class="avatar-main" id="avatarEl">
+                    {% if user and user.avatar %}
+                        <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
+                    {% else %}
+                        <span id="avatarLetter">{{ user.name[0]|upper if user and user.name else 'K' }}</span >
+                    {% endif %}
+                </div>
+                <div class="avatar-loading" id="avatarLoading">⏳</div>
             </div>
-            <div class="avatar-loading" id="avatarLoading">⏳</div>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+        </div>
+        
+        <div class="profile-name">{{ user.name if user else '' }}</div>
+        <div class="profile-username">@{{ user.login if user else '' }}</div>
+        
+        <!-- НОВАЯ СДВОЕННАЯ КНОПКА (50% на 50%) -->
+        <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 10px;">
+            <button type="button" class="profile-btn btn-blue" style="flex: 1; margin-bottom: 0;" onclick="document.getElementById('avatarInput').click()">
+                📷 Обновить фото
+            </button>
+            <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; margin-top: 0; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600;" 
+                onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
+                🗑 Удалить фото
+            </button>
         </div>
 
-        <div class="avatar-actions">
-            <button class="avatar-btn avatar-btn-edit" onclick="document.getElementById('avatarInput').click()">
-                📷 Изменить
-            </button>
-            <button class="avatar-btn avatar-btn-delete" id="deleteAvatarBtn"
-                    onclick="deleteAvatar()"
-                    {% if not user or not user.avatar %}disabled{% endif %}>
-                🗑 Удалить
-            </button>
-        </div>
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
 
