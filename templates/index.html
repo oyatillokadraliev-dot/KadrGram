@@ -974,7 +974,18 @@
     {% if target_user %}
     <div class="chat-header">
         <a href="/" class="back-btn">‹</a>
-        <div class="chat-header-avatar">{{ target_user.name[0]|upper }}</div>
+        
+        <!-- ИСПРАВЛЕННЫЙ БЛОК АВАТАРКИ В ШАПКЕ ЧАТА -->
+        <div class="chat-header-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; font-weight: 700;">
+            {% if target_user.avatar %}
+                <!-- Если у собеседника загружено фото профиля -->
+                <img src="{{ target_user.avatar }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+            {% else %}
+                <!-- Если фото нет — выводим первую букву имени -->
+                {{ target_user.name[0]|upper }}
+            {% endif %}
+        </div>
+        
         <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
             <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">
@@ -982,6 +993,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="messages" id="msgBox">
         <div class="typing-indicator" id="typingIndicator">
