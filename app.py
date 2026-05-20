@@ -492,6 +492,13 @@ def upload_avatar():
             "success": False
         }), 500
 
+@app.route("/delete_avatar", methods=["POST"])
+def delete_avatar():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Не авторизован'}), 401
+    users.update_one({"_id": oid(session['user_id'])}, {"$unset": {"avatar": ""}})
+    return jsonify({'success': True})
+
 # =====================================================
 # MESSAGES
 # =====================================================
