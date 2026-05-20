@@ -305,9 +305,6 @@
             <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
         </div>
         
-        <div class="profile-name">{{ user.name if user else '' }}</div>
-        <div class="profile-username">@{{ user.login if user else '' }}</div>
-        
         <!-- НОВАЯ СДВОЕННАЯ КНОПКА (50% на 50%) -->
         <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 10px;">
             <button type="button" class="profile-btn btn-blue" style="flex: 1; margin-bottom: 0;" onclick="document.getElementById('avatarInput').click()">
