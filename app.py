@@ -459,55 +459,30 @@ def update_profile():
 
 @app.route("/upload_avatar", methods=["POST"])
 def upload_avatar():
-
-    user = get_user()
-
-    if not user:
-        return jsonify({
-            "success": False
-        }), 401
-
-    if "avatar" not in request.files:
-        return jsonify({
-            "success": False
-        }), 400
-
-    file = request.files["avatar"]
-
-    if file.filename == "":
-        return jsonify({
-            "success": False
-        }), 400
-
-    if not allowed_file(file.filename):
-        return jsonify({
-            "success": False
-        }), 400
-
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Не авторизован'}), 401
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'Нет файла'}), 400
+    f = request.files['image']
+    if not f or not allowed_file(f.filename):
+        return jsonify({'success': False, 'message': 'Недопустимый файл'}), 400
+    f.seek(0, 2)
+    size = f.tell()
+    f.seek(0)
+    if size > 5 * 1024 * 1024:
+        return jsonify({'success': False, 'message': 'Файл слишком большой (макс. 5МБ)'}), 400
     try:
-
         result = cloudinary.uploader.upload(
-            file,
-            folder="kadrgram_avatars"
+            f,
+            folder="kadrgram_avatars",
+            transformation=[{"width": 200, "height": 200, "crop": "fill", "gravity": "face"}]
         )
-
-        avatar_url = result.get("secure_url")
-
-        users.update_one(
-            {
-                "_id": user["_id"]
-            },
-            {
-                "$set": {
-                    "avatar": avatar_url
-                }
-            }
-        )
-
-        return jsonify({
-            "success": True,
-            "avatar": avatar_url
-        })
+        url = result["secure_url"]
+        users.update_one({"_id": oid(session['user_id'])}, {"$set": {"avatar": url}})
+        return jsonify({'success': True, 'url': url})
+    except Exception as e:
+        logging.error(f"Avatar upload error: {e}")
+        return jsonify({'success': False, 'message': 'Ошибка загрузки'}), 500
 
     except Exception as e:
 
@@ -698,39 +673,26 @@ def on_connect():
         include_self=False
     )
 
-
 @socketio.on("disconnect")
 def on_disconnect():
-
     uid = session.get("user_id")
-
-    if not uid:
-        return
-
-    now = datetime.utcnow()
-
-    users.update_one(
-        {
-            "_id": oid(uid)
-        },
-        {
-            "$set": {
-                "online": False,
-                "last_seen": now
-            }
-        }
-    )
-
-    emit(
-        "user_offline",
-        {
+    if uid and users is not None:
+        now = datetime.utcnow()
+        user = users.find_one({"_id": oid(uid)})
+        # Не трогаем last_seen если пользователь просто переходит между страницами
+        # Проверяем — если last_seen уже недавно (меньше 5 сек) — не обновляем
+        last_seen = user.get("last_seen") if user else None
+        skip_last_seen = last_seen and (now - last_seen).total_seconds() < 5
+        update = {"online": False}
+        if not skip_last_seen:
+            update["last_seen"] = now
+        users.update_one({"_id": oid(uid)}, {"$set": update})
+        u = users.find_one({"_id": oid(uid)})
+        last_seen_str = format_last_seen(u.get("last_seen")) if u else "был(а) только что"
+        emit("user_offline", {
             "user_id": uid,
-            "last_seen_str": format_last_seen(now)
-        },
-        broadcast=True,
-        include_self=False
-    )
-
+            "last_seen_str": last_seen_str
+        }, broadcast=True, include_self=False)
 
 @socketio.on("heartbeat")
 def heartbeat():
