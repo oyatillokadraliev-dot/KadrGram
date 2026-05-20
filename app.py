@@ -1,5 +1,3 @@
-FULL READY app.py
-
 import traceback
 import eventlet
 eventlet.monkey_patch()
