@@ -290,7 +290,6 @@
 
 <div class="profile-container">
 
-<!-- КАРТОЧКА ПРОФИЛЯ — ИСПРАВЛЕННЫЙ ВАРИАНТ -->
 <div class="profile-container">
     <div class="avatar-section">
         <div class="avatar-wrapper">
@@ -306,26 +305,57 @@
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
 
-    <!-- ИМЯ И ЛОГИН СНОВА ПОД АВАТАРКОЙ -->
     <div class="profile-name">{{ user.name if user else '' }}</div>
     <div class="profile-username">@{{ user.login if user else '' }}</div>
 
-    <!-- СДВОЕННЫЕ КНОПКИ (ИДЕАЛЬНО ПО ШИРИНЕ И ЧЁТКО ПОД ИМЕНЕМ) -->
-    <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 12px; justify-content: space-between;">
-        <button type="button" class="profile-btn btn-blue" style="flex: 1; width: auto; margin-bottom: 0;" onclick="document.getElementById('avatarInput').click()">
-            📷 Обновить фото
-        </button>
-        <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600;" 
-            onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
-            🗑 Удалить фото
-        </button>
-    </div>
-
-    <!-- ОСТАЛЬНЫЕ КНОПКИ ИЗМЕНЕНИЯ ДАННЫХ -->
-    <button class="profile-btn btn-blue" onclick="openModal('nameModal')">✏ Изменить имя</button>
-    <button class="profile-btn btn-blue" onclick="openModal('loginModal')">🔑 Изменить логин</button>
-    <button class="profile-btn btn-blue" onclick="openModal('passwordModal')">🔒 Сменить пароль</button>
+    <!-- ОСТАВИЛИ ТОЛЬКО ОДНУ КНОПКУ, КОТОРАЯ ОТКРЫВАЕТ ОКНО НАСТРОЕК АККАУНТА -->
+    <button class="profile-btn btn-blue" onclick="openModal('editAccountModal')">✏️ Редактировать профиль</button>
 </div>
+
+<div class="settings-container">
+    <h3 class="settings-title">⚙ Настройки приложения</h3>
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-label">Тёмная тема</div>
+            <div class="setting-desc">Переключить оформление</div>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;">🚪 Выйти из аккаунта</a>
+</div>
+
+<!-- ========================================================== -->
+<!-- НОВОЕ ОБЩЕЕ МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРОФИЛЯ -->
+<!-- ========================================================== -->
+<div id="editAccountModal" class="modal" onclick="outsideClose(event,'editAccountModal')">
+    <div class="modal-content" style="max-width: 400px; padding: 20px; text-align: center;">
+        <div class="modal-title" style="margin-bottom: 20px; font-size: 18px; text-align: center;">Настройки аккаунта</div>
+        
+        <!-- УПРАВЛЕНИЕ ФОТО (ПЕРЕНЕСЛИ СЮДА НА 50/50%) -->
+        <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 20px; justify-content: space-between;">
+            <button type="button" class="profile-btn btn-blue" style="flex: 1; width: auto; margin-bottom: 0; padding: 10px; font-size: 13px;" onclick="document.getElementById('avatarInput').click()">
+                📷 Обновить фото
+            </button>
+            <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600;" 
+                onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
+                🗑 Удалить фото
+            </button>
+        </div>
+
+        <!-- КНОПКИ ИЗМЕНЕНИЯ ДАННЫХ (ОТКРЫВАЮТ СЛЕДУЮЩИЕ ОКНА) -->
+        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('nameModal')">✏ Изменить имя</button>
+        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
+        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
+        
+        <button class="close-btn" style="margin-top: 15px; font-weight: 600; background: #e8edf2; color: #5a6575;" onclick="closeModal('editAccountModal')">Закрыть</button>
+    </div>
+</div>
+
+<!-- ТВОИ ОСТАЛЬНЫЕ МОДАЛКИ (nameModal, loginModal, passwordModal) ОСТАЮТСЯ НИЖЕ БЕЗ ИЗМЕНЕНИЙ -->
+
 
 
 <div class="settings-container">
