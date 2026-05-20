@@ -290,43 +290,43 @@
 
 <div class="profile-container">
 
-        <!-- ОБНОВЛЕННЫЙ БЛОК АВАТАРА -->
-        <div class="avatar-section">
-            <div class="avatar-wrapper">
-                <div class="avatar-main" id="avatarEl">
-                    {% if user and user.avatar %}
-                        <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
-                    {% else %}
-                        <span id="avatarLetter">{{ user.name[0]|upper if user and user.name else 'K' }}</span >
-                    {% endif %}
-                </div>
-                <div class="avatar-loading" id="avatarLoading">⏳</div>
+<!-- КАРТОЧКА ПРОФИЛЯ — ИСПРАВЛЕННЫЙ ВАРИАНТ -->
+<div class="profile-container">
+    <div class="avatar-section">
+        <div class="avatar-wrapper">
+            <div class="avatar-main" id="avatarEl">
+                {% if user and user.avatar %}
+                    <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
+                {% else %}
+                    <span id="avatarLetter">{{ user.name[0]|upper if user and user.name else 'K' }}</span>
+                {% endif %}
             </div>
-            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+            <div class="avatar-loading" id="avatarLoading">⏳</div>
         </div>
-        
-        <!-- НОВАЯ СДВОЕННАЯ КНОПКА (50% на 50%) -->
-        <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 10px;">
-            <button type="button" class="profile-btn btn-blue" style="flex: 1; margin-bottom: 0;" onclick="document.getElementById('avatarInput').click()">
-                📷 Обновить фото
-            </button>
-            <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; margin-top: 0; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600;" 
-                onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
-                🗑 Удалить фото
-            </button>
-        </div>
-
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
 
+    <!-- ИМЯ И ЛОГИН СНОВА ПОД АВАТАРКОЙ -->
     <div class="profile-name">{{ user.name if user else '' }}</div>
     <div class="profile-username">@{{ user.login if user else '' }}</div>
 
-    <button class="profile-btn btn-blue" onclick="openModal('nameModal')">✏️ Изменить имя</button>
+    <!-- СДВОЕННЫЕ КНОПКИ (ИДЕАЛЬНО ПО ШИРИНЕ И ЧЁТКО ПОД ИМЕНЕМ) -->
+    <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 12px; justify-content: space-between;">
+        <button type="button" class="profile-btn btn-blue" style="flex: 1; width: auto; margin-bottom: 0;" onclick="document.getElementById('avatarInput').click()">
+            📷 Обновить фото
+        </button>
+        <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600;" 
+            onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
+            🗑 Удалить фото
+        </button>
+    </div>
+
+    <!-- ОСТАЛЬНЫЕ КНОПКИ ИЗМЕНЕНИЯ ДАННЫХ -->
+    <button class="profile-btn btn-blue" onclick="openModal('nameModal')">✏ Изменить имя</button>
     <button class="profile-btn btn-blue" onclick="openModal('loginModal')">🔑 Изменить логин</button>
     <button class="profile-btn btn-blue" onclick="openModal('passwordModal')">🔒 Сменить пароль</button>
-
 </div>
+
 
 <div class="settings-container">
     <h3 class="settings-title">⚙️ Настройки</h3>
