@@ -882,10 +882,14 @@
             id="user-{{ u.id }}"
             onclick="location.href='/?chat_with={{ u.id }}'"
         >
-            <div class="avatar" id="avatar-{{ u.id }}">
-                {{ u.name[0]|upper }}
-                {% if u.online %}<div class="avatar-online"></div>{% endif %}
-            </div>
+                <div class="avatar" id="avatar-{{ u.id }}">
+                    {% if u.avatar %}
+                        <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">
+                    {% else %}
+                        {{ u.name[0]|upper }}
+                    {% endif %}
+                    {% if u.online %}<div class="avatar-online"></div>{% endif %}
+                </div>
             <div class="user-meta">
                 <div class="user-name-row">
                     <span class="user-name">{{ u.name }}</span>
@@ -911,8 +915,12 @@
             onclick="location.href='/?chat_with={{ u.id }}'"
         >
             <div class="avatar" id="avatar-{{ u.id }}">
+        {% if u.avatar %}
+                <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">
+            {% else %}
                 {{ u.name[0]|upper }}
-                {% if u.online %}<div class="avatar-online"></div>{% endif %}
+            {% endif %}
+    {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
             <div class="user-meta">
                 <div class="user-name-row">
@@ -1664,6 +1672,11 @@ function savePassword() {
     }).then(() => location.reload());
 }
 
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+}
+
+// Применяем тёмную тему из localStorage
 if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-mode');
 }
