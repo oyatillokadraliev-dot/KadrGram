@@ -317,34 +317,32 @@
 </div>
 
 <!-- ========================================================== -->
-<!-- НОВОЕ ОБЩЕЕ МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРОФИЛЯ -->
+<!-- ИСПРАВЛЕННОЕ МОДАЛЬНОЕ ОКНО: ВСЕ ТЕГИ СТРОГО ЗАКРЫТЫ -->
 <!-- ========================================================== -->
-<div id="editAccountModal" class="modal" onclick="outsideClose(event,'editAccountModal')">
-    <div class="modal-content" style="max-width: 400px; padding: 20px; text-align: center;">
-        <div class="modal-title" style="margin-bottom: 20px; font-size: 18px; text-align: center;">Настройки аккаунта</div>
+<div id="editAccountModal" class="modal" onclick="closeModalOnOutsideClick(event, 'editAccountModal')">
+    <div class="modal-content" style="max-width: 400px; padding: 24px; text-align: center;">
+        <div class="modal-title" style="margin-bottom: 20px; font-size: 18px; text-align: center; font-weight: 700;">Настройки аккаунта</div>
         
-        <!-- УПРАВЛЕНИЕ ФОТО (ПЕРЕНЕСЛИ СЮДА НА 50/50%) -->
+        <!-- СДВОЕННЫЕ КНОПКИ (УПРАВЛЕНИЕ ФОТО) -->
         <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 20px; justify-content: space-between;">
-            <button type="button" class="profile-btn btn-blue" style="flex: 1; width: auto; margin-bottom: 0; padding: 10px; font-size: 13px;" onclick="document.getElementById('avatarInput').click()">
+            <button type="button" class="profile-btn btn-theme-blue" style="flex: 1; width: auto; margin-bottom: 0; padding: 12px; font-size: 14px;" onclick="document.getElementById('avatarInput').click()">
                 📷 Обновить фото
             </button>
-            <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600;" 
+            <button type="button" class="profile-btn btn-theme-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600;" 
                 onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
                 🗑 Удалить фото
             </button>
         </div>
 
-        <!-- КНОПКИ ИЗМЕНЕНИЯ ДАННЫХ (ОТКРЫВАЮТ СЛЕДУЮЩИЕ ОКНА) -->
-        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('nameModal')">✏ Изменить имя</button>
-        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
-        <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
+        <!-- КНОПКИ ИЗМЕНЕНИЯ ДАННЫХ -->
+        <button type="button" class="profile-btn btn-theme-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('nameModal')">✏ Изменить имя</button>
+        <button type="button" class="profile-btn btn-theme-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
+        <button type="button" class="profile-btn btn-theme-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
         
-
-<button class="profile-btn" type="button" 
-        style="margin-top: 20px; margin-bottom: 0; background: #e2e8f0; color: #475569 !important; border: none; font-weight: 600;" 
-        onclick="closeModal('editAccountModal')">
-    Закрыть
-</button>
+        <!-- КРАСИВАЯ КНОПКА ЗАКРЫТИЯ -->
+        <button type="button" class="profile-btn btn-cancel" style="margin-top: 20px; margin-bottom: 0; padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal')">
+            Закрыть
+        </button>
     </div>
 </div>
 
