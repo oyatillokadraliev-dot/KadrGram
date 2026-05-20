@@ -3,243 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://googleapis.com" rel="stylesheet">
     <title>KadrGram | Профиль</title>
     <style>
-    :root {
-        --primary: #0088cc;
-        --primary2: #00b4d8;
-        --success: #25d366;
-        --danger: #ff6b6b;
-        --bg: #f0f4f8;
-        --white: #ffffff;
-        --border: #e8ecf0;
-        --text: #1a1a2e;
-        --text2: #7a8a9a;
-        --shadow-sm: 0 4px 12px rgba(0,136,204,0.08);
-        --shadow-md: 0 8px 24px rgba(0,136,204,0.15);
-        --gradient-blue: linear-gradient(135deg, #0088cc, #00b4d8);
-        --gradient-red: linear-gradient(135deg, #ff6b6b, #ff4757);
-    }
+        :root {
+            --primary: #0088cc;
+            --primary2: #00b4d8;
+            --success: #25d366;
+            --danger: #ff6b6b;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e8ecf0;
+            --text: #1a1a2e;
+            --text2: #7a8a9a;
+            --shadow-sm: 0 2px 8px rgba(0,136,204,0.08);
+            --shadow-md: 0 8px 24px rgba(0,136,204,0.15);
+        }
 
-    body.dark-mode {
-        --bg: #0e1621;
-        --white: #182533;
-        --border: #1e2d3d;
-        --text: #ffffff;
-        --text2: #7f91a4;
-        --shadow-md: 0 8px 32px rgba(0,0,0,0.3);
-    }
+        body.dark-mode {
+            --bg: #0e1621;
+            --white: #182533;
+            --border: #1e2d3d;
+            --text: #ffffff;
+            --text2: #7f91a4;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        /* Тёмная тема для модалок и отмены */
+        body.dark-mode .modal-content button[onclick*="editAccountModal"],
+        body.dark-mode .btn-cancel {
+            background: #24303f !important;
+            color: #7f91a4 !important;
+        }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-        padding: 30px 20px 100px;
-        transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+        body.dark-mode .profile-container, 
+        body.dark-mode .settings-container,
+        body.dark-mode .modal-content,
+        body.dark-mode .bottom-nav {
+            background: var(--white) !important;
+            border-color: var(--border) !important;
+        }
 
-    .profile-container, .settings-container {
-        background: var(--white);
-        width: 100%;
-        max-width: 400px;
-        padding: 28px 24px;
-        border-radius: 24px;
-        box-shadow: var(--shadow-sm);
-        text-align: center;
-        border: 1px solid var(--border);
-        margin-top: 20px;
-        transition: all 0.3s ease;
-    }
+        body.dark-mode .form-input {
+            background: var(--bg) !important;
+            border-color: var(--border) !important;
+            color: #ffffff !important;
+        }
 
-    /* АВАТАР */
-    .avatar-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 16px;
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    .avatar-main {
-        width: 90px; height: 90px;
-        border-radius: 50%;
-        background: var(--gradient-blue);
-        color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 36px;
-        font-weight: 700;
-        box-shadow: 0 8px 24px rgba(0,136,204,0.3);
-        overflow: hidden;
-        flex-shrink: 0;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 30px 20px 100px;
+            transition: background 0.3s, color 0.3s;
+        }
 
-    .avatar-main img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
-    .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
+        .profile-container, .settings-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            padding: 28px 24px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            border: 1px solid var(--border);
+            margin-top: 20px;
+            transition: background 0.3s, border-color 0.3s;
+        }
 
-    /* КНОПКИ С ГРАДИЕНТАМИ И АНИМАЦИЕЙ СЖАТИЯ */
-    .profile-btn {
-        display: block;
-        width: 100%;
-        padding: 14px;
-        border-radius: 14px;
-        font-size: 15px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        font-family: inherit;
-        margin-bottom: 12px;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+        /* АВАТАР */
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 16px;
+        }
 
-    /* Синяя градиентная кнопка */
-    .btn-theme-blue {
-        background: var(--gradient-blue);
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.25);
-    }
-    .btn-theme-blue:hover {
-        transform: translateY(-2px) scale(1.01);
-        box-shadow: 0 8px 22px rgba(0, 136, 204, 0.4);
-        filter: brightness(1.05);
-    }
-    .btn-theme-blue:active {
-        transform: translateY(1px) scale(0.98);
-    }
-    .btn-theme-blue:disabled {
-        background: #e0e8f0 !important;
-        color: var(--text2) !important;
-        box-shadow: none !important;
-        cursor: not-allowed;
-        transform: none !important;
-        filter: none;
-    }
+        .avatar-main {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
 
-    /* Красная градиентная кнопка удаления */
-    .btn-theme-red {
-        background: var(--gradient-red);
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.25);
-    }
-    .btn-theme-red:hover {
-        transform: translateY(-2px) scale(1.01);
-        box-shadow: 0 8px 22px rgba(255, 107, 107, 0.4);
-        filter: brightness(1.05);
-    }
-    .btn-theme-red:active {
-        transform: translateY(1px) scale(0.98);
-    }
-    .btn-theme-red:disabled {
-        background: rgba(255,107,107,0.05) !important;
-        color: rgba(255,107,107,0.4) !important;
-        border: 1px solid rgba(255,107,107,0.1) !important;
-        box-shadow: none !important;
-        cursor: not-allowed;
-        transform: none !important;
-    }
+        .avatar-main img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
-    /* Кнопка отмены/закрытия */
-    .btn-cancel {
-        background: #eaf0f6;
-        color: #4a5568 !important;
-    }
-    .btn-cancel:hover {
-        background: #dfe7ef;
-        transform: translateY(-1px);
-    }
-    .btn-cancel:active {
-        transform: translateY(1px) scale(0.98);
-    }
+        .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+        .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
 
-    body.dark-mode .btn-cancel {
-        background: #243141 !important;
-        color: #bccee0 !important;
-    }
-    body.dark-mode .btn-cancel:hover {
-        background: #2c3c50 !important;
-    }
+        /* КНОПКИ */
+        .profile-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            text-decoration: none;
+            text-align: center;
+            font-family: inherit;
+        }
 
-    /* НАСТРОЙКИ */
-    .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
-    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); }
-    .setting-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
-    .setting-label { font-weight: 600; font-size: 15px; }
-    .setting-desc { font-size: 12px; color: var(--text2); }
+        .btn-blue {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
+        }
 
-    /* TOGGLE SWITCH */
-    .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .3s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
-    input:checked + .slider { background: var(--primary); }
-    input:checked + .slider:before { transform: translateX(20px); }
+        .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
+        .btn-blue:active { transform: translateY(0); }
+        .btn-blue:disabled { background: #e0e8f0; color: var(--text2); box-shadow: none; cursor: not-allowed; transform: none; }
 
-    /* МОДАЛЬНЫЕ ОКНА С АНИМАЦИЕЙ ОТСКОКА (iOS POP) */
-    .modal {
-        position: fixed; inset: 0;
-        background: rgba(14, 22, 33, 0.4);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        display: none; justify-content: center; align-items: center;
-        z-index: 1000; padding: 20px;
-        transition: all 0.3s;
-    }
-    .modal.active { display: flex; }
+        .btn-red {
+            background: rgba(255,107,107,0.08);
+            color: var(--danger) !important;
+            border: 1px solid rgba(255,107,107,0.2);
+            margin-top: 4px;
+            margin-bottom: 0;
+        }
 
-    .modal-content {
-        background: var(--white);
-        width: 100%; max-width: 380px;
-        padding: 26px;
-        border-radius: 24px;
-        box-shadow: var(--shadow-md);
-        animation: iosPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        text-align: left;
-    }
+        .btn-red:hover { background: rgba(255,107,107,0.15); }
+        .btn-red:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    @keyframes iosPop {
-        from { opacity: 0; transform: scale(0.85) translateY(10px); }
-        to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #475569 !important;
+        }
 
-    .modal-title { font-size: 19px; font-weight: 700; margin-bottom: 18px; color: var(--text); }
+        /* НАСТРОЕК */
+        .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
 
-    /* ИНПУТЫ */
-    .form-input {
-        width: 100%; padding: 13px 16px;
-        border: 1.5px solid var(--border);
-        border-radius: 12px; font-size: 15px; outline: none;
-        background: #f8fafc; color: var(--text);
-        margin-bottom: 12px; transition: all 0.2s ease;
-    }
-    .form-input:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(0,136,204,0.12); }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--border);
+        }
 
-    .rules { margin: 8px 0 14px; }
-    .hint { display: flex; align-items: center; font-size: 13px; color: var(--text2); margin-bottom: 7px; }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: #dde4ec; border: 1.5px solid #c8d4e0; flex-shrink: 0; }
-    .hint.success { color: var(--success); }
-    .hint.success .status-dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 8px rgba(37,211,102,0.4); }
-    .hint.invalid { color: var(--danger); }
-    .hint.invalid .status-dot { background: var(--danger); border-color: var(--danger); }
+        .setting-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+        .setting-label { font-weight: 600; font-size: 15px; }
+        .setting-desc { font-size: 12px; color: var(--text2); }
 
-    .modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
-    .modal-buttons .profile-btn { margin-bottom: 0; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-    /* НАВИГАЦИЯ */
-    .bottom-nav {
-        position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
-        background: var(--white); border-top: 1px solid var(--border);
-        display: flex; justify-content: space-around; align-items: center; z-index: 999;
-        box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
-    }
-    .nav-item { text-decoration: none; color: var(--text2); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s; }
-    .nav-item.active { color: var(--primary); font-weight: 600; }
-</style>
+        /* МОДАЛКИ */
+        .modal {
+            position: fixed; inset: 0;
+            background: rgba(26,26,46,0.45);
+            backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--white);
+            width: 100%; max-width: 380px;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            text-align: left;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            background: #f8fafc;
+            color: var(--text);
+            margin-bottom: 12px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(0,136,204,0.1); }
+
+        .rules { margin: 8px 0 14px; }
+        .hint { display: flex; align-items: center; font-size: 13px; color: var(--text2); margin-bottom: 7px; transition: all 0.2s; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: #dde4ec; border: 1.5px solid #c8d4e0; flex-shrink: 0; transition: all 0.25s; }
+        
+        .hint.success { color: var(--success); }
+        .hint.success .status-dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 6px rgba(37,211,102,0.4); }
+        .hint.invalid { color: var(--danger); }
+        .hint.invalid .status-dot { background: var(--danger); border-color: var(--danger); }
+
+        .modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
+        .modal-buttons .profile-btn { margin-bottom: 0; padding: 12px; }
+
+        /* НАВИГАЦИЯ */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: var(--white); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center; z-index: 999;
+        }
+        .nav-item { text-decoration: none; color: var(--text2); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; flex: 1; }
+        .nav-item.active { color: var(--primary); }
+    </style>
 </head>
 <body>
 
@@ -264,7 +260,7 @@
         <button type="button" class="profile-btn btn-blue" onclick="openModal('editAccountModal')">✏️ Редактировать профиль</button>
     </div>
 
-    <!-- НАСТРОЕК ПРИЛОЖЕНИЯ -->
+    <!-- НАСТРОЙКИ ПРИЛОЖЕНИЯ -->
     <div class="settings-container">
         <h3 class="settings-title">⚙ Настройки приложения</h3>
         <div class="setting-row">
@@ -280,7 +276,7 @@
         <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;">🚪 Выйти из аккаунта</a>
     </div>
 
-    <!-- ОБЩЕЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <!-- ОБЩЕЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК (ВНУТРИ СДВОЕННЫЕ КНОПКИ) -->
     <div id="editAccountModal" class="modal" onclick="closeModalOnOutsideClick(event, 'editAccountModal')">
         <div class="modal-content" style="text-align: center;">
             <h3 class="modal-title" style="text-align: center; margin-bottom: 20px;">Настройки аккаунта</h3>
@@ -299,7 +295,7 @@
             <button type="button" class="profile-btn btn-blue" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
             <button type="button" class="profile-btn btn-blue" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
             
-            <button type="button" class="profile-btn btn-cancel" style="margin-top: 20px; margin-bottom: 0;" onclick="closeModal('editAccountModal')">Закрыть</button>
+            <button type="button" class="profile-btn btn-cancel" style="margin-top: 20px; margin-bottom: 0; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; border: none; cursor: pointer;" onclick="closeModal('editAccountModal')">Закрыть</button>
         </div>
     </div>
 
@@ -364,7 +360,7 @@
         function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
 
         function uploadAvatar(input) {
-            const file = input.files[0];
+            const file = input.files;
             if (!file) return;
             const reader = new FileReader();
             reader.onloadend = async function() {
