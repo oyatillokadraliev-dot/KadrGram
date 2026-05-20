@@ -26,6 +26,10 @@
             --border: #1e2d3d;
             --text: #ffffff;
             --text2: #7f91a4;
+            
+            .modal-content button[onclick*="editAccountModal"] {
+    background: #24303f !important;
+    color: #7f91a4 !important;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -312,21 +316,6 @@
     <button class="profile-btn btn-blue" onclick="openModal('editAccountModal')">✏️ Редактировать профиль</button>
 </div>
 
-<div class="settings-container">
-    <h3 class="settings-title">⚙ Настройки приложения</h3>
-    <div class="setting-row">
-        <div class="setting-info">
-            <div class="setting-label">Тёмная тема</div>
-            <div class="setting-desc">Переключить оформление</div>
-        </div>
-        <label class="switch">
-            <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
-            <span class="slider"></span>
-        </label>
-    </div>
-    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;">🚪 Выйти из аккаунта</a>
-</div>
-
 <!-- ========================================================== -->
 <!-- НОВОЕ ОБЩЕЕ МОДАЛЬНОЕ ОКНО: РЕДАКТИРОВАНИЕ ПРОФИЛЯ -->
 <!-- ========================================================== -->
@@ -350,7 +339,12 @@
         <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
         <button class="profile-btn btn-blue" style="padding: 12px; font-size: 14px;" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
         
-        <button class="close-btn" style="margin-top: 15px; font-weight: 600; background: #e8edf2; color: #5a6575;" onclick="closeModal('editAccountModal')">Закрыть</button>
+
+<button class="profile-btn" type="button" 
+        style="margin-top: 20px; margin-bottom: 0; background: #e2e8f0; color: #475569 !important; border: none; font-weight: 600;" 
+        onclick="closeModal('editAccountModal')">
+    Закрыть
+</button>
     </div>
 </div>
 
