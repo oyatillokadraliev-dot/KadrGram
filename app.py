@@ -155,39 +155,18 @@ def rate_limit(user_id):
     return True
 
 
-def format_last_seen(last_seen):
-    if not last_seen:
-        return "не был(а) в сети"
-
-    now = datetime.utcnow()
-    diff = (now - last_seen).total_seconds()
-
-    if diff < 60:
-        return "был(а) только что"
-
-    if diff < 3600:
-        mins = int(diff // 60)
-        return f"был(а) {mins} мин назад"
-
-    if diff < 86400:
-        return "был(а) сегодня в " + last_seen.strftime("%H:%M")
-
-    if diff < 172800:
-        return "был(а) вчера в " + last_seen.strftime("%H:%M")
-
-    return "был(а) " + last_seen.strftime("%d.%m.%Y")
-
-
 def serialize_user(u):
+    last_seen = u.get("last_seen")
+    # Превращаем объект даты в стандартную ISO строку UTC для JavaScript
+    last_seen_iso = last_seen.isoformat() + "Z" if last_seen else None
+
     return {
         "id": str(u["_id"]),
         "name": u.get("name", ""),
         "login": u.get("login", ""),
         "avatar": u.get("avatar", ""),
         "online": bool(u.get("online", False)),
-        "last_seen_str": format_last_seen(
-            u.get("last_seen")
-        )
+        "last_seen_iso": last_seen_iso  # <-- Передаем точную метку для JavaScript
     }
 
 
