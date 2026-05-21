@@ -123,14 +123,11 @@ def oid(x):
         return ObjectId(x)
     except Exception:
         return None
-
-
 def allowed_file(filename):
     return (
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
     )
-
 
 def get_user():
     uid = session.get("user_id")
