@@ -927,7 +927,7 @@
                     <span class="user-name">{{ u.name }}</span>
                     <span class="pin-icon">📌</span>
                 </div>
-                <div class="user-status" data-iso="{{ u.last_seen_iso }}">
+                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">
                     {% if u.online %}в сети{% else %}был(а) недавно{% endif %}
                 </div>
             </div>
@@ -958,8 +958,8 @@
                 <div class="user-name-row">
                     <span class="user-name">{{ u.name }}</span>
                 </div>
-                <div class="user-status" id="status-{{ u.id }}">
-                    {{ 'в сети' if u.online else u.last_seen_str }}
+                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">
+                    {% if u.online %}в сети{% else %}был(а) недавно{% endif %}
                 </div>
             </div>
             <span class="unread-badge" id="badge-{{ u.id }}"
@@ -1764,6 +1764,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+// НАСТРОЙКА СОКЕТ-ОБРАБОТЧИКОВ ДЛЯ REAL-TIME ОБНОВЛЕНИЯ БЕЗ ЛАГОВ
+
+// 1. Ловим мгновенное изменение статуса онлайн/оффлайн
+socket.on("user_status_change", (data) => {
+    const statusTextEl = document.getElementById(`status-${data.user_id}`);
+    const avatarBox = document.getElementById(`avatar-${data.user_id}`);
+
+    if (data.online) {
+        if (statusTextEl) statusTextEl.innerText = "в сети";
+        if (avatarBox && !avatarBox.querySelector('.avatar-online')) {
+            avatarBox.insertAdjacentHTML('beforeend', '<div class="avatar-online"></div>');
+        }
+    } else {
+        if (statusTextEl && data.last_seen_iso) {
+            statusTextEl.innerText = parseLastSeen(data.last_seen_iso);
+        }
+        if (avatarBox) {
+            const onlineDot = avatarBox.querySelector('.avatar-online');
+            if (onlineDot) onlineDot.remove();
+        }
+    }
+});
+
+// 2. Ловим мгновенное прочтение сообщений и перекрашиваем галочки на ✓✓
+socket.on("messages_read", (data) => {
+    // Проверяем, что прочитан именно текущий открытый чат
+    if (data.chat_id === currentChatId) {
+        document.querySelectorAll('.my-msg .msg-ticks').forEach(ticks => {
+            ticks.innerText = "✓✓";
+            ticks.classList.add("read");
+        });
+    }
+});
+
+// 3. Отправляем сигнал прочтения, как только открываем чат с пользователем
+// Добавь вызов этой строчки внутрь своей логики открытия переписки
+if (currentChatId) {
+    socket.emit("read_messages", { chat_id: currentChatId });
+}
 
 </script>
 <!-- Всплывающая панель реакций Apple iOS -->
