@@ -927,8 +927,8 @@
                     <span class="user-name">{{ u.name }}</span>
                     <span class="pin-icon">📌</span>
                 </div>
-                <div class="user-status" id="status-{{ u.id }}">
-                    {{ 'в сети' if u.online else u.last_seen_str }}
+                <div class="user-status" data-iso="{{ u.last_seen_iso }}">
+                    {% if u.online %}в сети{% else %}был(а) недавно{% endif %}
                 </div>
             </div>
             <span class="unread-badge" id="badge-{{ u.id }}"
@@ -1724,6 +1724,47 @@ if (localStorage.getItem('theme') === 'dark') {
 if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark-mode');
 }
+    // 1. Универсальная функция расчета времени под часовой пояс пользователя
+function parseLastSeen(isoString) {
+    if (!isoString) return "не был(а) в сети";
+
+    const lastSeenDate = new Date(isoString); // Телефон сам переведет UTC в местное время устройства
+    const nowDate = new Date();
+    const diffInSeconds = Math.floor((nowDate - lastSeenDate) / 1000);
+
+    if (diffInSeconds < 60) return "был(а) только что";
+
+    if (diffInSeconds < 3600) {
+        const mins = Math.floor(diffInSeconds / 60);
+        return `был(а) ${mins} мин. назад`;
+    }
+
+    const timeStr = lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (lastSeenDate.toDateString() === nowDate.toDateString()) {
+        return `был(а) сегодня в ${timeStr}`;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(nowDate.getDate() - 1);
+    if (lastSeenDate.toDateString() === yesterday.toDateString()) {
+        return `был(а) вчера в ${timeStr}`;
+    }
+
+    return "был(а) " + lastSeenDate.toLocaleDateString();
+}
+
+// 2. Автоматический перерасчет времени в списке чатов при загрузке страницы
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.user-status').forEach(el => {
+        const iso = el.getAttribute('data-iso');
+        // Если пользователь не в сети — рассчитываем его точное локальное время
+        if (el.innerText.trim() !== "в сети" && iso) {
+            el.innerText = parseLastSeen(iso);
+        }
+    });
+});
+
 </script>
 <!-- Всплывающая панель реакций Apple iOS -->
 <div id="reaction-picker" style="display: none; position: absolute; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 30px; padding: 8px 14px; gap: 10px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.4); align-items: center;">
