@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link href="https://googleapis.com" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>KadrGram | Профиль</title>
     <style>
         :root {
@@ -16,8 +16,6 @@
             --border: #e8ecf0;
             --text: #1a1a2e;
             --text2: #7a8a9a;
-            --shadow-sm: 0 2px 8px rgba(0,136,204,0.08);
-            --shadow-md: 0 8px 24px rgba(0,136,204,0.15);
         }
 
         body.dark-mode {
@@ -28,14 +26,7 @@
             --text2: #7f91a4;
         }
 
-        /* Тёмная тема для модалок и отмены */
-        body.dark-mode .modal-content button[onclick*="editAccountModal"],
-        body.dark-mode .btn-cancel {
-            background: #24303f !important;
-            color: #7f91a4 !important;
-        }
-
-        body.dark-mode .profile-container, 
+        body.dark-mode .profile-container,
         body.dark-mode .settings-container,
         body.dark-mode .modal-content,
         body.dark-mode .bottom-nav {
@@ -44,9 +35,14 @@
         }
 
         body.dark-mode .form-input {
-            background: var(--bg) !important;
+            background: #0e1621 !important;
             border-color: var(--border) !important;
-            color: #ffffff !important;
+            color: #fff !important;
+        }
+
+        body.dark-mode .btn-cancel {
+            background: #24303f !important;
+            color: #7f91a4 !important;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -65,18 +61,16 @@
 
         .profile-container, .settings-container {
             background: var(--white);
-            width: 100%;
-            max-width: 400px;
+            width: 100%; max-width: 400px;
             padding: 28px 24px;
             border-radius: 24px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
             text-align: center;
             border: 1px solid var(--border);
             margin-top: 20px;
             transition: background 0.3s, border-color 0.3s;
         }
 
-        /* АВАТАР */
         .avatar-section {
             display: flex;
             flex-direction: column;
@@ -84,43 +78,70 @@
             margin-bottom: 16px;
         }
 
+        .avatar-wrapper { position: relative; display: inline-block; }
+
         .avatar-main {
             width: 90px; height: 90px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
             display: flex; align-items: center; justify-content: center;
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 36px; font-weight: 700;
             box-shadow: 0 8px 24px rgba(0,136,204,0.3);
             overflow: hidden;
-            flex-shrink: 0;
         }
 
         .avatar-main img {
             width: 100%; height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
+            object-fit: cover; border-radius: 50%;
         }
+
+        .avatar-loading {
+            position: absolute; inset: 0;
+            background: rgba(0,136,204,0.7);
+            border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+            color: white; font-size: 20px;
+        }
+
+        .avatar-actions {
+            display: flex; gap: 8px; margin-top: 12px;
+        }
+
+        .avatar-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; border: none;
+            font-family: inherit; transition: all 0.2s;
+        }
+
+        .avatar-btn-edit {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            box-shadow: 0 3px 10px rgba(0,136,204,0.3);
+        }
+
+        .avatar-btn-edit:hover { transform: scale(1.03); }
+
+        .avatar-btn-delete {
+            background: rgba(255,107,107,0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255,107,107,0.2);
+        }
+
+        .avatar-btn-delete:hover { background: rgba(255,107,107,0.18); }
+        .avatar-btn-delete:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
         .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
 
-        /* КНОПКИ */
         .profile-btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 10px;
-            text-decoration: none;
-            text-align: center;
-            font-family: inherit;
+            display: block; width: 100%; padding: 14px;
+            border-radius: 12px; font-size: 15px; font-weight: 600;
+            border: none; cursor: pointer; transition: all 0.2s;
+            margin-bottom: 10px; text-decoration: none;
+            text-align: center; font-family: inherit;
         }
 
         .btn-blue {
@@ -131,33 +152,24 @@
 
         .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
         .btn-blue:active { transform: translateY(0); }
-        .btn-blue:disabled { background: #e0e8f0; color: var(--text2); box-shadow: none; cursor: not-allowed; transform: none; }
+        .btn-blue:disabled { background: #e0e8f0; color: var(--text2) !important; box-shadow: none; cursor: not-allowed; transform: none; }
 
         .btn-red {
             background: rgba(255,107,107,0.08);
             color: var(--danger) !important;
             border: 1px solid rgba(255,107,107,0.2);
-            margin-top: 4px;
-            margin-bottom: 0;
+            margin-top: 4px; margin-bottom: 0;
         }
 
         .btn-red:hover { background: rgba(255,107,107,0.15); }
-        .btn-red:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        .btn-cancel {
-            background: #e2e8f0;
-            color: #475569 !important;
-        }
+        .btn-cancel { background: #e2e8f0; color: #475569 !important; }
 
-        /* НАСТРОЕК */
         .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
 
         .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 13px 0;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 0; border-bottom: 1px solid var(--border);
         }
 
         .setting-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
@@ -171,7 +183,6 @@
         input:checked + .slider { background: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* МОДАЛКИ */
         .modal {
             position: fixed; inset: 0;
             background: rgba(26,26,46,0.45);
@@ -185,8 +196,7 @@
         .modal-content {
             background: var(--white);
             width: 100%; max-width: 380px;
-            padding: 24px;
-            border-radius: 20px;
+            padding: 24px; border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
             text-align: left;
@@ -200,17 +210,12 @@
         .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 
         .form-input {
-            width: 100%;
-            padding: 12px 16px;
+            width: 100%; padding: 12px 16px;
             border: 1.5px solid var(--border);
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-            background: #f8fafc;
-            color: var(--text);
-            margin-bottom: 12px;
-            font-family: inherit;
-            transition: all 0.2s;
+            border-radius: 10px; font-size: 15px;
+            outline: none; background: #f8fafc;
+            color: var(--text); margin-bottom: 12px;
+            font-family: inherit; transition: all 0.2s;
         }
 
         .form-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(0,136,204,0.1); }
@@ -218,219 +223,229 @@
         .rules { margin: 8px 0 14px; }
         .hint { display: flex; align-items: center; font-size: 13px; color: var(--text2); margin-bottom: 7px; transition: all 0.2s; }
         .status-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: #dde4ec; border: 1.5px solid #c8d4e0; flex-shrink: 0; transition: all 0.25s; }
-        
         .hint.success { color: var(--success); }
         .hint.success .status-dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 6px rgba(37,211,102,0.4); }
         .hint.invalid { color: var(--danger); }
         .hint.invalid .status-dot { background: var(--danger); border-color: var(--danger); }
 
-        .modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
-        .modal-buttons .profile-btn { margin-bottom: 0; padding: 12px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 6px; }
+        .modal-buttons .profile-btn { margin-bottom: 0; padding: 12px; flex: 1; }
 
-        /* НАВИГАЦИЯ */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
             background: var(--white); border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center; z-index: 999;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+            transition: background 0.3s, border-color 0.3s;
         }
-        .nav-item { text-decoration: none; color: var(--text2); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; flex: 1; }
+
+        .nav-item { text-decoration: none; color: var(--text2); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- КАРТОЧКА ПРОФИЛЯ -->
-    <div class="profile-container">
-        <div class="avatar-section">
-            <div class="avatar-wrapper">
-                <div class="avatar-main" id="avatarEl">
-                    {% if user and user.avatar %}
-                        <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
-                    {% else %}
-                        <span id="avatarLetter">{{ user.name|upper if user and user.name else 'K' }}</span>
-                    {% endif %}
-                </div>
+<div class="profile-container">
+    <div class="avatar-section">
+        <div class="avatar-wrapper">
+            <div class="avatar-main" id="avatarEl">
+                {% if user and user.avatar %}
+                    <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар">
+                {% else %}
+                    <span>{{ user.name[0]|upper if user and user.name else 'K' }}</span>
+                {% endif %}
             </div>
-            <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+            <div class="avatar-loading" id="avatarLoading">⏳</div>
         </div>
 
-        <div class="profile-name">{{ user.name if user else '' }}</div>
-        <div class="profile-username">@{{ user.login if user else '' }}</div>
-
-        <button type="button" class="profile-btn btn-blue" onclick="openModal('editAccountModal')">✏️ Редактировать профиль</button>
-    </div>
-
-    <!-- НАСТРОЙКИ ПРИЛОЖЕНИЯ -->
-    <div class="settings-container">
-        <h3 class="settings-title">⚙ Настройки приложения</h3>
-        <div class="setting-row">
-            <div class="setting-info">
-                <div class="setting-label">Тёмная тема</div>
-                <div class="setting-desc">Переключить оформление</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
-                <span class="slider"></span>
-            </label>
+        <div class="avatar-actions">
+            <button class="avatar-btn avatar-btn-edit" onclick="document.getElementById('avatarInput').click()">
+                📷 Изменить
+            </button>
+            <button class="avatar-btn avatar-btn-delete" id="deleteAvatarBtn"
+                    onclick="deleteAvatar()"
+                    {% if not user or not user.avatar %}disabled{% endif %}>
+                🗑 Удалить
+            </button>
         </div>
-        <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;">🚪 Выйти из аккаунта</a>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
 
-    <!-- ОБЩЕЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК (ВНУТРИ СДВОЕННЫЕ КНОПКИ) -->
-    <div id="editAccountModal" class="modal" onclick="closeModalOnOutsideClick(event, 'editAccountModal')">
-        <div class="modal-content" style="text-align: center;">
-            <h3 class="modal-title" style="text-align: center; margin-bottom: 20px;">Настройки аккаунта</h3>
-            
-            <div style="display: flex; gap: 10px; width: 100%; margin-bottom: 20px; justify-content: space-between;">
-                <button type="button" class="profile-btn btn-blue" style="flex: 1; width: auto; margin-bottom: 0; padding: 12px; font-size: 14px;" onclick="document.getElementById('avatarInput').click()">
-                    📷 Обновить
-                </button>
-                <button type="button" class="profile-btn btn-red" id="deleteAvatarBtn" style="flex: 1; width: auto; margin-top: 0; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600;" 
-                    onclick="deleteAvatar()" {% if not user or not user.avatar %}disabled{% endif %}>
-                    🗑 Удалить
-                </button>
-            </div>
+    <div class="profile-name">{{ user.name if user else '' }}</div>
+    <div class="profile-username">@{{ user.login if user else '' }}</div>
 
-            <button type="button" class="profile-btn btn-blue" onclick="closeModal('editAccountModal'); openModal('nameModal')">✏ Изменить имя</button>
-            <button type="button" class="profile-btn btn-blue" onclick="closeModal('editAccountModal'); openModal('loginModal')">🔑 Изменить логин</button>
-            <button type="button" class="profile-btn btn-blue" onclick="closeModal('editAccountModal'); openModal('passwordModal')">🔒 Сменить пароль</button>
-            
-            <button type="button" class="profile-btn btn-cancel" style="margin-top: 20px; margin-bottom: 0; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; border: none; cursor: pointer;" onclick="closeModal('editAccountModal')">Закрыть</button>
+    <button class="profile-btn btn-blue" onclick="openModal('nameModal')">✏️ Изменить имя</button>
+    <button class="profile-btn btn-blue" onclick="openModal('loginModal')">🔑 Изменить логин</button>
+    <button class="profile-btn btn-blue" onclick="openModal('passwordModal')">🔒 Сменить пароль</button>
+</div>
+
+<div class="settings-container">
+    <h3 class="settings-title">⚙️ Настройки</h3>
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-label">Тёмная тема</div>
+            <div class="setting-desc">Переключить оформление</div>
         </div>
+        <label class="switch">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
+            <span class="slider"></span>
+        </label>
     </div>
+    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px; display:block;">🚪 Выйти из аккаунта</a>
+</div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ИМЯ -->
-    <div id="nameModal" class="modal" onclick="closeModalOnOutsideClick(event, 'nameModal')">
-        <div class="modal-content">
-            <h3 class="modal-title">Изменить имя</h3>
-            <input type="text" id="input-name" class="form-input" placeholder="Новое имя" oninput="validateName()">
-            <div class="rules">
-                <div id="rule-name-len" class="hint"><span class="status-dot"></span>От 2 до 30 символов</div>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="profile-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
-                <button type="button" id="btn-save-name" class="profile-btn btn-blue" onclick="sendUpdate('name')" disabled>Сохранить</button>
-            </div>
+<!-- МОДАЛКА: ИМЯ -->
+<div id="nameModal" class="modal" onclick="outsideClose(event,'nameModal')">
+    <div class="modal-content">
+        <div class="modal-title">Изменить имя</div>
+        <input type="text" id="inputName" class="form-input" placeholder="Новое имя" oninput="validateName()">
+        <div class="rules">
+            <div id="ruleNameLen" class="hint"><span class="status-dot"></span>От 2 до 30 символов</div>
+        </div>
+        <div class="modal-buttons">
+            <button class="profile-btn btn-cancel" onclick="closeModal('nameModal')">Отмена</button>
+            <button class="profile-btn btn-blue" id="btnSaveName" onclick="sendUpdate('name')" disabled>Сохранить</button>
         </div>
     </div>
+</div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: ИЗМЕНИТЬ ЛОГИН -->
-    <div id="loginModal" class="modal" onclick="closeModalOnOutsideClick(event, 'loginModal')">
-        <div class="modal-content">
-            <h3 class="modal-title">Изменить логин</h3>
-            <input type="text" id="input-login" class="form-input" placeholder="Новый логин" oninput="validateLogin()">
-            <div class="rules">
-                <div id="rule-login-len" class="hint"><span class="status-dot"></span>От 4 до 20 символов</div>
-                <div id="rule-login-chars" class="hint"><span class="status-dot"></span>Только английские буквы и цифры</div>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="profile-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
-                <button type="button" id="btn-save-login" class="profile-btn btn-blue" onclick="sendUpdate('login')" disabled>Сохранить</button>
-            </div>
+<!-- МОДАЛКА: ЛОГИН -->
+<div id="loginModal" class="modal" onclick="outsideClose(event,'loginModal')">
+    <div class="modal-content">
+        <div class="modal-title">Изменить логин</div>
+        <input type="text" id="inputLogin" class="form-input" placeholder="Новый логин" oninput="validateLogin()">
+        <div class="rules">
+            <div id="ruleLoginLen" class="hint"><span class="status-dot"></span>От 3 до 24 символов</div>
+            <div id="ruleLoginChars" class="hint"><span class="status-dot"></span>Только буквы и цифры</div>
+        </div>
+        <div class="modal-buttons">
+            <button class="profile-btn btn-cancel" onclick="closeModal('loginModal')">Отмена</button>
+            <button class="profile-btn btn-blue" id="btnSaveLogin" onclick="sendUpdate('login')" disabled>Сохранить</button>
         </div>
     </div>
+</div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: СМЕНИТЬ ПАРОЛЬ -->
-    <div id="passwordModal" class="modal" onclick="closeModalOnOutsideClick(event, 'passwordModal')">
-        <div class="modal-content">
-            <h3 class="modal-title">Сменить пароль</h3>
-            <input type="password" id="input-password" class="form-input" placeholder="Новый пароль" oninput="validatePassword()">
-            <div class="rules">
-                <div id="rule-pass-len" class="hint"><span class="status-dot"></span>Не менее 6 символов</div>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="profile-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
-                <button type="button" id="btn-save-password" class="profile-btn btn-blue" onclick="sendUpdate('password')" disabled>Сохранить</button>
-            </div>
+<!-- МОДАЛКА: ПАРОЛЬ -->
+<div id="passwordModal" class="modal" onclick="outsideClose(event,'passwordModal')">
+    <div class="modal-content">
+        <div class="modal-title">Сменить пароль</div>
+        <input type="password" id="inputPassword" class="form-input" placeholder="Новый пароль" oninput="validatePassword()">
+        <div class="rules">
+            <div id="rulePassLen"    class="hint"><span class="status-dot"></span>Минимум 8 символов</div>
+            <div id="rulePassUpper"  class="hint"><span class="status-dot"></span>Минимум 1 заглавная</div>
+            <div id="rulePassNumber" class="hint"><span class="status-dot"></span>Минимум 1 цифра</div>
+            <div id="rulePassEng"    class="hint"><span class="status-dot"></span>Только латиница</div>
+        </div>
+        <div class="modal-buttons">
+            <button class="profile-btn btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
+            <button class="profile-btn btn-blue" id="btnSavePassword" onclick="sendUpdate('password')" disabled>Сохранить</button>
         </div>
     </div>
+</div>
 
-    <!-- НИЖНИЙ ТУЛБАР -->
-    <nav class="bottom-nav">
-        <a href="/" class="nav-item">💬 <span>Чаты</span></a>
-        <a href="/search" class="nav-item">🔍 <span>Поиск</span></a>
-        <a href="/profile" class="nav-item active">👤 <span>Профиль</span></a>
-    </nav>
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">💬<span>Чаты</span></a>
+    <a href="/search" class="nav-item">🔍<span>Поиск</span></a>
+    <a href="/profile" class="nav-item active">👤<span>Профиль</span></a>
+</nav>
 
-    <script>
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function closeModalOnOutsideClick(event, id) { if (event.target === document.getElementById(id)) closeModal(id); }
+<script>
+    // Тема — применяем сразу до рендера
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        var t = document.getElementById('themeToggle');
+        if (t) t.checked = true;
+    }
 
-        function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
+    function toggleTheme(cb) {
+        document.body.classList.toggle('dark-mode', cb.checked);
+        localStorage.setItem('theme', cb.checked ? 'dark' : 'light');
+    }
 
-        function uploadAvatar(input) {
-            const file = input.files;
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onloadend = async function() {
-                const base64String = reader.result;
-                const response = await fetch('/upload_avatar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: base64String })
-                });
-                if ((await response.json()).success) location.reload();
-            };
-            reader.readAsDataURL(file);
-        }
+    function openModal(id)  { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function outsideClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
-        async function deleteAvatar() {
-            if (!confirm('Удалить фото профиля?')) return;
-            const response = await fetch('/upload_avatar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: null })
+    function updateHint(id, valid) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (valid === null) { el.className = 'hint'; return; }
+        el.className = 'hint ' + (valid ? 'success' : 'invalid');
+    }
+
+    function validateName() {
+        var v = document.getElementById('inputName').value.trim();
+        var ok = v.length >= 2 && v.length <= 30;
+        updateHint('ruleNameLen', v.length > 0 ? ok : null);
+        document.getElementById('btnSaveName').disabled = !ok;
+    }
+
+    function validateLogin() {
+        var v = document.getElementById('inputLogin').value.trim();
+        var lenOk   = v.length >= 3 && v.length <= 24;
+        var charsOk = /^[A-Za-z0-9]+$/.test(v);
+        updateHint('ruleLoginLen',   v.length > 0 ? lenOk   : null);
+        updateHint('ruleLoginChars', v.length > 0 ? charsOk : null);
+        document.getElementById('btnSaveLogin').disabled = !(lenOk && charsOk);
+    }
+
+    function validatePassword() {
+        var v = document.getElementById('inputPassword').value;
+        var checks = {
+            rulePassLen:    v.length >= 8,
+            rulePassUpper:  /[A-Z]/.test(v),
+            rulePassNumber: /[0-9]/.test(v),
+            rulePassEng:    /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v)
+        };
+        Object.keys(checks).forEach(function(k) { updateHint(k, v.length > 0 ? checks[k] : null); });
+        document.getElementById('btnSavePassword').disabled = !Object.values(checks).every(Boolean);
+    }
+
+    async function sendUpdate(type) {
+        var value = '';
+        if (type === 'name')     value = document.getElementById('inputName').value.trim();
+        if (type === 'login')    value = document.getElementById('inputLogin').value.trim();
+        if (type === 'password') value = document.getElementById('inputPassword').value;
+        var r = await fetch('/update_profile', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({field: type, value: value})
+        });
+        var res = await r.json();
+        if (res.success) location.reload();
+        else alert(res.message || 'Ошибка');
+    }
+
+    // Загрузка аватарки через FormData (не base64!)
+    function uploadAvatar(input) {
+        var file = input.files[0];  // ИСПРАВЛЕНО: было input.files
+        if (!file) return;
+        var loading = document.getElementById('avatarLoading');
+        loading.style.display = 'flex';
+        var fd = new FormData();
+        fd.append('image', file);
+        fetch('/upload_avatar', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                loading.style.display = 'none';
+                if (res.success) location.reload();
+                else alert('Ошибка: ' + (res.message || ''));
+            })
+            .catch(function() {
+                loading.style.display = 'none';
+                alert('Ошибка загрузки');
             });
-            if ((await response.json()).success) location.reload();
-        }
+        input.value = '';
+    }
 
-        function validateName() {
-            const val = document.getElementById('input-name').value.trim();
-            const btn = document.getElementById('btn-save-name');
-            document.getElementById('rule-name-len').className = (val.length >= 2 && val.length <= 30) ? "hint success" : (val.length > 0 ? "hint invalid" : "hint");
-            btn.disabled = !(val.length >= 2 && val.length <= 30);
-        }
-
-        function validateLogin() {
-            const val = document.getElementById('input-login').value.trim();
-            const btn = document.getElementById('btn-save-login');
-            const cLen = val.length >= 4 && val.length <= 20;
-            const cChr = /^[a-zA-Z0-9_]+$/.test(val);
-            document.getElementById('rule-login-len').className = val.length === 0 ? "hint" : (cLen ? "hint success" : "hint invalid");
-            document.getElementById('rule-login-chars').className = val.length === 0 ? "hint" : (cChr ? "hint success" : "hint invalid");
-            btn.disabled = !(cLen && cChr);
-        }
-
-        function validatePassword() {
-            const val = document.getElementById('input-password').value;
-            const btn = document.getElementById('btn-save-password');
-            document.getElementById('rule-pass-len').className = val.length === 0 ? "hint" : (val.length >= 6 ? "hint success" : "hint invalid");
-            btn.disabled = !(val.length >= 6);
-        }
-
-        function toggleTheme(checkbox) {
-            document.body.classList.toggle('dark-mode', checkbox.checked);
-            localStorage.setItem('theme', checkbox.checked ? 'dark' : 'light');
-        }
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            if(document.getElementById('themeToggle')) document.getElementById('themeToggle').checked = true;
-        }
-
-        async function sendUpdate(type) {
-            let value = '';
-            if (type === 'name') value = document.getElementById('input-name').value.trim();
-            if (type === 'login') value = document.getElementById('input-login').value.trim();
-            if (type === 'password') value = document.getElementById('input-password').value;
-
-            const response = await fetch('/update_profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ field: type, value: value })
-            });
-            if ((await response.json()).success) location.reload();
-        }
-    </script>
+    // Удаление аватарки
+    async function deleteAvatar() {
+        if (!confirm('Удалить аватарку?')) return;
+        var r = await fetch('/delete_avatar', { method: 'POST' });
+        var res = await r.json();
+        if (res.success) location.reload();
+        else alert(res.message || 'Ошибка');
+    }
+</script>
 </body>
 </html>
