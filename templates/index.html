@@ -793,8 +793,8 @@
         }
 
         /* ===================== PROFILE ===================== */
-        body {
-            padding-bottom: 90px;
+        @media (max-width: 768px) {
+            body { padding-bottom: 70px; }
         }
         
         .bottom-nav {
@@ -1716,94 +1716,33 @@ function savePassword() {
     }).then(() => location.reload());
 }
 
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark-mode');
-}
+    if (localStorage.getItem('theme') === 'dark')
+        document.body.classList.add('dark-mode');
 
-// Применяем тёмную тему из localStorage
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark-mode');
-}
-    // 1. Универсальная функция расчета времени под часовой пояс пользователя
-function parseLastSeen(isoString) {
-    if (!isoString) return "не был(а) в сети";
-
-    const lastSeenDate = new Date(isoString); // Телефон сам переведет UTC в местное время устройства
-    const nowDate = new Date();
-    const diffInSeconds = Math.floor((nowDate - lastSeenDate) / 1000);
-
-    if (diffInSeconds < 60) return "был(а) только что";
-
-    if (diffInSeconds < 3600) {
-        const mins = Math.floor(diffInSeconds / 60);
-        return `был(а) ${mins} мин. назад`;
+    // last_seen по часовому поясу пользователя
+    function parseLastSeen(iso) {
+        if (!iso) return "не был(а) в сети";
+        var d = new Date(iso);
+        var now = new Date();
+        var diff = Math.floor((now - d) / 1000);
+        if (diff < 60)   return "был(а) только что";
+        if (diff < 3600) return "был(а) " + Math.floor(diff/60) + " мин. назад";
+        var time = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        var today = now.toDateString();
+        var yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
+        if (d.toDateString() === today)               return "был(а) сегодня в " + time;
+        if (d.toDateString() === yesterday.toDateString()) return "был(а) вчера в " + time;
+        return "был(а) " + d.toLocaleDateString();
     }
 
-    const timeStr = lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    if (lastSeenDate.toDateString() === nowDate.toDateString()) {
-        return `был(а) сегодня в ${timeStr}`;
-    }
-
-    const yesterday = new Date();
-    yesterday.setDate(nowDate.getDate() - 1);
-    if (lastSeenDate.toDateString() === yesterday.toDateString()) {
-        return `был(а) вчера в ${timeStr}`;
-    }
-
-    return "был(а) " + lastSeenDate.toLocaleDateString();
-}
-
-// 2. Автоматический перерасчет времени в списке чатов при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll('.user-status').forEach(el => {
-        const iso = el.getAttribute('data-iso');
-        // Если пользователь не в сети — рассчитываем его точное локальное время
-        if (el.innerText.trim() !== "в сети" && iso) {
-            el.innerText = parseLastSeen(iso);
-        }
-    });
-});
-// НАСТРОЙКА СОКЕТ-ОБРАБОТЧИКОВ ДЛЯ REAL-TIME ОБНОВЛЕНИЯ БЕЗ ЛАГОВ
-
-// 1. Ловим мгновенное изменение статуса онлайн/оффлайн
-socket.on("user_status_change", (data) => {
-    const statusTextEl = document.getElementById(`status-${data.user_id}`);
-    const avatarBox = document.getElementById(`avatar-${data.user_id}`);
-
-    if (data.online) {
-        if (statusTextEl) statusTextEl.innerText = "в сети";
-        if (avatarBox && !avatarBox.querySelector('.avatar-online')) {
-            avatarBox.insertAdjacentHTML('beforeend', '<div class="avatar-online"></div>');
-        }
-    } else {
-        if (statusTextEl && data.last_seen_iso) {
-            statusTextEl.innerText = parseLastSeen(data.last_seen_iso);
-        }
-        if (avatarBox) {
-            const onlineDot = avatarBox.querySelector('.avatar-online');
-            if (onlineDot) onlineDot.remove();
-        }
-    }
-});
-
-// 2. Ловим мгновенное прочтение сообщений и перекрашиваем галочки на ✓✓
-socket.on("messages_read", (data) => {
-    // Проверяем, что прочитан именно текущий открытый чат
-    if (data.chat_id === currentChatId) {
-        document.querySelectorAll('.my-msg .msg-ticks').forEach(ticks => {
-            ticks.innerText = "✓✓";
-            ticks.classList.add("read");
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.user-status').forEach(function(el) {
+            var iso = el.getAttribute('data-iso');
+            if (el.innerText.trim() !== "в сети" && iso) {
+                el.innerText = parseLastSeen(iso);
+            }
         });
-    }
-});
-
-// 3. Отправляем сигнал прочтения, как только открываем чат с пользователем
-// Добавь вызов этой строчки внутрь своей логики открытия переписки
-if (currentChatId) {
-    socket.emit("read_messages", { chat_id: currentChatId });
-}
-
+    });
 </script>
 <!-- Всплывающая панель реакций Apple iOS -->
 <div id="reaction-picker" style="display: none; position: absolute; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 30px; padding: 8px 14px; gap: 10px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.4); align-items: center;">
