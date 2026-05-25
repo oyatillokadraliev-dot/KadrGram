@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link href="https://googleapis.com" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>KadrGram | Поиск</title>
-
     <style>
         :root {
             --primary: #0088cc;
+            --primary2: #00b4d8;
             --success: #25d366;
             --bg: #f0f4f8;
             --white: #ffffff;
@@ -24,13 +24,12 @@
             --text: #ffffff;
             --text2: #7f91a4;
         }
-        
-        * { 
-            box-sizing: border-box; 
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+
+        body.dark-mode .container { background: var(--white) !important; border-color: var(--border) !important; }
+        body.dark-mode input { background: #0e1621 !important; color: #fff !important; border-color: var(--border) !important; }
+        body.dark-mode .bottom-nav { background: var(--white) !important; border-color: var(--border) !important; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -39,165 +38,133 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
             min-height: 100vh;
-            padding: 40px 20px 100px 20px; /* Отступ снизу 100px, чтобы контент не перекрывался панелью */
+            padding: 30px 20px 100px;
+            transition: background 0.3s, color 0.3s;
         }
 
         .container {
-            width: 100%;
-            max-width: 400px; /* Сделал ширину как в профиле для аккуратного мобильного вида */
+            width: 100%; max-width: 400px;
             background: var(--white);
             border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
             border: 1px solid var(--border);
             margin-top: 20px;
+            transition: background 0.3s, border-color 0.3s;
         }
 
         .header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
         }
 
         .back {
-            font-size: 20px;
-            text-decoration: none;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1.5px solid var(--border);
-            outline: none;
-            font-size: 15px;
-            background: #f8fafc;
+            font-size: 22px; text-decoration: none;
+            color: var(--primary); font-weight: bold;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
             transition: all 0.2s;
         }
 
-        input:focus {
-            border-color: var(--primary);
-            background: white;
+        .back:hover { background: linear-gradient(135deg, var(--primary), var(--primary2)); color: white; }
+
+        h2 { margin: 0; font-size: 19px; font-weight: 700; }
+
+        form { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        input {
+            flex: 1; padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            outline: none; font-size: 15px;
+            background: #f8fafc;
+            color: var(--text);
+            font-family: inherit;
+            transition: all 0.2s;
         }
+
+        input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(0,136,204,0.1); }
 
         button[type="submit"] {
-            padding: 10px 16px;
+            padding: 10px 18px;
             border: none;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 3px 10px rgba(0,136,204,0.3);
         }
 
-        button[type="submit"]:hover {
-            opacity: 0.9;
-        }
+        button[type="submit"]:hover { transform: scale(1.03); }
 
         .user {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+            gap: 12px;
         }
 
-        .info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+        .user-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 700; flex-shrink: 0;
+            overflow: hidden;
         }
 
-        .name {
-            font-weight: 600;
-            color: var(--text);
-        }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .login {
-            font-size: 13px;
-            color: var(--text2);
-        }
+        .info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+
+        .name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .login-text { font-size: 13px; color: var(--text2); }
 
         .chat-btn {
             background: var(--success);
-            color: white;
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: opacity 0.2s;
+            color: white; text-decoration: none;
+            padding: 8px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+            transition: all 0.2s; flex-shrink: 0;
+            white-space: nowrap;
         }
 
-        .chat-btn:hover {
-            opacity: 0.9;
-        }
+        .chat-btn:hover { opacity: 0.9; transform: scale(1.02); }
 
         .empty {
-            text-align: center;
-            color: var(--text2);
-            margin-top: 25px;
-            font-size: 14px;
-            line-height: 1.5;
+            text-align: center; color: var(--text2);
+            margin-top: 30px; font-size: 14px; line-height: 1.6;
         }
 
-        /* НИЖНИЙ ТУЛБАР */
+        .empty-icon { font-size: 40px; margin-bottom: 10px; }
+
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: var(--white);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 999;
-            padding-bottom: env(safe-area-inset-bottom);
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: var(--white); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+            transition: background 0.3s, border-color 0.3s;
         }
 
         .nav-item {
-            text-decoration: none;
-            color: var(--text2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            flex: 1;
+            text-decoration: none; color: var(--text2);
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s;
         }
 
-        .nav-item.active {
-            color: var(--primary);
-        }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-
     <div class="header">
-        <a href="/" class="back">←</a>
+        <a href="/" class="back">‹</a>
         <h2>Поиск пользователей</h2>
     </div>
 
@@ -206,7 +173,7 @@
             name="query"
             placeholder="Имя или логин..."
             value="{{ request.args.get('query', '') | e }}"
-            required
+            autocomplete="off"
         />
         <button type="submit">Найти</button>
     </form>
@@ -214,38 +181,36 @@
     <div class="results">
         {% for r in results %}
         <div class="user">
-            <div class="info">
-                <div class="name">
-                    {{ r.name | e }}
-                </div>
-                <div class="login">
-                    @{{ r.login | e }}
-                </div>
+            <div class="user-avatar">
+                {% if r.avatar %}
+                    <img src="{{ r.avatar }}" alt="">
+                {% else %}
+                    {{ r.name[0]|upper }}
+                {% endif %}
             </div>
-            <a class="chat-btn" href="/?chat_with={{ r.id }}">
-                Написать
-            </a>
+            <div class="info">
+                <div class="name">{{ r.name | e }}</div>
+                <div class="login-text">@{{ r.login | e }}</div>
+            </div>
+            <a class="chat-btn" href="/?chat_with={{ r.id }}">Написать</a>
         </div>
         {% else %}
             {% if request.args.get('query') %}
                 <div class="empty">
-                    Никого не нашли 😔<br><br>
-                    Попробуйте:<br>
-                    • имя<br>
-                    • логин
+                    <div class="empty-icon">😔</div>
+                    Никого не нашли<br>Попробуйте другое имя или логин
                 </div>
             {% endif %}
         {% endfor %}
     </div>
-
 </div>
 
-<!-- НИЖНИЙ ТУЛБАР (АКТИВЕН ПОИСК) -->
 <nav class="bottom-nav">
-    <a href="/" class="nav-item">💬 <span>Чаты</span></a>
-    <a href="/search" class="nav-item active">🔍 <span>Поиск</span></a>
-    <a href="/profile" class="nav-item">👤 <span>Профиль</span></a>
+    <a href="/" class="nav-item">💬<span>Чаты</span></a>
+    <a href="/search" class="nav-item active">🔍<span>Поиск</span></a>
+    <a href="/profile" class="nav-item">👤<span>Профиль</span></a>
 </nav>
+
 <script>
     if (localStorage.getItem('theme') === 'dark')
         document.body.classList.add('dark-mode');
