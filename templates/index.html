@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -42,7 +43,8 @@
         body.dark-mode .sidebar-header, 
         body.dark-mode .sidebar-footer,
         body.dark-mode .chat-header,
-        body.dark-mode .input-area {
+        body.dark-mode .input-area,
+        body.dark-mode .bottom-nav {
             background-color: var(--white) !important;
             border-color: var(--border) !important;
         }
@@ -50,15 +52,8 @@
         body.dark-mode .user-item:hover {
             background-color: rgba(255, 255, 255, 0.05) !important;
         }
-        
-        body.dark-mode .chat-input {
-            background-color: var(--bg) !important;
-            border-color: var(--border) !important;
-            color: #ffffff !important;
-        }
 
-        body.dark-mode .message-input,
-        body.dark-mode #message-text {
+        body.dark-mode .message-input {
             background-color: #0e1621 !important;
             border-color: #101924 !important;
             color: #ffffff !important;
@@ -70,14 +65,6 @@
         
         body.dark-mode .nav-item.active {
             color: #0088cc !important;
-        }
-        body.dark-mode .user-item.active {
-            background: rgba(0, 136, 204, 0.15) !important;
-            border-left: 3px solid var(--primary);
-        }
-
-        body.dark-mode .user-item:active {
-            background: rgba(0, 136, 204, 0.25) !important;
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -95,7 +82,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d0dae4; border-radius: 4px; }
 
-        /* ===================== SIDEBAR ===================== */
         .sidebar {
             width: 340px;
             flex-shrink: 0;
@@ -197,6 +183,11 @@
             position: relative;
             box-shadow: 0 4px 12px rgba(0,136,204,0.3);
             transition: transform 0.2s;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
         }
 
         .user-item:hover .avatar { transform: scale(1.05); }
@@ -212,9 +203,7 @@
         }
 
         .user-meta { flex: 1; min-width: 0; }
-
         .user-name-row { display: flex; align-items: center; gap: 5px; }
-
         .user-name {
             font-weight: 600;
             font-size: 15px;
@@ -263,7 +252,6 @@
         }
 
         .my-name { font-weight: 600; font-size: 14px; color: var(--text); }
-
         .logout-link {
             color: var(--danger);
             text-decoration: none;
@@ -281,7 +269,6 @@
             transform: scale(1.02);
         }
 
-        /* ===================== CHAT ===================== */
         .chat-area {
             flex: 1;
             display: flex;
@@ -325,6 +312,8 @@
             border-radius: 50%;
             background: linear-gradient(135deg, #e8f4ff, #d0eeff);
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
 
         .back-btn:hover { transform: scale(1.05); box-shadow: var(--shadow-sm); }
@@ -339,6 +328,11 @@
             font-weight: 700;
             flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(0,136,204,0.3);
+            overflow: hidden;
+        }
+
+        .chat-header-avatar img {
+            width: 100%; height: 100%; object-fit: cover;
         }
 
         .chat-header-info { flex: 1; min-width: 0; }
@@ -346,7 +340,6 @@
         .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
         .chat-status.online { color: var(--success); font-weight: 500; }
 
-        /* ===================== MESSAGES ===================== */
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -394,35 +387,10 @@
         .my-msg .msg-time  { color: rgba(255,255,255,0.65); }
         .my-msg .msg-ticks { color: rgba(255,255,255,0.75); }
         .my-msg .msg-ticks.read { color: white; }
-        .my-msg .msg-edited { color: rgba(255,255,255,0.55); }
-
-        .msg-reply {
-            background: rgba(0,136,204,0.08);
-            border-left: 3px solid var(--primary);
-            border-radius: 8px;
-            padding: 5px 9px;
-            margin-bottom: 6px;
-            font-size: 12px;
-            color: var(--text2);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .msg-reply:hover { background: rgba(0,136,204,0.14); }
-
-        .my-msg .msg-reply {
-            background: rgba(255,255,255,0.18);
-            border-left-color: rgba(255,255,255,0.7);
-            color: rgba(255,255,255,0.8);
-        }
-
-        .msg-reply b { color: var(--primary); display: block; font-size: 11px; }
-        .my-msg .msg-reply b { color: white; }
 
         .msg-text { font-size: 15px; line-height: 1.45; }
         .msg-deleted { font-size: 13px; color: var(--text2); font-style: italic; }
         .my-msg .msg-deleted { color: rgba(255,255,255,0.55); }
-        .msg-edited { font-size: 10px; color: var(--text2); }
 
         .msg-image {
             max-width: 100%;
@@ -448,18 +416,6 @@
         .msg-ticks { font-size: 12px; color: var(--text2); line-height: 1; }
         .msg-ticks.read { color: var(--primary); }
 
-        .load-more-label {
-            text-align: center;
-            color: var(--text2);
-            font-size: 12px;
-            padding: 8px;
-            background: rgba(0,136,204,0.06);
-            border-radius: 10px;
-            align-self: center;
-            margin: 4px 0;
-        }
-
-        /* ===================== TYPING ===================== */
         .typing-indicator {
             display: none;
             align-self: flex-start;
@@ -469,18 +425,15 @@
             border-radius: var(--radius);
             border-bottom-left-radius: 4px;
             box-shadow: var(--shadow-sm);
-            animation: msgIn 0.2s ease;
         }
 
         .typing-dots { display: flex; gap: 4px; align-items: center; }
-
         .typing-dots span {
             width: 7px; height: 7px;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
             border-radius: 50%;
             animation: bounce 1.2s infinite;
         }
-
         .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
@@ -489,7 +442,6 @@
             30%            { transform: translateY(-6px); }
         }
 
-        /* ===================== INPUT ===================== */
         .input-area {
             background: white;
             border-top: 1px solid var(--border);
@@ -499,68 +451,6 @@
             padding-bottom: env(safe-area-inset-bottom);
             box-shadow: 0 -2px 12px rgba(0,136,204,0.06);
         }
-
-        .photo-preview-wrap {
-            display: none;
-            padding: 8px 14px 0;
-            position: relative;
-            width: fit-content;
-        }
-
-        .photo-preview-wrap img {
-            max-height: 90px;
-            border-radius: 10px;
-            display: block;
-            border: 2px solid var(--border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .photo-preview-cancel {
-            position: absolute;
-            top: 4px; right: 10px;
-            background: rgba(0,0,0,0.55);
-            color: white;
-            border-radius: 50%;
-            width: 22px; height: 22px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .reply-preview {
-            display: none;
-            background: linear-gradient(135deg, #f0f8ff, #e8f4ff);
-            border-left: 3px solid var(--primary);
-            padding: 7px 36px 7px 12px;
-            font-size: 13px;
-            color: var(--text2);
-            position: relative;
-            margin: 8px 12px 0;
-            border-radius: 10px;
-            box-shadow: var(--shadow-sm);
-            animation: slideDown 0.2s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .reply-preview b { color: var(--primary); display: block; font-size: 12px; margin-bottom: 2px; }
-
-        .reply-cancel {
-            position: absolute;
-            right: 10px; top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--text2);
-            font-size: 18px;
-            line-height: 1;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-
-        .reply-cancel:hover { color: var(--danger); }
 
         .input-row {
             padding: 10px 12px;
@@ -586,7 +476,6 @@
         }
 
         .message-input::placeholder { color: var(--text2); }
-
         .message-input:focus {
             border-color: var(--primary);
             background: white;
@@ -630,87 +519,6 @@
             box-shadow: var(--shadow-sm);
         }
 
-        /* ===================== CTX MENU ===================== */
-        .ctx-menu {
-            position: fixed;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            min-width: 190px;
-            overflow: hidden;
-            display: none;
-            animation: ctxIn 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes ctxIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-
-        .ctx-item {
-            padding: 13px 18px;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text);
-            transition: background 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .ctx-item:hover { background: linear-gradient(135deg, #f0f8ff, #e8f4ff); }
-        .ctx-item + .ctx-item { border-top: 1px solid var(--border); }
-        .ctx-item.danger { color: var(--danger); }
-        .ctx-item.danger:hover { background: rgba(255,107,107,0.06); }
-
-        /* ===================== LIGHTBOX ===================== */
-        .lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-            animation: fadeIn 0.2s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .lightbox.open { display: flex; }
-        .lightbox img {
-            max-width: 95vw; max-height: 90vh;
-            border-radius: 16px;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-            animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes zoomIn {
-            from { transform: scale(0.85); opacity: 0; }
-            to   { transform: scale(1); opacity: 1; }
-        }
-
-        .lightbox-close {
-            position: absolute;
-            top: max(20px, env(safe-area-inset-top));
-            right: 20px;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s;
-        }
-
-        .lightbox-close:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
-
-        /* ===================== EMPTY ===================== */
         .empty-chat {
             display: flex;
             flex-direction: column;
@@ -744,7 +552,6 @@
 
         .empty-chat-sub { font-size: 14px; color: var(--text2); }
 
-        /* ===================== CONNECTION ===================== */
         .connection-status {
             position: absolute;
             top: 12px; right: 16px;
@@ -758,7 +565,35 @@
             z-index: 10;
         }
 
-        /* ===================== MOBILE ===================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: white;
+            border-top: 1px solid #e8ecf0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+        }
+        
+        .nav-item {
+            text-decoration: none;
+            color: #7a8a9a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -774,7 +609,7 @@
             }
 
             .back-btn { display: flex !important; }
-            .input-area { position: sticky; bottom: 0; z-index: 100; }
+            .input-area { position: sticky; bottom: 70px; z-index: 100; }
         }
 
         @media (min-width: 769px) {
@@ -785,7 +620,6 @@
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h2 class="logo">KadrGram</h2>
@@ -799,30 +633,20 @@
         {% if pinned_users %}
         <div class="pin-section-label">📌 Закреплённые</div>
         {% for u in pinned_users %}
-        <div
-            class="user-item pinned-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
-            id="user-{{ u.id }}"
-            onclick="location.href='/?chat_with={{ u.id }}'"
-        >
-                <div class="avatar" id="avatar-{{ u.id }}">
-                    {% if u.avatar %}
-                        <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">
-                    {% else %}
-                        {{ u.name[0]|upper }}
-                    {% endif %}
-                    {% if u.online %}<div class="avatar-online"></div>{% endif %}
-                </div>
-            <div class="user-meta">
-                <div class="user-name-row">
-                    <span class="user-name">{{ u.name }}</span>
-                    <span class="pin-icon">📌</span>
-                </div>
-                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">
-                    {% if u.online %}в сети{% else %}был(а) недавно{% endif %}
-                </div>
+        <div class="user-item pinned-item {{ 'active' if target_user and target_user.id == u.id else '' }}" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
+            <div class="avatar" id="avatar-{{ u.id }}">
+                {% if u.avatar %}
+                    <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;" alt="">
+                {% else %}
+                    {{ u.name[0]|upper }}
+                {% endif %}
+                {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
-            <span class="unread-badge" id="badge-{{ u.id }}"
-                  {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
+            <div class="user-meta">
+                <div class="user-name-row"><span class="user-name">{{ u.name }}</span><span class="pin-icon">📌</span></div>
+                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
+            </div>
+            <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
         </div>
         {% endfor %}
         {% if regular_users %}
@@ -831,29 +655,20 @@
         {% endif %}
 
         {% for u in regular_users %}
-        <div
-            class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}"
-            id="user-{{ u.id }}"
-            onclick="location.href='/?chat_with={{ u.id }}'"
-        >
+        <div class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
             <div class="avatar" id="avatar-{{ u.id }}">
-        {% if u.avatar %}
-                <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">
-            {% else %}
-                {{ u.name[0]|upper }}
-            {% endif %}
-    {% if u.online %}<div class="avatar-online"></div>{% endif %}
+                {% if u.avatar %}
+                    <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;" alt="">
+                {% else %}
+                    {{ u.name[0]|upper }}
+                {% endif %}
+                {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
             <div class="user-meta">
-                <div class="user-name-row">
-                    <span class="user-name">{{ u.name }}</span>
-                </div>
-                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">
-                    {% if u.online %}в сети{% else %}был(а) недавно{% endif %}
-                </div>
+                <div class="user-name-row"><span class="user-name">{{ u.name }}</span></div>
+                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
             </div>
-            <span class="unread-badge" id="badge-{{ u.id }}"
-                  {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
+            <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
         </div>
         {% endfor %}
     </div>
@@ -864,25 +679,22 @@
     </div>
 </div>
 
-<!-- CHAT -->
 <div class="chat-area">
     <div class="connection-status" id="connStatus">⚠ Нет соединения</div>
 
     {% if target_user %}
     <div class="chat-header">
         <a href="/" class="back-btn">‹</a>
-        <div class="chat-header-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; font-weight: 700;">
+        <div class="chat-header-avatar">
             {% if target_user.avatar %}
-                <img src="{{ target_user.avatar }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+                <img src="{{ target_user.avatar }}" style="width: 100%; height: 100%; object-fit: cover;">
             {% else %}
                 {{ target_user.name[0]|upper }}
             {% endif %}
         </div>
         <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
-            <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">
-                {{ 'в сети' if target_user.online else target_user.last_seen_str }}
-            </div>
+            <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">{{ 'в сети' if target_user.online else target_user.last_seen_str }}</div>
         </div>
     </div>
 
@@ -892,17 +704,8 @@
     </div>
 
     <div class="input-area">
-        <div class="photo-preview-wrap" id="photoPreview">
-            <img id="previewImg" src="" alt="">
-            <div class="photo-preview-cancel" onclick="cancelPhotoPreview()">✕</div>
-        </div>
-        <div class="reply-preview" id="replyPreview">
-            <b id="replySender"></b>
-            <span id="replyText"></span>
-            <span class="reply-cancel" onclick="cancelReply()">✕</span>
-        </div>
         <div class="input-row">
-            <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Отправить фото">📷</button>
+            <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Фото">📷</button>
             <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
             <textarea class="message-input" id="messageInput" placeholder="Напишите сообщение..." rows="1" onkeydown="handleKeydown(event)" oninput="autoResizeInput()"></textarea>
             <button class="send-btn" onclick="sendMessage()" title="Отправить">✈️</button>
@@ -917,30 +720,28 @@
     {% endif %}
 </div>
 
-<div class="ctx-menu" id="ctxMenu"></div>
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <img id="lightboxImg" src="" alt="">
-    <div class="lightbox-close" onclick="closeLightbox()">✕</div>
-</div>
+<nav class="bottom-nav">
+    <a href="/" class="nav-item active">💬<span>Чаты</span></a>
+    <a href="/search" class="nav-item">🔍<span>Поиск</span></a>
+    <a href="/profile" class="nav-item">👤<span>Профиль</span></a>
+</nav>
 
 <script>
     const socket = io();
     const myId = '{{ my_id }}';
-    const targetId = '{{ target_user.id if target_user else '' }}';
+    const targetId = '{{ target_user.id if target_user else "" }}';
+    let loadingOldMessages = false;
 
-    // ===== THEME =====
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
     }
 
-    // ===== AUTO RESIZE =====
     function autoResizeInput() {
         const input = document.getElementById('messageInput');
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     }
 
-    // ===== KEYDOWN =====
     function handleKeydown(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -948,7 +749,6 @@
         }
     }
 
-    // ===== SEND MESSAGE =====
     function sendMessage() {
         const text = document.getElementById('messageInput').value.trim();
         if (!text && !window.selectedPhotoUrl) return;
@@ -956,17 +756,14 @@
         socket.emit('new_message', {
             receiver_id: targetId,
             text: text,
-            image: window.selectedPhotoUrl || null,
-            reply_to: window.replyToId || null
+            image: window.selectedPhotoUrl || null
         });
 
         document.getElementById('messageInput').value = '';
         autoResizeInput();
-        cancelPhotoPreview();
-        cancelReply();
+        window.selectedPhotoUrl = null;
     }
 
-    // ===== PHOTO =====
     function handlePhotoUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -979,41 +776,76 @@
             .then(res => {
                 if (res.url) {
                     window.selectedPhotoUrl = res.url;
-                    document.getElementById('previewImg').src = res.url;
-                    document.getElementById('photoPreview').style.display = 'block';
+                    alert('Фото загруженно. Отправить?');
                 }
             });
     }
 
-    function cancelPhotoPreview() {
-        window.selectedPhotoUrl = null;
-        document.getElementById('photoPreview').style.display = 'none';
+    function loadMessages() {
+        if (!targetId || loadingOldMessages) return;
+        loadingOldMessages = true;
+
+        const msgs = document.getElementById('messages');
+        const lastMsg = msgs.querySelector('.msg');
+        const beforeId = lastMsg ? lastMsg.getAttribute('data-msg-id') : null;
+
+        fetch(`/get_messages?with=${targetId}${beforeId ? '&before_id=' + beforeId : ''}`)
+            .then(r => r.json())
+            .then(messages => {
+                messages.forEach(m => appendMessage(m));
+                loadingOldMessages = false;
+                msgs.scrollTop = msgs.scrollHeight;
+            });
     }
 
-    // ===== REPLY =====
-    function cancelReply() {
-        window.replyToId = null;
-        document.getElementById('replyPreview').style.display = 'none';
+    function appendMessage(m) {
+        const msgs = document.getElementById('messages');
+        const isMine = m.sender === myId;
+        const msgEl = document.createElement('div');
+        msgEl.className = `msg ${isMine ? 'my-msg' : 'their-msg'}`;
+        msgEl.setAttribute('data-msg-id', m.id);
+        msgEl.innerHTML = `
+            ${m.image ? `<img src="${m.image}" class="msg-image" onclick="openLightbox('${m.image}')" loading="lazy">` : ''}
+            ${m.text ? `<div class="msg-text">${m.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+            <div class="msg-footer">
+                <span class="msg-time">${new Date(m.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>
+                ${isMine ? `<span class="msg-ticks ${m.read ? 'read' : ''}">✓${m.read ? '✓' : ''}</span>` : ''}
+            </div>
+        `;
+        msgs.appendChild(msgEl);
+        msgs.scrollTop = msgs.scrollHeight;
     }
 
-    // ===== LIGHTBOX =====
     function openLightbox(src) {
-        document.getElementById('lightboxImg').src = src;
-        document.getElementById('lightbox').classList.add('open');
+        console.log('Open:', src);
     }
 
-    function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('open');
-    }
-
-    // ===== SOCKET =====
     socket.on('connect', () => {
         document.getElementById('connStatus').style.display = 'none';
+        if (targetId) loadMessages();
     });
 
     socket.on('disconnect', () => {
         document.getElementById('connStatus').style.display = 'block';
     });
+
+    socket.on('receive_message', (m) => {
+        if (m.sender === targetId || m.receiver === targetId) {
+            appendMessage(m);
+        }
+    });
+
+    socket.on('user_online', (data) => {
+        const status = document.getElementById(`status-${data.user_id}`);
+        if (status) status.textContent = 'в сети';
+    });
+
+    socket.on('user_offline', (data) => {
+        const status = document.getElementById(`status-${data.user_id}`);
+        if (status) status.textContent = data.last_seen_str;
+    });
+
+    if (targetId) loadMessages();
 </script>
 
 </body>
