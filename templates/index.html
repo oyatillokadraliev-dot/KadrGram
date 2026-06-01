@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -444,6 +445,7 @@
             padding-bottom: env(safe-area-inset-bottom);
             box-shadow: 0 -2px 12px rgba(0,136,204,0.06);
             z-index: 100;
+            position: relative;
         }
 
         .input-row {
@@ -602,11 +604,9 @@
             .chat-area {
                 width: 100%;
                 display: {{ 'flex' if target_user else 'none' }};
-                padding-bottom: 70px;
             }
 
             .back-btn { display: flex !important; }
-            .input-area { position: absolute; bottom: 70px; left: 0; right: 0; }
         }
 
         @media (min-width: 769px) {
@@ -632,38 +632,28 @@
         {% for u in pinned_users %}
         <div class="user-item pinned-item {{ 'active' if target_user and target_user.id == u.id else '' }}" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
             <div class="avatar" id="avatar-{{ u.id }}">
-                {% if u.avatar %}
-                    <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;" alt="">
-                {% else %}
-                    {{ u.name[0]|upper }}
-                {% endif %}
+                {% if u.avatar %}<img src="{{ u.avatar }}" alt="">{% else %}{{ u.name[0]|upper }}{% endif %}
                 {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
             <div class="user-meta">
                 <div class="user-name-row"><span class="user-name">{{ u.name }}</span><span class="pin-icon">📌</span></div>
-                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
+                <div class="user-status" id="status-{{ u.id }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
             </div>
             <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
         </div>
         {% endfor %}
-        {% if regular_users %}
-        <div class="pin-section-label" style="margin-top:6px;">Все чаты</div>
-        {% endif %}
+        {% if regular_users %}<div class="pin-section-label" style="margin-top:6px;">Все чаты</div>{% endif %}
         {% endif %}
 
         {% for u in regular_users %}
         <div class="user-item {{ 'active' if target_user and target_user.id == u.id else '' }}" id="user-{{ u.id }}" onclick="location.href='/?chat_with={{ u.id }}'">
             <div class="avatar" id="avatar-{{ u.id }}">
-                {% if u.avatar %}
-                    <img src="{{ u.avatar }}" style="width:100%;height:100%;object-fit:cover;" alt="">
-                {% else %}
-                    {{ u.name[0]|upper }}
-                {% endif %}
+                {% if u.avatar %}<img src="{{ u.avatar }}" alt="">{% else %}{{ u.name[0]|upper }}{% endif %}
                 {% if u.online %}<div class="avatar-online"></div>{% endif %}
             </div>
             <div class="user-meta">
                 <div class="user-name-row"><span class="user-name">{{ u.name }}</span></div>
-                <div class="user-status" id="status-{{ u.id }}" data-iso="{{ u.last_seen_iso }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
+                <div class="user-status" id="status-{{ u.id }}">{% if u.online %}в сети{% else %}{{ u.last_seen_str }}{% endif %}</div>
             </div>
             <span class="unread-badge" id="badge-{{ u.id }}" {% if u.unread == 0 %}style="display:none;"{% endif %}>{{ u.unread }}</span>
         </div>
@@ -683,11 +673,7 @@
     <div class="chat-header">
         <a href="/" class="back-btn">‹</a>
         <div class="chat-header-avatar">
-            {% if target_user.avatar %}
-                <img src="{{ target_user.avatar }}" style="width: 100%; height: 100%; object-fit: cover;">
-            {% else %}
-                {{ target_user.name[0]|upper }}
-            {% endif %}
+            {% if target_user.avatar %}<img src="{{ target_user.avatar }}" alt="">{% else %}{{ target_user.name[0]|upper }}{% endif %}
         </div>
         <div class="chat-header-info">
             <div class="chat-user-name">{{ target_user.name }}</div>
@@ -696,9 +682,7 @@
     </div>
 
     <div class="messages" id="messages"></div>
-    <div class="typing-indicator" id="typingIndicator">
-        <div class="typing-dots"><span></span><span></span><span></span></div>
-    </div>
+    <div class="typing-indicator" id="typingIndicator"><div class="typing-dots"><span></span><span></span><span></span></div></div>
 
     <div class="input-area">
         <div class="input-row">
@@ -734,6 +718,7 @@
 
     function autoResizeInput() {
         const input = document.getElementById('messageInput');
+        if (!input) return;
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     }
@@ -776,6 +761,7 @@
 
     function appendMessage(m) {
         const msgs = document.getElementById('messages');
+        if (!msgs) return;
         const isMine = m.sender === myId;
         const msgEl = document.createElement('div');
         msgEl.className = `msg ${isMine ? 'my-msg' : 'their-msg'}`;
@@ -788,7 +774,7 @@
             </div>
         `;
         msgs.appendChild(msgEl);
-        msgs.scrollTop = msgs.scrollHeight;
+        setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 0);
     }
 
     function loadMessages() {
@@ -796,9 +782,12 @@
         fetch(`/get_messages?with=${targetId}`)
             .then(r => r.json())
             .then(messages => {
-                messages.forEach(m => appendMessage(m));
-                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-            });
+                const msgs = document.getElementById('messages');
+                msgs.innerHTML = '';
+                messages.reverse().forEach(m => appendMessage(m));
+                setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 100);
+            })
+            .catch(err => console.error('Ошибка загрузки:', err));
     }
 
     socket.on('connect', () => {
@@ -816,7 +805,9 @@
         }
     });
 
-    if (targetId) loadMessages();
+    if (targetId) {
+        setTimeout(() => loadMessages(), 500);
+    }
 </script>
 
 </body>
