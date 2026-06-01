@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>KadrGram</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -603,10 +602,11 @@
             .chat-area {
                 width: 100%;
                 display: {{ 'flex' if target_user else 'none' }};
+                padding-bottom: 70px;
             }
 
             .back-btn { display: flex !important; }
-            .input-area { position: sticky; bottom: 70px; }
+            .input-area { position: absolute; bottom: 70px; left: 0; right: 0; }
         }
 
         @media (min-width: 769px) {
@@ -727,7 +727,6 @@
     const socket = io();
     const myId = '{{ my_id }}';
     const targetId = '{{ target_user.id if target_user else "" }}';
-    let loadingOldMessages = false;
 
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
@@ -771,25 +770,7 @@
         fetch('/upload_image', { method: 'POST', body: fd })
             .then(r => r.json())
             .then(res => {
-                if (res.url) {
-                    window.selectedPhotoUrl = res.url;
-                }
-            });
-    }
-
-    function loadMessages() {
-        if (!targetId || loadingOldMessages) return;
-        loadingOldMessages = true;
-
-        const msgs = document.getElementById('messages');
-        const beforeId = msgs.querySelector('.msg') ? msgs.querySelector('.msg').getAttribute('data-msg-id') : null;
-
-        fetch(`/get_messages?with=${targetId}${beforeId ? '&before_id=' + beforeId : ''}`)
-            .then(r => r.json())
-            .then(messages => {
-                messages.forEach(m => appendMessage(m));
-                loadingOldMessages = false;
-                msgs.scrollTop = msgs.scrollHeight;
+                if (res.url) window.selectedPhotoUrl = res.url;
             });
     }
 
@@ -798,7 +779,6 @@
         const isMine = m.sender === myId;
         const msgEl = document.createElement('div');
         msgEl.className = `msg ${isMine ? 'my-msg' : 'their-msg'}`;
-        msgEl.setAttribute('data-msg-id', m.id);
         msgEl.innerHTML = `
             ${m.image ? `<img src="${m.image}" class="msg-image" loading="lazy">` : ''}
             ${m.text ? `<div class="msg-text">${m.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
@@ -809,6 +789,16 @@
         `;
         msgs.appendChild(msgEl);
         msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function loadMessages() {
+        if (!targetId) return;
+        fetch(`/get_messages?with=${targetId}`)
+            .then(r => r.json())
+            .then(messages => {
+                messages.forEach(m => appendMessage(m));
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            });
     }
 
     socket.on('connect', () => {
@@ -824,16 +814,6 @@
         if (m.sender === targetId || m.receiver === targetId) {
             appendMessage(m);
         }
-    });
-
-    socket.on('user_online', (data) => {
-        const status = document.getElementById(`status-${data.user_id}`);
-        if (status) status.textContent = 'в сети';
-    });
-
-    socket.on('user_offline', (data) => {
-        const status = document.getElementById(`status-${data.user_id}`);
-        if (status) status.textContent = data.last_seen_str;
     });
 
     if (targetId) loadMessages();
