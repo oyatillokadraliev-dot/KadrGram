@@ -187,7 +187,7 @@
         }
 
         .avatar img {
-            width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+            width: 100%; height: 100%; object-fit: cover;
         }
 
         .user-item:hover .avatar { transform: scale(1.05); }
@@ -389,9 +389,6 @@
         .my-msg .msg-ticks.read { color: white; }
 
         .msg-text { font-size: 15px; line-height: 1.45; }
-        .msg-deleted { font-size: 13px; color: var(--text2); font-style: italic; }
-        .my-msg .msg-deleted { color: rgba(255,255,255,0.55); }
-
         .msg-image {
             max-width: 100%;
             max-height: 260px;
@@ -399,10 +396,7 @@
             display: block;
             margin-bottom: 5px;
             cursor: pointer;
-            transition: transform 0.2s;
         }
-
-        .msg-image:hover { transform: scale(1.02); }
 
         .msg-footer {
             display: flex;
@@ -445,11 +439,12 @@
         .input-area {
             background: white;
             border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
+            display: flex !important;
+            flex-direction: column !important;
             flex-shrink: 0;
             padding-bottom: env(safe-area-inset-bottom);
             box-shadow: 0 -2px 12px rgba(0,136,204,0.06);
+            z-index: 100;
         }
 
         .input-row {
@@ -577,6 +572,7 @@
             justify-content: space-around;
             align-items: center;
             z-index: 999;
+            padding-bottom: env(safe-area-inset-bottom);
         }
         
         .nav-item {
@@ -588,6 +584,7 @@
             gap: 4px;
             font-size: 12px;
             font-weight: 500;
+            transition: color 0.2s;
         }
         
         .nav-item.active {
@@ -609,7 +606,7 @@
             }
 
             .back-btn { display: flex !important; }
-            .input-area { position: sticky; bottom: 70px; z-index: 100; }
+            .input-area { position: sticky; bottom: 70px; }
         }
 
         @media (min-width: 769px) {
@@ -705,10 +702,10 @@
 
     <div class="input-area">
         <div class="input-row">
-            <button class="photo-btn" onclick="document.getElementById('photoInput').click()" title="Фото">📷</button>
+            <button class="photo-btn" onclick="document.getElementById('photoInput').click()">📷</button>
             <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
             <textarea class="message-input" id="messageInput" placeholder="Напишите сообщение..." rows="1" onkeydown="handleKeydown(event)" oninput="autoResizeInput()"></textarea>
-            <button class="send-btn" onclick="sendMessage()" title="Отправить">✈️</button>
+            <button class="send-btn" onclick="sendMessage()">✈️</button>
         </div>
     </div>
     {% else %}
@@ -776,7 +773,6 @@
             .then(res => {
                 if (res.url) {
                     window.selectedPhotoUrl = res.url;
-                    alert('Фото загруженно. Отправить?');
                 }
             });
     }
@@ -786,8 +782,7 @@
         loadingOldMessages = true;
 
         const msgs = document.getElementById('messages');
-        const lastMsg = msgs.querySelector('.msg');
-        const beforeId = lastMsg ? lastMsg.getAttribute('data-msg-id') : null;
+        const beforeId = msgs.querySelector('.msg') ? msgs.querySelector('.msg').getAttribute('data-msg-id') : null;
 
         fetch(`/get_messages?with=${targetId}${beforeId ? '&before_id=' + beforeId : ''}`)
             .then(r => r.json())
@@ -805,7 +800,7 @@
         msgEl.className = `msg ${isMine ? 'my-msg' : 'their-msg'}`;
         msgEl.setAttribute('data-msg-id', m.id);
         msgEl.innerHTML = `
-            ${m.image ? `<img src="${m.image}" class="msg-image" onclick="openLightbox('${m.image}')" loading="lazy">` : ''}
+            ${m.image ? `<img src="${m.image}" class="msg-image" loading="lazy">` : ''}
             ${m.text ? `<div class="msg-text">${m.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
             <div class="msg-footer">
                 <span class="msg-time">${new Date(m.time).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>
@@ -814,10 +809,6 @@
         `;
         msgs.appendChild(msgEl);
         msgs.scrollTop = msgs.scrollHeight;
-    }
-
-    function openLightbox(src) {
-        console.log('Open:', src);
     }
 
     socket.on('connect', () => {
