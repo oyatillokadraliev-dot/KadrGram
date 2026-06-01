@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <title>KadrGram | Редактирование профиля</title>
+    <title>KadrGram | Профиль</title>
     <style>
         :root {
             --primary: #0088cc;
@@ -26,8 +26,10 @@
             --text2: #7f91a4;
         }
 
-        body.dark-mode .edit-container,
-        body.dark-mode .modal-content {
+        body.dark-mode .profile-container,
+        body.dark-mode .settings-container,
+        body.dark-mode .modal-content,
+        body.dark-mode .bottom-nav {
             background: var(--white) !important;
             border-color: var(--border) !important;
         }
@@ -38,9 +40,9 @@
             color: #fff !important;
         }
 
-        body.dark-mode .bottom-nav {
-            background: var(--white) !important;
-            border-color: var(--border) !important;
+        body.dark-mode .btn-cancel {
+            background: #24303f !important;
+            color: #7f91a4 !important;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -57,416 +59,93 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
-        }
-
-        .back-button:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 18px rgba(0, 136, 204, 0.4);
-        }
-
-        .edit-container {
+        .profile-container, .settings-container {
             background: var(--white);
-            width: 100%;
-            max-width: 420px;
-            padding: 32px 28px;
+            width: 100%; max-width: 400px;
+            padding: 28px 24px;
             border-radius: 24px;
-            box-shadow: 0 2px 8px rgba(0, 136, 204, 0.08);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
+            text-align: center;
             border: 1px solid var(--border);
+            margin-top: 20px;
             transition: background 0.3s, border-color 0.3s;
         }
 
-        .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 28px;
-            background: linear-gradient(135deg, var(--primary), var(--primary2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ===== AVATAR SECTION ===== */
         .avatar-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 32px;
-            padding-bottom: 32px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .avatar-wrapper {
-            position: relative;
-            display: inline-block;
             margin-bottom: 16px;
         }
 
+        .avatar-wrapper { position: relative; display: inline-block; }
+
         .avatar-main {
-            width: 100px;
-            height: 100px;
+            width: 90px; height: 90px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0, 136, 204, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3);
             overflow: hidden;
-            border: 3px solid var(--white);
         }
 
         .avatar-main img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
+            width: 100%; height: 100%;
+            object-fit: cover; border-radius: 50%;
         }
 
-        .avatar-loading {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 136, 204, 0.7);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
+        .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; margin-top: 16px; }
+        .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
+
+        .profile-btn {
+            display: block; width: 100%; padding: 14px;
+            border-radius: 12px; font-size: 15px; font-weight: 600;
+            border: none; cursor: pointer; transition: all 0.2s;
+            margin-bottom: 10px; text-decoration: none;
+            text-align: center; font-family: inherit;
         }
 
-        .avatar-button-group {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            margin-top: 14px;
-        }
-
-        .avatar-btn {
-            flex: 1;
-            padding: 11px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-
-        .avatar-btn-upload {
+        .btn-blue {
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            box-shadow: 0 3px 10px rgba(0, 136, 204, 0.3);
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
         }
 
-        .avatar-btn-upload:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+        .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
+        .btn-blue:active { transform: translateY(0); }
+        .btn-blue:disabled { background: #e0e8f0; color: var(--text2) !important; box-shadow: none; cursor: not-allowed; transform: none; }
+
+        .btn-red {
+            background: rgba(255,107,107,0.08);
+            color: var(--danger) !important;
+            border: 1px solid rgba(255,107,107,0.2);
+            margin-top: 4px; margin-bottom: 0;
         }
 
-        .avatar-btn-upload:active {
-            transform: translateY(0);
+        .btn-red:hover { background: rgba(255,107,107,0.15); }
+
+        .btn-cancel { background: #e2e8f0; color: #475569 !important; }
+
+        .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
+
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 0; border-bottom: 1px solid var(--border);
         }
 
-        .avatar-btn-delete {
-            background: rgba(255, 107, 107, 0.1);
-            color: var(--danger);
-            border: 1.5px solid rgba(255, 107, 107, 0.2);
-        }
+        .setting-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+        .setting-label { font-weight: 600; font-size: 15px; }
+        .setting-desc { font-size: 12px; color: var(--text2); }
 
-        .avatar-btn-delete:hover {
-            background: rgba(255, 107, 107, 0.16);
-        }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        .avatar-btn-delete:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
-
-        #avatarInput {
-            display: none;
-        }
-
-        /* ===== FORM FIELDS ===== */
-        .form-section {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text2);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 13px 16px;
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-            background: #f8fafc;
-            color: var(--text);
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(0, 136, 204, 0.1);
-        }
-
-        .form-input:disabled {
-            background: #f0f4f8;
-            color: var(--text2);
-            cursor: not-allowed;
-        }
-
-        .input-hint {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-            color: var(--text2);
-            margin-top: 6px;
-            transition: all 0.15s;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin-right: 7px;
-            background: #dde4ec;
-            border: 1.5px solid #c8d4e0;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .input-hint.success {
-            color: var(--success);
-        }
-
-        .input-hint.success .status-dot {
-            background: var(--success);
-            border-color: var(--success);
-            box-shadow: 0 0 5px rgba(37, 211, 102, 0.4);
-        }
-
-        .input-hint.invalid {
-            color: var(--danger);
-        }
-
-        .input-hint.invalid .status-dot {
-            background: var(--danger);
-            border-color: var(--danger);
-        }
-
-        /* ===== BUTTONS ===== */
-        .button-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 28px;
-        }
-
-        .save-button,
-        .cancel-button {
-            flex: 1;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .save-button {
-            background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.25);
-        }
-
-        .save-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 136, 204, 0.35);
-        }
-
-        .save-button:active {
-            transform: translateY(0);
-        }
-
-        .save-button:disabled {
-            background: #e0e8f0;
-            color: var(--text2);
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .cancel-button {
-            background: #e2e8f0;
-            color: #475569;
-        }
-
-        .cancel-button:hover {
-            background: #d0dce8;
-        }
-
-        /* ===== MODAL ===== */
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(26, 26, 46, 0.45);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--white);
-            width: 100%;
-            max-width: 360px;
-            padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            animation: modalIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid var(--border);
-        }
-
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: inherit;
-        }
-
-        .modal-btn-confirm {
-            background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            box-shadow: 0 3px 10px rgba(0, 136, 204, 0.25);
-        }
-
-        .modal-btn-confirm:hover {
-            transform: translateY(-1px);
-        }
-
-        .modal-btn-cancel {
-            background: #e2e8f0;
-            color: #475569;
-        }
-
-        .modal-btn-cancel:hover {
-            background: #d0dce8;
-        }
-
-        /* ===== LOADING ===== */
-        .saving-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(26, 26, 46, 0.4);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .saving-overlay.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid rgba(0, 136, 204, 0.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== THEME ===== */
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
-            border: none;
-            color: var(--primary);
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 136, 204, 0.15);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.25);
-        }
-
-        /* ===== NAVBAR ===== */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -474,77 +153,32 @@
             right: 0;
             height: 70px;
             background: white;
-            border-top: 1px solid #e8ecf0;
+            border-top: 1px solid #eee;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 999;
-            padding-bottom: env(safe-area-inset-bottom);
-            transition: background 0.3s, border-color 0.3s;
         }
-
+        
         .nav-item {
             text-decoration: none;
-            color: #7a8a9a;
+            color: #777;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
             font-size: 12px;
             font-weight: 500;
-            flex: 1;
-            transition: color 0.2s;
         }
-
+        
         .nav-item.active {
-            color: var(--primary);
-        }
-
-        .nav-item:hover {
-            color: var(--primary);
-        }
-
-        /* ===== MOBILE ===== */
-        @media (max-width: 480px) {
-            .back-button {
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-            }
-
-            .theme-toggle {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
-            }
-
-            .edit-container {
-                padding: 24px 20px;
-                border-radius: 20px;
-            }
-
-            .page-title {
-                font-size: 24px;
-                margin-bottom: 24px;
-            }
-
-            .avatar-main {
-                width: 90px;
-                height: 90px;
-                font-size: 36px;
-            }
+            color: #3390ec;
         }
     </style>
 </head>
 <body>
 
-<button class="back-button" onclick="goBack()">‹</button>
-<button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-
-<div class="edit-container">
-    <h1 class="page-title">✏️ Редактировать профиль</h1>
-
-    <!-- AVATAR SECTION -->
+<div class="profile-container">
     <div class="avatar-section">
         <div class="avatar-wrapper">
             <div class="avatar-main" id="avatarEl">
@@ -554,76 +188,28 @@
                     <span>{{ user.name[0]|upper if user and user.name else 'K' }}</span>
                 {% endif %}
             </div>
-            <div class="avatar-loading" id="avatarLoading">⏳</div>
-        </div>
-
-        <div class="avatar-button-group">
-            <button class="avatar-btn avatar-btn-upload" onclick="document.getElementById('avatarInput').click()">
-                📷 Загрузить
-            </button>
-            <button class="avatar-btn avatar-btn-delete" id="deleteAvatarBtn"
-                    onclick="confirmDeleteAvatar()"
-                    {% if not user or not user.avatar %}disabled{% endif %}>
-                🗑 Удалить
-            </button>
-        </div>
-        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
-    </div>
-
-    <!-- NAME FIELD -->
-    <div class="form-section">
-        <label class="form-label">Имя</label>
-        <input type="text" id="nameInput" class="form-input" value="{{ user.name if user else '' }}" placeholder="Ваше имя" oninput="validateName()">
-        <div id="nameHint" class="input-hint" style="display:none;">
-            <span class="status-dot"></span>
-            <span id="nameHintText">От 2 до 30 символов</span>
         </div>
     </div>
 
-    <!-- LOGIN FIELD -->
-    <div class="form-section">
-        <label class="form-label">Логин</label>
-        <input type="text" id="loginInput" class="form-input" value="{{ user.login if user else '' }}" placeholder="Ваш логин" oninput="validateLogin()">
-        <div id="loginHint" class="input-hint" style="display:none;">
-            <span class="status-dot"></span>
-            <span id="loginHintText">От 3 до 24 символов, только буквы и цифры</span>
-        </div>
-    </div>
+    <div class="profile-name">{{ user.name if user else '' }}</div>
+    <div class="profile-username">@{{ user.login if user else '' }}</div>
 
-    <!-- PASSWORD FIELD -->
-    <div class="form-section">
-        <label class="form-label">Новый пароль (опционально)</label>
-        <input type="password" id="passwordInput" class="form-input" placeholder="Новый пароль (не обязательно)" oninput="validatePassword()">
-        <div id="passwordHint" class="input-hint" style="display:none;">
-            <span class="status-dot"></span>
-            <span id="passwordHintText">Минимум 8 символов, буквы, цифры</span>
-        </div>
-    </div>
-
-    <!-- BUTTONS -->
-    <div class="button-group">
-        <button class="cancel-button" onclick="goBack()">Отмена</button>
-        <button class="save-button" id="saveButton" onclick="saveProfile()" disabled>Сохранить</button>
-    </div>
+    <button class="profile-btn btn-blue" onclick="location.href='/edit_profile'">✏️ Редактировать профиль</button>
 </div>
 
-<!-- DELETE AVATAR CONFIRMATION MODAL -->
-<div id="deleteAvatarModal" class="modal" onclick="outsideClose(event, 'deleteAvatarModal')">
-    <div class="modal-content">
-        <div class="modal-title">Удалить аватарку?</div>
-        <p style="font-size: 14px; color: var(--text2); margin-bottom: 16px;">
-            Вы не сможете восстановить удалённую аватарку
-        </p>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal('deleteAvatarModal')">Отмена</button>
-            <button class="modal-btn modal-btn-confirm" onclick="deleteAvatar()">Удалить</button>
+<div class="settings-container">
+    <h3 class="settings-title">⚙️ Настройки</h3>
+    <div class="setting-row">
+        <div class="setting-info">
+            <div class="setting-label">Тёмная тема</div>
+            <div class="setting-desc">Переключить оформление</div>
         </div>
+        <label class="switch">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme(this)">
+            <span class="slider"></span>
+        </label>
     </div>
-</div>
-
-<!-- SAVING OVERLAY -->
-<div class="saving-overlay" id="savingOverlay">
-    <div class="spinner"></div>
+    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px; display:block;">🚪 Выйти из аккаунта</a>
 </div>
 
 <nav class="bottom-nav">
@@ -633,205 +219,17 @@
 </nav>
 
 <script>
-    // ===== THEME ===== 
+    // Тема — применяем сразу до рендера
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
+        var t = document.getElementById('themeToggle');
+        if (t) t.checked = true;
     }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    function toggleTheme(cb) {
+        document.body.classList.toggle('dark-mode', cb.checked);
+        localStorage.setItem('theme', cb.checked ? 'dark' : 'light');
     }
-
-    // ===== NAVIGATION =====
-    function goBack() {
-        window.location.href = '/profile';
-    }
-
-    // ===== MODALS =====
-    function openModal(id) {
-        document.getElementById(id).classList.add('active');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('active');
-    }
-
-    function outsideClose(e, id) {
-        if (e.target === document.getElementById(id)) closeModal(id);
-    }
-
-    // ===== VALIDATION HELPERS =====
-    function updateHint(id, valid, text) {
-        const hint = document.getElementById(id);
-        if (!hint) return;
-        if (valid === null) {
-            hint.style.display = 'none';
-            return;
-        }
-        hint.style.display = 'flex';
-        hint.className = 'input-hint ' + (valid ? 'success' : 'invalid');
-        if (text) document.getElementById(id + 'Text').textContent = text;
-    }
-
-    function checkFormValid() {
-        const name = document.getElementById('nameInput').value.trim();
-        const login = document.getElementById('loginInput').value.trim();
-        const password = document.getElementById('passwordInput').value;
-
-        const nameOk = name.length >= 2 && name.length <= 30;
-        const loginOk = /^[A-Za-z0-9]+$/.test(login) && login.length >= 3 && login.length <= 24;
-        const passwordOk = password === '' || (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password));
-
-        document.getElementById('saveButton').disabled = !(nameOk && loginOk && passwordOk);
-    }
-
-    // ===== VALIDATION FUNCTIONS =====
-    function validateName() {
-        const v = document.getElementById('nameInput').value.trim();
-        const ok = v.length >= 2 && v.length <= 30;
-        updateHint('nameHint', v.length > 0 ? ok : null, ok ? '✓ Имя в порядке' : '✗ От 2 до 30 символов');
-        checkFormValid();
-    }
-
-    function validateLogin() {
-        const v = document.getElementById('loginInput').value.trim();
-        const lenOk = v.length >= 3 && v.length <= 24;
-        const charsOk = /^[A-Za-z0-9]+$/.test(v);
-        const ok = lenOk && charsOk;
-        updateHint('loginHint', v.length > 0 ? ok : null, ok ? '✓ Логин в порядке' : '✗ 3-24 символов, буквы и цифры');
-        checkFormValid();
-    }
-
-    function validatePassword() {
-        const v = document.getElementById('passwordInput').value;
-        if (v === '') {
-            updateHint('passwordHint', null);
-            checkFormValid();
-            return;
-        }
-        const lenOk = v.length >= 8;
-        const upperOk = /[A-Z]/.test(v);
-        const numOk = /[0-9]/.test(v);
-        const ok = lenOk && upperOk && numOk;
-        updateHint('passwordHint', ok, ok ? '✓ Пароль в порядке' : '✗ 8+ символов, заглавная, цифра');
-        checkFormValid();
-    }
-
-    // ===== AVATAR UPLOAD =====
-    function handleAvatarUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const loading = document.getElementById('avatarLoading');
-        loading.style.display = 'flex';
-
-        const fd = new FormData();
-        fd.append('image', file);
-
-        fetch('/upload_avatar', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(res => {
-                loading.style.display = 'none';
-                if (res.success) {
-                    const avatar = document.getElementById('avatarEl');
-                    avatar.innerHTML = `<img id="avatarImg" src="${res.url}" alt="Аватар" loading="lazy">`;
-                    document.getElementById('deleteAvatarBtn').disabled = false;
-                    e.target.value = '';
-                } else {
-                    alert('Ошибка: ' + (res.message || 'Неизвестная ошибка'));
-                }
-            })
-            .catch(err => {
-                loading.style.display = 'none';
-                alert('Ошибка загрузки аватарки');
-            });
-    }
-
-    // ===== AVATAR DELETE =====
-    function confirmDeleteAvatar() {
-        openModal('deleteAvatarModal');
-    }
-
-    function deleteAvatar() {
-        closeModal('deleteAvatarModal');
-        const loading = document.getElementById('avatarLoading');
-        loading.style.display = 'flex';
-
-        fetch('/delete_avatar', { method: 'POST' })
-            .then(r => r.json())
-            .then(res => {
-                loading.style.display = 'none';
-                if (res.success) {
-                    const avatar = document.getElementById('avatarEl');
-                    const nameFirst = '{{ user.name[0]|upper if user and user.name else "K" }}';
-                    avatar.innerHTML = `<span>${nameFirst}</span>`;
-                    document.getElementById('deleteAvatarBtn').disabled = true;
-                } else {
-                    alert('Ошибка: ' + (res.message || 'Неизвестная ошибка'));
-                }
-            })
-            .catch(err => {
-                loading.style.display = 'none';
-                alert('Ошибка удаления');
-            });
-    }
-
-    // ===== SAVE PROFILE =====
-    async function saveProfile() {
-        const name = document.getElementById('nameInput').value.trim();
-        const login = document.getElementById('loginInput').value.trim();
-        const password = document.getElementById('passwordInput').value;
-
-        const overlay = document.getElementById('savingOverlay');
-        overlay.classList.add('active');
-
-        try {
-            // Update name
-            if (name !== '{{ user.name if user else "" }}') {
-                const r1 = await fetch('/update_profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ field: 'name', value: name })
-                });
-                const res1 = await r1.json();
-                if (!res1.success) throw new Error(res1.message || 'Ошибка сохранения имени');
-            }
-
-            // Update login
-            if (login !== '{{ user.login if user else "" }}') {
-                const r2 = await fetch('/update_profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ field: 'login', value: login })
-                });
-                const res2 = await r2.json();
-                if (!res2.success) throw new Error(res2.message || 'Ошибка сохранения логина');
-            }
-
-            // Update password
-            if (password) {
-                const r3 = await fetch('/update_profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ field: 'password', value: password })
-                });
-                const res3 = await r3.json();
-                if (!res3.success) throw new Error(res3.message || 'Ошибка сохранения пароля');
-            }
-
-            // Success - go back
-            overlay.classList.remove('active');
-            window.location.href = '/profile';
-        } catch (err) {
-            overlay.classList.remove('active');
-            alert('Ошибка: ' + err.message);
-        }
-    }
-
-    // Init validation
-    validateName();
-    validateLogin();
 </script>
 
 </body>
