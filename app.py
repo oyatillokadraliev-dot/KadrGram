@@ -263,6 +263,18 @@ def profile():
         return redirect("/login")
     return render_template("profile.html", user=serialize_user(user))
 
+@app.route("/verify_password", methods=["POST"])
+def verify_password():
+    user = get_user()
+    if not user:
+        return jsonify({"valid": False}), 401
+    
+    data = request.get_json()
+    pwd = data.get("password", "")
+    
+    valid = check_password_hash(user["password"], pwd)
+    return jsonify({"valid": valid})
+
 @app.route("/edit_profile")
 def edit_profile():
     user = get_user()
