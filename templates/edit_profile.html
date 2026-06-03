@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>KadrGram | Редактировать профиль</title>
+    <style>
+        :root {
+            --primary: #0088cc; --primary2: #00b4d8; --success: #25d366;
+            --danger: #ff6b6b; --bg: #f0f4f8; --white: #ffffff;
+            --border: #e8ecf0; --text: #1a1a2e; --text2: #7a8a9a;
+        }
+
+        body.dark-mode {
+            --bg: #0e1621; --white: #182533; --border: #1e2d3d;
+            --text: #ffffff; --text2: #7f91a4;
+        }
+
+        body.dark-mode .edit-container,
+        body.dark-mode .bottom-nav {
+            background: var(--white) !important;
+            border-color: var(--border) !important;
+        }
+
+        body.dark-mode input,
+        body.dark-mode textarea {
+            background: #0e1621 !important;
+            border-color: var(--border) !important;
+            color: white !important;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            min-height: 100vh; 
+            padding: 30px 20px 100px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .back-link {
+            align-self: flex-start;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        .edit-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            padding: 28px 24px;
+            border-radius: 24px;
+            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
+            border: 1px solid var(--border);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .edit-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(0,136,204,0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0,136,204,0.35);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .avatar-main {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3);
+            overflow: hidden;
+        }
+
+        .avatar-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,136,204,0.25);
+        }
+
+        .btn-upload:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,136,204,0.35);
+        }
+
+        .btn-delete {
+            background: rgba(255,107,107,0.08);
+            color: var(--danger);
+            border: 1px solid rgba(255,107,107,0.2);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255,107,107,0.15);
+        }
+
+        .message {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.show { display: block; }
+        .message.success { background: rgba(37,211,102,0.1); color: var(--success); border: 1px solid rgba(37,211,102,0.2); }
+        .message.error { background: rgba(255,107,107,0.1); color: var(--danger); border: 1px solid rgba(255,107,107,0.2); }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+            padding-bottom: env(safe-area-inset-bottom);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: var(--text2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            flex: 1;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 16px 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<a href="/profile" class="back-link">← Назад</a>
+
+<div class="edit-container">
+    <div class="edit-title">✏️ Редактировать профиль</div>
+
+    <div id="message" class="message"></div>
+
+    <!-- AVATAR SECTION -->
+    <div class="avatar-section">
+        <div class="avatar-main" id="avatarPreview">
+            {% if user and user.avatar %}
+                <img src="{{ user.avatar }}" alt="Аватар">
+            {% else %}
+                {% if user and user.name %}{{ user.name[0]|upper }}{% else %}K{% endif %}
+            {% endif %}
+        </div>
+        <div class="avatar-buttons">
+            <button class="btn-small btn-upload" onclick="document.getElementById('avatarInput').click()">📤 Загрузить</button>
+            <button class="btn-small btn-delete" onclick="deleteAvatar()">🗑️ Удалить</button>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+    </div>
+
+    <!-- NAME -->
+    <div class="form-group">
+        <label class="form-label">Имя</label>
+        <input type="text" id="nameInput" class="form-input" value="{{ user.name if user else '' }}" placeholder="Ваше имя">
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form-group">
+        <label class="form-label">Логин</label>
+        <input type="text" id="loginInput" class="form-input" value="{{ user.login if user else '' }}" placeholder="username">
+    </div>
+
+    <!-- PASSWORD -->
+    <div class="form-group">
+        <label class="form-label">Новый пароль (опционально)</label>
+        <input type="password" id="passwordInput" class="form-input" placeholder="Оставь пусто, если не менять">
+    </div>
+
+    <button class="btn-submit" onclick="saveProfile()">💾 Сохранить</button>
+</div>
+
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">💬<span>Чаты</span></a>
+    <a href="/search" class="nav-item">🔍<span>Поиск</span></a>
+    <a href="/profile" class="nav-item">👤<span>Профиль</span></a>
+</nav>
+
+<script>
+    // ✅ Инициализируем тему
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+
+    function showMessage(text, type) {
+        var msg = document.getElementById('message');
+        msg.innerText = text;
+        msg.className = 'message show ' + type;
+        setTimeout(function() {
+            msg.className = 'message';
+        }, 4000);
+    }
+
+    function uploadAvatar(input) {
+        var file = input.files[0];
+        if (!file) return;
+
+        var fd = new FormData();
+        fd.append('image', file);
+
+        fetch('/upload_avatar', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    var preview = document.getElementById('avatarPreview');
+                    preview.innerHTML = '<img src="' + data.url + '" alt="Аватар">';
+                    showMessage('✅ Аватар загружен', 'success');
+                } else {
+                    showMessage('❌ ' + (data.message || 'Ошибка загрузки'), 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                showMessage('❌ Ошибка сети', 'error');
+            });
+        input.value = '';
+    }
+
+    function deleteAvatar() {
+        fetch('/delete_avatar', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    var preview = document.getElementById('avatarPreview');
+                    preview.innerHTML = '{{ user.name[0]|upper if user and user.name else "K" }}';
+                    showMessage('✅ Аватар удален', 'success');
+                } else {
+                    showMessage('❌ Ошибка', 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                showMessage('❌ Ошибка сети', 'error');
+            });
+    }
+
+    function saveProfile() {
+        var name = document.getElementById('nameInput').value.trim();
+        var login = document.getElementById('loginInput').value.trim();
+        var pwd = document.getElementById('passwordInput').value.trim();
+
+        if (!name) {
+            showMessage('❌ Введи имя', 'error');
+            return;
+        }
+
+        var updates = [];
+
+        if (name !== '{{ user.name if user else "" }}') {
+            updates.push(updateField('name', name));
+        }
+        if (login !== '{{ user.login if user else "" }}') {
+            updates.push(updateField('login', login));
+        }
+        if (pwd) {
+            updates.push(updateField('password', pwd));
+        }
+
+        if (updates.length === 0) {
+            showMessage('ℹ️ Нет изменений', 'success');
+            return;
+        }
+
+        Promise.all(updates)
+            .then(() => {
+                showMessage('✅ Профиль обновлен', 'success');
+                setTimeout(() => {
+                    window.location.href = '/profile';
+                }, 1500);
+            })
+            .catch(() => {
+                showMessage('❌ Ошибка сохранения', 'error');
+            });
+    }
+
+    function updateField(field, value) {
+        return fetch('/update_profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: field, value: value })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Ошибка');
+            }
+        });
+    }
+</script>
+</body>
+</html>
