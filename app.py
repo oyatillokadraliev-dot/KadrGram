@@ -263,6 +263,12 @@ def profile():
         return redirect("/login")
     return render_template("profile.html", user=serialize_user(user))
 
+@app.route("/edit_profile")
+def edit_profile():
+    user = get_user()
+    if not user:
+        return redirect("/login")
+    return render_template("edit_profile.html", user=serialize_user(user))
 
 @app.route("/update_profile", methods=["POST"])
 def update_profile():
