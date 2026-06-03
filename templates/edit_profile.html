@@ -113,6 +113,32 @@
             min-height: 80px;
         }
 
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text2);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        .password-wrapper .form-input {
+            padding-right: 44px;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 14px;
@@ -296,7 +322,19 @@
     <!-- PASSWORD -->
     <div class="form-group">
         <label class="form-label">Новый пароль (опционально)</label>
-        <input type="password" id="passwordInput" class="form-input" placeholder="Оставь пусто, если не менять">
+        <div class="password-wrapper">
+            <input type="password" id="passwordInput" class="form-input" placeholder="Оставь пусто, если не менять">
+            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
+        </div>
+    </div>
+
+    <!-- VERIFY CURRENT PASSWORD -->
+    <div class="form-group" id="verifyGroup" style="display: none;">
+        <label class="form-label">Подтверди текущий пароль</label>
+        <div class="password-wrapper">
+            <input type="password" id="verifyPassword" class="form-input" placeholder="Введи текущий пароль">
+            <button type="button" class="toggle-password" onclick="toggleVerifyPasswordVisibility()">👁️</button>
+        </div>
     </div>
 
     <button class="btn-submit" onclick="saveProfile()">💾 Сохранить</button>
@@ -321,6 +359,30 @@
         setTimeout(function() {
             msg.className = 'message';
         }, 4000);
+    }
+
+    function togglePasswordVisibility() {
+        var input = document.getElementById('passwordInput');
+        var btn = event.target;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = '🙈';
+        } else {
+            input.type = 'password';
+            btn.innerText = '👁️';
+        }
+    }
+
+    function toggleVerifyPasswordVisibility() {
+        var input = document.getElementById('verifyPassword');
+        var btn = event.target;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerText = '🙈';
+        } else {
+            input.type = 'password';
+            btn.innerText = '👁️';
+        }
     }
 
     function uploadAvatar(input) {
@@ -376,6 +438,48 @@
             return;
         }
 
+        // ✅ Если меняем пароль - требуем подтверждение текущего пароля
+        if (pwd) {
+            if (pwd.length < 8) {
+                showMessage('❌ Пароль минимум 8 символов', 'error');
+                return;
+            }
+            var verifyPwd = document.getElementById('verifyPassword').value.trim();
+            if (!verifyPwd) {
+                showMessage('❌ Подтверди текущий пароль', 'error');
+                document.getElementById('verifyGroup').style.display = 'block';
+                return;
+            }
+            // Отправляем подтверждение пароля на сервер
+            verifyCurrentPassword(verifyPwd, function(verified) {
+                if (!verified) {
+                    showMessage('❌ Неверный пароль', 'error');
+                    return;
+                }
+                performUpdate(name, login, pwd);
+            });
+        } else {
+            performUpdate(name, login, pwd);
+        }
+    }
+
+    function verifyCurrentPassword(pwd, callback) {
+        fetch('/verify_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pwd })
+        })
+        .then(r => r.json())
+        .then(data => {
+            callback(data.valid);
+        })
+        .catch(e => {
+            console.error(e);
+            callback(false);
+        });
+    }
+
+    function performUpdate(name, login, pwd) {
         var updates = [];
 
         if (name !== '{{ user.name if user else "" }}') {
@@ -418,6 +522,15 @@
             }
         });
     }
+
+    // ✅ Показываем поле для подтверждения при вводе пароля
+    document.getElementById('passwordInput').addEventListener('input', function() {
+        if (this.value.trim()) {
+            document.getElementById('verifyGroup').style.display = 'block';
+        } else {
+            document.getElementById('verifyGroup').style.display = 'none';
+        }
+    });
 </script>
 </body>
 </html>
