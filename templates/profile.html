@@ -7,96 +7,52 @@
     <title>KadrGram | Профиль</title>
     <style>
         :root {
-            --primary: #0088cc;
-            --primary2: #00b4d8;
-            --success: #25d366;
-            --danger: #ff6b6b;
-            --bg: #f0f4f8;
-            --white: #ffffff;
-            --border: #e8ecf0;
-            --text: #1a1a2e;
-            --text2: #7a8a9a;
+            --primary: #0088cc; --primary2: #00b4d8; --success: #25d366;
+            --danger: #ff6b6b; --bg: #f0f4f8; --white: #ffffff;
+            --border: #e8ecf0; --text: #1a1a2e; --text2: #7a8a9a;
         }
 
         body.dark-mode {
-            --bg: #0e1621;
-            --white: #182533;
-            --border: #1e2d3d;
-            --text: #ffffff;
-            --text2: #7f91a4;
+            --bg: #0e1621; --white: #182533; --border: #1e2d3d;
+            --text: #ffffff; --text2: #7f91a4;
         }
 
         body.dark-mode .profile-container,
         body.dark-mode .settings-container,
-        body.dark-mode .modal-content,
         body.dark-mode .bottom-nav {
             background: var(--white) !important;
             border-color: var(--border) !important;
-        }
-
-        body.dark-mode .form-input {
-            background: #0e1621 !important;
-            border-color: var(--border) !important;
-            color: #fff !important;
-        }
-
-        body.dark-mode .btn-cancel {
-            background: #24303f !important;
-            color: #7f91a4 !important;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 30px 20px 100px;
+            background: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 30px 20px 100px;
             transition: background 0.3s, color 0.3s;
         }
 
         .profile-container, .settings-container {
-            background: var(--white);
-            width: 100%; max-width: 400px;
-            padding: 28px 24px;
-            border-radius: 24px;
+            background: var(--white); width: 100%; max-width: 400px;
+            padding: 28px 24px; border-radius: 24px;
             box-shadow: 0 2px 8px rgba(0,136,204,0.08);
-            text-align: center;
-            border: 1px solid var(--border);
-            margin-top: 20px;
-            transition: background 0.3s, border-color 0.3s;
+            text-align: center; border: 1px solid var(--border);
+            margin-top: 20px; transition: background 0.3s, border-color 0.3s;
         }
-
-        .avatar-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .avatar-wrapper { position: relative; display: inline-block; }
 
         .avatar-main {
-            width: 90px; height: 90px;
-            border-radius: 50%;
+            width: 90px; height: 90px; border-radius: 50%; margin: 0 auto;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            display: flex; align-items: center; justify-content: center;
+            color: white; display: flex; align-items: center; justify-content: center;
             font-size: 36px; font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0,136,204,0.3);
-            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3); overflow: hidden;
         }
 
-        .avatar-main img {
-            width: 100%; height: 100%;
-            object-fit: cover; border-radius: 50%;
-        }
+        .avatar-main img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; margin-top: 16px; }
+        .profile-name { font-size: 22px; font-weight: 700; margin-top: 14px; margin-bottom: 3px; }
         .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
 
         .profile-btn {
@@ -109,24 +65,18 @@
 
         .btn-blue {
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
+            color: white !important; box-shadow: 0 4px 12px rgba(0,136,204,0.25);
         }
 
         .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
         .btn-blue:active { transform: translateY(0); }
-        .btn-blue:disabled { background: #e0e8f0; color: var(--text2) !important; box-shadow: none; cursor: not-allowed; transform: none; }
 
         .btn-red {
-            background: rgba(255,107,107,0.08);
-            color: var(--danger) !important;
-            border: 1px solid rgba(255,107,107,0.2);
-            margin-top: 4px; margin-bottom: 0;
+            background: rgba(255,107,107,0.08); color: var(--danger) !important;
+            border: 1px solid rgba(255,107,107,0.2); margin-top: 4px; margin-bottom: 0;
         }
 
         .btn-red:hover { background: rgba(255,107,107,0.15); }
-
-        .btn-cancel { background: #e2e8f0; color: #475569 !important; }
 
         .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
 
@@ -147,54 +97,37 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: white;
-            border-top: 1px solid #eee;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 999;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: var(--white); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+            transition: background 0.3s, border-color 0.3s;
         }
-        
+
         .nav-item {
-            text-decoration: none;
-            color: #777;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 500;
+            text-decoration: none; color: var(--text2);
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s;
         }
-        
-        .nav-item.active {
-            color: #3390ec;
-        }
+
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="profile-container">
-    <div class="avatar-section">
-        <div class="avatar-wrapper">
-            <div class="avatar-main" id="avatarEl">
-                {% if user and user.avatar %}
-                    <img id="avatarImg" src="{{ user.avatar }}" alt="Аватар" loading="lazy">
-                {% else %}
-                    <span>{{ user.name[0]|upper if user and user.name else 'K' }}</span>
-                {% endif %}
-            </div>
-        </div>
+    <div class="avatar-main">
+        {% if user and user.avatar %}
+            <img src="{{ user.avatar }}" alt="Аватар">
+        {% else %}
+            {{ user.name[0]|upper if user and user.name else 'K' }}
+        {% endif %}
     </div>
 
     <div class="profile-name">{{ user.name if user else '' }}</div>
     <div class="profile-username">@{{ user.login if user else '' }}</div>
 
-    <button class="profile-btn btn-blue" onclick="location.href='/edit_profile'">✏️ Редактировать профиль</button>
+    <a href="/edit_profile" class="profile-btn btn-blue">✏️ Редактировать профиль</a>
 </div>
 
 <div class="settings-container">
@@ -209,7 +142,7 @@
             <span class="slider"></span>
         </label>
     </div>
-    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px; display:block;">🚪 Выйти из аккаунта</a>
+    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;display:block;">🚪 Выйти из аккаунта</a>
 </div>
 
 <nav class="bottom-nav">
@@ -219,7 +152,6 @@
 </nav>
 
 <script>
-    // Тема — применяем сразу до рендера
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
         var t = document.getElementById('themeToggle');
@@ -231,6 +163,5 @@
         localStorage.setItem('theme', cb.checked ? 'dark' : 'light');
     }
 </script>
-
 </body>
 </html>
