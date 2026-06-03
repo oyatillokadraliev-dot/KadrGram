@@ -26,91 +26,222 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+        html, body { height: 100%; }
+
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg); color: var(--text);
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; padding: 30px 20px 100px;
+            min-height: 100vh; 
+            padding: 30px 20px 100px;  /* ✅ Отступ снизу для bottom-nav */
             transition: background 0.3s, color 0.3s;
         }
 
         .profile-container, .settings-container {
-            background: var(--white); width: 100%; max-width: 400px;
-            padding: 28px 24px; border-radius: 24px;
+            background: var(--white); 
+            width: 100%; 
+            max-width: 400px;
+            padding: 28px 24px; 
+            border-radius: 24px;
             box-shadow: 0 2px 8px rgba(0,136,204,0.08);
-            text-align: center; border: 1px solid var(--border);
-            margin-top: 20px; transition: background 0.3s, border-color 0.3s;
+            text-align: center; 
+            border: 1px solid var(--border);
+            margin-top: 20px; 
+            transition: background 0.3s, border-color 0.3s;
         }
 
         .avatar-main {
-            width: 90px; height: 90px; border-radius: 50%; margin: 0 auto;
+            width: 90px; 
+            height: 90px; 
+            border-radius: 50%; 
+            margin: 0 auto;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 36px; font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0,136,204,0.3); overflow: hidden;
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 36px; 
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3); 
+            overflow: hidden;
         }
 
-        .avatar-main img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .avatar-main img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            border-radius: 50%; 
+        }
 
-        .profile-name { font-size: 22px; font-weight: 700; margin-top: 14px; margin-bottom: 3px; }
-        .profile-username { font-size: 14px; color: var(--text2); margin-bottom: 22px; }
+        .profile-name { 
+            font-size: 22px; 
+            font-weight: 700; 
+            margin-top: 14px; 
+            margin-bottom: 3px; 
+        }
+
+        .profile-username { 
+            font-size: 14px; 
+            color: var(--text2); 
+            margin-bottom: 22px; 
+        }
 
         .profile-btn {
-            display: block; width: 100%; padding: 14px;
-            border-radius: 12px; font-size: 15px; font-weight: 600;
-            border: none; cursor: pointer; transition: all 0.2s;
-            margin-bottom: 10px; text-decoration: none;
-            text-align: center; font-family: inherit;
+            display: block; 
+            width: 100%; 
+            padding: 14px;
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: 600;
+            border: none; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            margin-bottom: 10px; 
+            text-decoration: none;
+            text-align: center; 
+            font-family: inherit;
         }
 
         .btn-blue {
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white !important; box-shadow: 0 4px 12px rgba(0,136,204,0.25);
+            color: white !important; 
+            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
         }
 
-        .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
-        .btn-blue:active { transform: translateY(0); }
+        .btn-blue:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 18px rgba(0,136,204,0.35); 
+        }
+
+        .btn-blue:active { 
+            transform: translateY(0); 
+        }
 
         .btn-red {
-            background: rgba(255,107,107,0.08); color: var(--danger) !important;
-            border: 1px solid rgba(255,107,107,0.2); margin-top: 4px; margin-bottom: 0;
+            background: rgba(255,107,107,0.08); 
+            color: var(--danger) !important;
+            border: 1px solid rgba(255,107,107,0.2); 
+            margin-top: 4px; 
+            margin-bottom: 0;
         }
 
-        .btn-red:hover { background: rgba(255,107,107,0.15); }
+        .btn-red:hover { 
+            background: rgba(255,107,107,0.15); 
+        }
 
-        .settings-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; text-align: left; }
+        .settings-title { 
+            font-size: 17px; 
+            font-weight: 700; 
+            margin-bottom: 14px; 
+            text-align: left; 
+        }
 
         .setting-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 13px 0; border-bottom: 1px solid var(--border);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 13px 0; 
+            border-bottom: 1px solid var(--border);
         }
 
-        .setting-info { display: flex; flex-direction: column; gap: 2px; text-align: left; }
-        .setting-label { font-weight: 600; font-size: 15px; }
-        .setting-desc { font-size: 12px; color: var(--text2); }
+        .setting-info { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 2px; 
+            text-align: left; 
+        }
 
-        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .3s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background: var(--primary); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .setting-label { 
+            font-weight: 600; 
+            font-size: 15px; 
+        }
+
+        .setting-desc { 
+            font-size: 12px; 
+            color: var(--text2); 
+        }
+
+        .switch { 
+            position: relative; 
+            display: inline-block; 
+            width: 46px; 
+            height: 26px; 
+        }
+
+        .switch input { 
+            opacity: 0; 
+            width: 0; 
+            height: 0; 
+        }
+
+        .slider { 
+            position: absolute; 
+            cursor: pointer; 
+            inset: 0; 
+            background: #ccc; 
+            transition: .3s; 
+            border-radius: 34px; 
+        }
+
+        .slider:before { 
+            position: absolute; 
+            content: ""; 
+            height: 20px; 
+            width: 20px; 
+            left: 3px; 
+            bottom: 3px; 
+            background: white; 
+            transition: .3s; 
+            border-radius: 50%; 
+        }
+
+        input:checked + .slider { 
+            background: var(--primary); 
+        }
+
+        input:checked + .slider:before { 
+            transform: translateX(20px); 
+        }
 
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
-            background: var(--white); border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 70px;
+            background: var(--white); 
+            border-top: 1px solid var(--border);
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center;
+            z-index: 999; 
+            padding-bottom: env(safe-area-inset-bottom);
             transition: background 0.3s, border-color 0.3s;
         }
 
         .nav-item {
-            text-decoration: none; color: var(--text2);
-            display: flex; flex-direction: column; align-items: center;
-            gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s;
+            text-decoration: none; 
+            color: var(--text2);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            gap: 4px; 
+            font-size: 12px; 
+            font-weight: 500; 
+            flex: 1; 
+            transition: color 0.2s;
         }
 
-        .nav-item.active { color: var(--primary); }
+        .nav-item.active { 
+            color: var(--primary); 
+        }
+
+        /* ✅ На мобиле добавляем больший отступ */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 16px 90px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -120,12 +251,12 @@
         {% if user and user.avatar %}
             <img src="{{ user.avatar }}" alt="Аватар">
         {% else %}
-            {{ user.name[0]|upper if user and user.name else 'K' }}
+            {% if user and user.name %}{{ user.name[0]|upper }}{% else %}K{% endif %}
         {% endif %}
     </div>
 
-    <div class="profile-name">{{ user.name if user else '' }}</div>
-    <div class="profile-username">@{{ user.login if user else '' }}</div>
+    <div class="profile-name">{{ user.name if user else 'Пользователь' }}</div>
+    <div class="profile-username">@{{ user.login if user else 'user' }}</div>
 
     <a href="/edit_profile" class="profile-btn btn-blue">✏️ Редактировать профиль</a>
 </div>
@@ -142,7 +273,7 @@
             <span class="slider"></span>
         </label>
     </div>
-    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;display:block;">🚪 Выйти из аккаунта</a>
+    <a href="/logout" class="profile-btn btn-red" style="margin-top:16px;">🚪 Выйти из аккаунта</a>
 </div>
 
 <nav class="bottom-nav">
@@ -152,16 +283,23 @@
 </nav>
 
 <script>
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        var t = document.getElementById('themeToggle');
-        if (t) t.checked = true;
+    // ✅ Инициализируем тему
+    function initTheme() {
+        var isDark = localStorage.getItem('theme') === 'dark';
+        if (isDark) {
+            document.body.classList.add('dark-mode');
+        }
+        var toggle = document.getElementById('themeToggle');
+        if (toggle) toggle.checked = isDark;
     }
 
     function toggleTheme(cb) {
         document.body.classList.toggle('dark-mode', cb.checked);
         localStorage.setItem('theme', cb.checked ? 'dark' : 'light');
     }
+
+    // ✅ Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', initTheme);
 </script>
 </body>
 </html>
