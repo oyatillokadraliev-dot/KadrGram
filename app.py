@@ -48,6 +48,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = None
 users = None
 messages = None
+mongo_ok = False
 
 try:
     client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -59,6 +60,7 @@ try:
     messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING), ("created_at", DESCENDING)])
     messages.create_index([("receiver", ASCENDING), ("read", ASCENDING)])
     messages.create_index([("created_at", DESCENDING)])
+    mongo_ok = True
     print("✅ Mongo connected")
 except Exception as e:
     print("❌ Mongo error:", e)
@@ -83,6 +85,8 @@ def allowed_file(filename):
 
 
 def get_user():
+    if not mongo_ok or not users:
+        return None
     uid = session.get("user_id")
     if not uid:
         return None
@@ -217,17 +221,24 @@ def home():
         return redirect("/login")
 
     my_id = str(user["_id"])
-    pinned_ids = user.get("pinned_chats", [])
+    pinned_ids = set(user.get("pinned_chats", []))
+
+    # Получаем unread-сообщения одним запросом вместо N count_documents
+    unread_by_sender = {}
+    if mongo_ok and messages:
+        pipeline = [
+            {"$match": {"receiver": my_id, "read": False}},
+            {"$group": {"_id": "$sender", "unread": {"$sum": 1}}}
+        ]
+        for row in messages.aggregate(pipeline, allowDiskUse=False):
+            unread_by_sender[str(row["_id"])] = int(row.get("unread", 0))
 
     raw_users = list(users.find({"_id": {"$ne": user["_id"]}}))
     all_users = []
     for u in raw_users:
         uid_str = str(u["_id"])
-        unread = messages.count_documents({
-            "sender": uid_str, "receiver": my_id, "read": False
-        })
         su = serialize_user(u)
-        su["unread"] = unread
+        su["unread"] = unread_by_sender.get(uid_str, 0)
         su["pinned"] = uid_str in pinned_ids
         all_users.append(su)
 
@@ -235,7 +246,7 @@ def home():
 
     target_user = None
     chat_with = request.args.get("chat_with")
-    if chat_with:
+    if chat_with and mongo_ok and messages:
         raw_target = users.find_one({"_id": oid(chat_with)})
         if raw_target:
             target_user = serialize_user(raw_target)
@@ -371,7 +382,7 @@ def delete_avatar():
 @app.route("/get_messages")
 def get_messages():
     user = get_user()
-    if not user:
+    if not user or not mongo_ok or not messages:
         return jsonify([])
 
     other = request.args.get("with")
@@ -390,7 +401,8 @@ def get_messages():
     if before_id:
         query["_id"] = {"$lt": oid(before_id)}
 
-    msgs = list(messages.find(query).sort("created_at", DESCENDING).limit(50))
+    # Пагинация должна соответствовать курсору по _id, иначе выборки "плывут"
+    msgs = list(messages.find(query).sort("_id", DESCENDING).limit(50))
     msgs.reverse()
     return jsonify([serialize_message(m) for m in msgs])
 
@@ -637,27 +649,40 @@ def mark_read(data):
 @socketio.on("toggle_reaction")
 def toggle_reaction(data):
     user_id = session.get("user_id")
-    if not user_id:
+    if not user_id or not mongo_ok or not messages:
         return
+
     msg_id = data.get("message_id")
     emoji = data.get("emoji")
     allowed = ["👍", "❤️", "🔥", "😂", "👏", "😮", "😢"]
     if emoji not in allowed:
         return
+
     message = messages.find_one({"_id": oid(msg_id)})
     if not message:
         return
+
     reactions = message.get("reactions", {})
     if reactions.get(user_id) == emoji:
         del reactions[user_id]
     else:
         reactions[user_id] = emoji
+
     messages.update_one({"_id": oid(msg_id)}, {"$set": {"reactions": reactions}})
     reaction_counts = Counter(reactions.values())
-    socketio.emit("update_reactions", {
+
+    payload = {
         "message_id": msg_id,
         "reaction_counts": dict(reaction_counts)
-    })
+    }
+
+    # Меньше нагрузки: уведомляем только участников сообщения
+    sender_id = message.get("sender")
+    receiver_id = message.get("receiver")
+    if sender_id:
+        emit("update_reactions", payload, room=str(sender_id))
+    if receiver_id and receiver_id != sender_id:
+        emit("update_reactions", payload, room=str(receiver_id))
 
 # =====================================================
 # ERRORS
