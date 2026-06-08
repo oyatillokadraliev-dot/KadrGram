@@ -263,19 +263,19 @@
 <!-- ПАРОЛЬ -->
 <div class="card">
     <div class="section-title">Пароль</div>
-    <div class="field-row">
+    <div class="field-row" style="position: relative;"> <!-- ДОБАВЛЕНО СТИЛЬ position: relative -->
         <label class="field-label">Новый пароль</label>
+        
+        <!-- К инпуту добавляем padding-right: 85px, чтобы текст кнопки не перекрывал точки -->
         <input type="password" id="inputPassword" class="field-input"
                placeholder="Введите новый пароль"
-               oninput="validatePassword()">
-        <div class="rules">
-            <div id="rulePassLen"    class="hint"><span class="dot"></span>Минимум 8 символов</div>
-            <div id="rulePassUpper"  class="hint"><span class="dot"></span>Минимум 1 заглавная буква</div>
-            <div id="rulePassNumber" class="hint"><span class="dot"></span>Минимум 1 цифра</div>
-            <div id="rulePassEng"    class="hint"><span class="dot"></span>Только латиница</div>
-        </div>
-    </div>
-    <button class="save-btn" id="btnSavePassword" onclick="savePassword()" disabled>Сохранить пароль</button>
+               oninput="validatePassword()" style="padding-right: 85px;">
+        
+        <!-- ДОБАВЛЕНА КНОПКА СТРОГО С ТЕКСТОМ "Показать" -->
+        <button type="button" id="togglePasswordBtn" 
+                style="position: absolute; right: 16px; bottom: 12px; background: none; border: none; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 14px; font-family: inherit; z-index: 10; padding: 5px;">
+            Показать
+        </button>
 </div>
 
 <!-- Toast уведомление -->
@@ -425,6 +425,18 @@
             showToast('❌ Ошибка сети', 'error');
         }
     }
+    // Логика кнопки Показать/Скрыть пароль
+document.getElementById('togglePasswordBtn').addEventListener('click', function () {
+    var passwordInput = document.getElementById('inputPassword');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        this.innerText = 'Скрыть';
+    } else {
+        passwordInput.type = 'password';
+        this.innerText = 'Показать';
+    }
+});
 </script>
 </body>
 </html>
