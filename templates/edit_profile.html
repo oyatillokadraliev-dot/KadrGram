@@ -17,520 +17,414 @@
             --text: #ffffff; --text2: #7f91a4;
         }
 
-        body.dark-mode .edit-container,
-        body.dark-mode .bottom-nav {
-            background: var(--white) !important;
-            border-color: var(--border) !important;
+        body.dark-mode .card,
+        body.dark-mode .bottom-nav { background: var(--white) !important; border-color: var(--border) !important; }
+
+        body.dark-mode .field-input {
+            background: #0e1621 !important; border-color: var(--border) !important; color: #fff !important;
         }
 
-        body.dark-mode input,
-        body.dark-mode textarea {
-            background: #0e1621 !important;
-            border-color: var(--border) !important;
-            color: white !important;
+        body.dark-mode .modal-box {
+            background: var(--white) !important; border-color: var(--border) !important;
         }
+
+        body.dark-mode .btn-cancel { background: #24303f !important; color: #7f91a4 !important; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        html, body { height: 100%; }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg); 
-            color: var(--text);
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-            min-height: 100vh; 
-            padding: 30px 20px 100px;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px 16px 100px;
             transition: background 0.3s, color 0.3s;
         }
 
-        .back-link {
-            align-self: flex-start;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 20px;
-            font-size: 14px;
+        /* Шапка */
+        .page-header {
+            width: 100%; max-width: 420px;
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px; padding-top: env(safe-area-inset-top);
         }
 
-        .back-link:hover { text-decoration: underline; }
+        .back-link {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #e8f4ff, #d0eeff);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: var(--primary); font-size: 22px;
+            flex-shrink: 0; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,136,204,0.1);
+        }
 
-        .edit-container {
-            background: var(--white);
-            width: 100%;
-            max-width: 400px;
-            padding: 28px 24px;
-            border-radius: 24px;
-            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
+        .back-link:hover { background: linear-gradient(135deg, var(--primary), var(--primary2)); color: white; }
+
+        .page-title { font-size: 20px; font-weight: 700; }
+
+        /* Карточка */
+        .card {
+            background: var(--white); width: 100%; max-width: 420px;
+            border-radius: 24px; padding: 24px;
             border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.08);
+            margin-bottom: 16px;
             transition: background 0.3s, border-color 0.3s;
         }
 
-        .edit-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            background: var(--bg);
-            color: var(--text);
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus,
-        .form-textarea:focus {
-            border-color: var(--primary);
-            background: var(--white);
-            box-shadow: 0 0 0 4px rgba(0,136,204,0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .password-wrapper {
-            position: relative;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text2);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px;
-            transition: color 0.2s;
-        }
-
-        .toggle-password:hover {
-            color: var(--primary);
-        }
-
-        .password-wrapper .form-input {
-            padding-right: 44px;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,136,204,0.25);
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(0,136,204,0.35);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
+        /* Аватар */
         .avatar-section {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;
         }
 
-        .avatar-main {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 14px;
+        .avatar-wrap { position: relative; display: inline-block; }
+
+        .avatar-circle {
+            width: 100px; height: 100px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0,136,204,0.3);
-            overflow: hidden;
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0,136,204,0.3); overflow: hidden;
+            transition: transform 0.2s;
         }
 
-        .avatar-main img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
+        .avatar-circle:hover { transform: scale(1.03); }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .avatar-loading {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(0,136,204,0.75);
+            display: none; align-items: center; justify-content: center;
+            color: white; font-size: 22px;
         }
 
-        .avatar-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
+        .avatar-btns { display: flex; gap: 8px; margin-top: 14px; }
+
+        .av-btn {
+            padding: 9px 18px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            border: none; font-family: inherit; transition: all 0.2s;
         }
 
-        .btn-small {
-            padding: 8px 16px;
-            border-radius: 10px;
-            border: none;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .btn-upload {
+        .av-btn-blue {
             background: linear-gradient(135deg, var(--primary), var(--primary2));
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,136,204,0.25);
+            color: white; box-shadow: 0 3px 10px rgba(0,136,204,0.3);
         }
 
-        .btn-upload:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,136,204,0.35);
-        }
+        .av-btn-blue:hover { transform: scale(1.03); box-shadow: 0 5px 14px rgba(0,136,204,0.4); }
 
-        .btn-delete {
-            background: rgba(255,107,107,0.08);
-            color: var(--danger);
+        .av-btn-red {
+            background: rgba(255,107,107,0.1); color: var(--danger);
             border: 1px solid rgba(255,107,107,0.2);
         }
 
-        .btn-delete:hover {
-            background: rgba(255,107,107,0.15);
+        .av-btn-red:hover { background: rgba(255,107,107,0.18); }
+        .av-btn-red:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Поля */
+        .section-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+
+        .field-row { margin-bottom: 14px; }
+        .field-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; display: block; }
+
+        .field-input {
+            width: 100%; padding: 12px 16px;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 15px; outline: none; background: #f8fafc;
+            color: var(--text); font-family: inherit; transition: all 0.2s;
         }
 
-        .message {
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 14px;
-            display: none;
+        .field-input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(0,136,204,0.1); }
+
+        .field-hint { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+        /* Кнопки сохранения */
+        .save-btn {
+            width: 100%; padding: 14px; border-radius: 12px;
+            font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+            font-family: inherit; transition: all 0.2s; margin-top: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--primary2));
+            color: white; box-shadow: 0 4px 14px rgba(0,136,204,0.3);
         }
 
-        .message.show { display: block; }
-        .message.success { background: rgba(37,211,102,0.1); color: var(--success); border: 1px solid rgba(37,211,102,0.2); }
-        .message.error { background: rgba(255,107,107,0.1); color: var(--danger); border: 1px solid rgba(255,107,107,0.2); }
+        .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.4); }
+        .save-btn:active { transform: translateY(0); }
+        .save-btn:disabled { background: #dde4ec; color: var(--text2); box-shadow: none; cursor: not-allowed; transform: none; }
 
+        /* Правила валидации */
+        .rules { margin: 8px 0 12px; }
+        .hint { display: flex; align-items: center; font-size: 12px; color: var(--text2); margin-bottom: 6px; transition: all 0.2s; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: #dde4ec; border: 1.5px solid #c8d4e0; flex-shrink: 0; transition: all 0.25s; }
+        .hint.ok  { color: var(--success); }
+        .hint.ok  .dot { background: var(--success); border-color: var(--success); box-shadow: 0 0 6px rgba(37,211,102,0.4); }
+        .hint.bad { color: var(--danger); }
+        .hint.bad .dot { background: var(--danger); border-color: var(--danger); }
+
+        /* Разделитель */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 16px; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            background: #1a1a2e; color: white; padding: 12px 24px;
+            border-radius: 12px; font-size: 14px; font-weight: 500;
+            z-index: 9999; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; white-space: nowrap;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .toast.show { opacity: 1; }
+        .toast.success { background: #1a7a3a; }
+        .toast.error   { background: #7a1a1a; }
+
+        /* NAV */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: var(--white);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 999;
-            padding-bottom: env(safe-area-inset-bottom);
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: var(--white); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
             transition: background 0.3s, border-color 0.3s;
         }
 
         .nav-item {
-            text-decoration: none;
-            color: var(--text2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            flex: 1;
-            transition: color 0.2s;
+            text-decoration: none; color: var(--text2);
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; font-size: 12px; font-weight: 500; flex: 1; transition: color 0.2s;
         }
 
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 20px 16px 90px;
-            }
-        }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
-<a href="/profile" class="back-link">← Назад</a>
+<div class="page-header">
+    <a href="/profile" class="back-link">‹</a>
+    <div class="page-title">Редактировать профиль</div>
+</div>
 
-<div class="edit-container">
-    <div class="edit-title">✏️ Редактировать профиль</div>
-
-    <div id="message" class="message"></div>
-
-    <!-- AVATAR SECTION -->
+<!-- АВАТАРКА -->
+<div class="card">
+    <div class="section-title">Фото профиля</div>
     <div class="avatar-section">
-        <div class="avatar-main" id="avatarPreview">
-            {% if user and user.avatar %}
-                <img src="{{ user.avatar }}" alt="Аватар">
-            {% else %}
-                {% if user and user.name %}{{ user.name[0]|upper }}{% else %}K{% endif %}
-            {% endif %}
+        <div class="avatar-wrap">
+            <div class="avatar-circle" id="avatarCircle">
+                {% if user and user.avatar %}
+                    <img id="avatarImg" src="{{ user.avatar }}" alt="">
+                {% else %}
+                    <span id="avatarLetter">{{ user.name[0]|upper if user and user.name else 'K' }}</span>
+                {% endif %}
+            </div>
+            <div class="avatar-loading" id="avatarLoading">⏳</div>
         </div>
-        <div class="avatar-buttons">
-            <button class="btn-small btn-upload" onclick="document.getElementById('avatarInput').click()">📤 Загрузить</button>
-            <button class="btn-small btn-delete" onclick="deleteAvatar()">🗑️ Удалить</button>
+        <div class="avatar-btns">
+            <button class="av-btn av-btn-blue" onclick="document.getElementById('avatarInput').click()">
+                📷 Изменить фото
+            </button>
+            <button class="av-btn av-btn-red" id="btnDeleteAvatar"
+                    onclick="deleteAvatar()"
+                    {% if not user or not user.avatar %}disabled{% endif %}>
+                🗑 Удалить
+            </button>
         </div>
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
-
-    <!-- NAME -->
-    <div class="form-group">
-        <label class="form-label">Имя</label>
-        <input type="text" id="nameInput" class="form-input" value="{{ user.name if user else '' }}" placeholder="Ваше имя">
-    </div>
-
-    <!-- LOGIN -->
-    <div class="form-group">
-        <label class="form-label">Логин</label>
-        <input type="text" id="loginInput" class="form-input" value="{{ user.login if user else '' }}" placeholder="username">
-    </div>
-
-    <!-- PASSWORD -->
-    <div class="form-group">
-        <label class="form-label">Новый пароль (опционально)</label>
-        <div class="password-wrapper">
-            <input type="password" id="passwordInput" class="form-input" placeholder="Оставь пусто, если не менять">
-            <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
-        </div>
-    </div>
-
-    <!-- VERIFY CURRENT PASSWORD -->
-    <div class="form-group" id="verifyGroup" style="display: none;">
-        <label class="form-label">Подтверди текущий пароль</label>
-        <div class="password-wrapper">
-            <input type="password" id="verifyPassword" class="form-input" placeholder="Введи текущий пароль">
-            <button type="button" class="toggle-password" onclick="toggleVerifyPasswordVisibility()">👁️</button>
-        </div>
-    </div>
-
-    <button class="btn-submit" onclick="saveProfile()">💾 Сохранить</button>
 </div>
+
+<!-- ИМЯ -->
+<div class="card">
+    <div class="section-title">Имя</div>
+    <div class="field-row">
+        <label class="field-label">Отображаемое имя</label>
+        <input type="text" id="inputName" class="field-input"
+               placeholder="Введите имя"
+               value="{{ user.name if user else '' }}"
+               oninput="validateName()" maxlength="30">
+        <div class="rules">
+            <div id="ruleNameLen" class="hint"><span class="dot"></span>От 2 до 30 символов</div>
+        </div>
+    </div>
+    <button class="save-btn" id="btnSaveName" onclick="saveName()" disabled>Сохранить имя</button>
+</div>
+
+<!-- ЛОГИН -->
+<div class="card">
+    <div class="section-title">Логин</div>
+    <div class="field-row">
+        <label class="field-label">Логин для входа</label>
+        <input type="text" id="inputLogin" class="field-input"
+               placeholder="Введите логин"
+               value="{{ user.login if user else '' }}"
+               oninput="validateLogin()" maxlength="24">
+        <div class="rules">
+            <div id="ruleLoginLen"   class="hint"><span class="dot"></span>От 3 до 24 символов</div>
+            <div id="ruleLoginChars" class="hint"><span class="dot"></span>Только буквы и цифры</div>
+        </div>
+    </div>
+    <button class="save-btn" id="btnSaveLogin" onclick="saveLogin()" disabled>Сохранить логин</button>
+</div>
+
+<!-- ПАРОЛЬ -->
+<div class="card">
+    <div class="section-title">Пароль</div>
+    <div class="field-row">
+        <label class="field-label">Новый пароль</label>
+        <input type="password" id="inputPassword" class="field-input"
+               placeholder="Введите новый пароль"
+               oninput="validatePassword()">
+        <div class="rules">
+            <div id="rulePassLen"    class="hint"><span class="dot"></span>Минимум 8 символов</div>
+            <div id="rulePassUpper"  class="hint"><span class="dot"></span>Минимум 1 заглавная буква</div>
+            <div id="rulePassNumber" class="hint"><span class="dot"></span>Минимум 1 цифра</div>
+            <div id="rulePassEng"    class="hint"><span class="dot"></span>Только латиница</div>
+        </div>
+    </div>
+    <button class="save-btn" id="btnSavePassword" onclick="savePassword()" disabled>Сохранить пароль</button>
+</div>
+
+<!-- Toast уведомление -->
+<div class="toast" id="toast"></div>
 
 <nav class="bottom-nav">
     <a href="/" class="nav-item">💬<span>Чаты</span></a>
     <a href="/search" class="nav-item">🔍<span>Поиск</span></a>
-    <a href="/profile" class="nav-item">👤<span>Профиль</span></a>
+    <a href="/profile" class="nav-item active">👤<span>Профиль</span></a>
 </nav>
 
 <script>
-    // ✅ Инициализируем тему
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
+    // Тема
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+
+    // Toast
+    function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        t.innerText = msg;
+        t.className = 'toast show ' + (type || '');
+        setTimeout(function() { t.className = 'toast'; }, 2500);
     }
 
-    function showMessage(text, type) {
-        var msg = document.getElementById('message');
-        msg.innerText = text;
-        msg.className = 'message show ' + type;
-        setTimeout(function() {
-            msg.className = 'message';
-        }, 4000);
+    // Хелпер подсказок
+    function setHint(id, state) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (state === null) el.className = 'hint';
+        else el.className = 'hint ' + (state ? 'ok' : 'bad');
     }
 
-    function togglePasswordVisibility() {
-        var input = document.getElementById('passwordInput');
-        var btn = event.target;
-        if (input.type === 'password') {
-            input.type = 'text';
-            btn.innerText = '🙈';
-        } else {
-            input.type = 'password';
-            btn.innerText = '👁️';
+    // ========== ВАЛИДАЦИЯ ==========
+
+    var origName  = document.getElementById('inputName').value;
+    var origLogin = document.getElementById('inputLogin').value;
+
+    function validateName() {
+        var v = document.getElementById('inputName').value.trim();
+        var ok = v.length >= 2 && v.length <= 30;
+        setHint('ruleNameLen', v.length > 0 ? ok : null);
+        document.getElementById('btnSaveName').disabled = !ok || v === origName;
+    }
+
+    function validateLogin() {
+        var v = document.getElementById('inputLogin').value.trim();
+        var lenOk   = v.length >= 3 && v.length <= 24;
+        var charsOk = /^[A-Za-z0-9]+$/.test(v);
+        setHint('ruleLoginLen',   v.length > 0 ? lenOk   : null);
+        setHint('ruleLoginChars', v.length > 0 ? charsOk : null);
+        document.getElementById('btnSaveLogin').disabled = !(lenOk && charsOk) || v === origLogin;
+    }
+
+    function validatePassword() {
+        var v = document.getElementById('inputPassword').value;
+        var c = {
+            rulePassLen:    v.length >= 8,
+            rulePassUpper:  /[A-Z]/.test(v),
+            rulePassNumber: /[0-9]/.test(v),
+            rulePassEng:    /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v)
+        };
+        Object.keys(c).forEach(function(k) { setHint(k, v.length > 0 ? c[k] : null); });
+        document.getElementById('btnSavePassword').disabled = !Object.values(c).every(Boolean);
+    }
+
+    // ========== СОХРАНЕНИЕ ==========
+
+    async function saveField(field, value, btnId) {
+        var btn = document.getElementById(btnId);
+        btn.disabled = true;
+        btn.innerText = 'Сохранение...';
+
+        try {
+            var r = await fetch('/update_profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({field: field, value: value})
+            });
+            var res = await r.json();
+            if (res.success) {
+                showToast('✅ Сохранено!', 'success');
+                if (field === 'name')  origName  = value;
+                if (field === 'login') origLogin = value;
+                if (field === 'password') document.getElementById('inputPassword').value = '';
+                setTimeout(function() { validateName(); validateLogin(); validatePassword(); }, 100);
+            } else {
+                showToast('❌ ' + (res.message || 'Ошибка'), 'error');
+                btn.disabled = false;
+            }
+        } catch(e) {
+            showToast('❌ Ошибка сети', 'error');
+            btn.disabled = false;
         }
+
+        btn.innerText = field === 'name' ? 'Сохранить имя' :
+                        field === 'login' ? 'Сохранить логин' : 'Сохранить пароль';
     }
 
-    function toggleVerifyPasswordVisibility() {
-        var input = document.getElementById('verifyPassword');
-        var btn = event.target;
-        if (input.type === 'password') {
-            input.type = 'text';
-            btn.innerText = '🙈';
-        } else {
-            input.type = 'password';
-            btn.innerText = '👁️';
-        }
-    }
+    function saveName()     { saveField('name',     document.getElementById('inputName').value.trim(),     'btnSaveName'); }
+    function saveLogin()    { saveField('login',    document.getElementById('inputLogin').value.trim(),    'btnSaveLogin'); }
+    function savePassword() { saveField('password', document.getElementById('inputPassword').value,        'btnSavePassword'); }
+
+    // ========== АВАТАРКА ==========
 
     function uploadAvatar(input) {
         var file = input.files[0];
         if (!file) return;
-
+        var loading = document.getElementById('avatarLoading');
+        loading.style.display = 'flex';
         var fd = new FormData();
         fd.append('image', file);
-
-        fetch('/upload_avatar', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    var preview = document.getElementById('avatarPreview');
-                    preview.innerHTML = '<img src="' + data.url + '" alt="Аватар">';
-                    showMessage('✅ Аватар загружен', 'success');
+        fetch('/upload_avatar', {method: 'POST', body: fd})
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                loading.style.display = 'none';
+                if (res.success) {
+                    // Обновляем аватарку без перезагрузки
+                    var circle = document.getElementById('avatarCircle');
+                    circle.innerHTML = '<img src="' + res.url + '" alt="">';
+                    document.getElementById('btnDeleteAvatar').disabled = false;
+                    showToast('✅ Фото обновлено!', 'success');
                 } else {
-                    showMessage('❌ ' + (data.message || 'Ошибка загрузки'), 'error');
+                    showToast('❌ ' + (res.message || 'Ошибка загрузки'), 'error');
                 }
             })
-            .catch(e => {
-                console.error(e);
-                showMessage('❌ Ошибка сети', 'error');
+            .catch(function() {
+                loading.style.display = 'none';
+                showToast('❌ Ошибка сети', 'error');
             });
         input.value = '';
     }
 
-    function deleteAvatar() {
-        fetch('/delete_avatar', { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    var preview = document.getElementById('avatarPreview');
-                    preview.innerHTML = '{{ user.name[0]|upper if user and user.name else "K" }}';
-                    showMessage('✅ Аватар удален', 'success');
-                } else {
-                    showMessage('❌ Ошибка', 'error');
-                }
-            })
-            .catch(e => {
-                console.error(e);
-                showMessage('❌ Ошибка сети', 'error');
-            });
-    }
-
-    function saveProfile() {
-        var name = document.getElementById('nameInput').value.trim();
-        var login = document.getElementById('loginInput').value.trim();
-        var pwd = document.getElementById('passwordInput').value.trim();
-
-        if (!name) {
-            showMessage('❌ Введи имя', 'error');
-            return;
-        }
-
-        // ✅ Если меняем пароль - требуем подтверждение текущего пароля
-        if (pwd) {
-            if (pwd.length < 8) {
-                showMessage('❌ Пароль минимум 8 символов', 'error');
-                return;
+    async function deleteAvatar() {
+        if (!confirm('Удалить фото профиля?')) return;
+        try {
+            var r = await fetch('/delete_avatar', {method: 'POST'});
+            var res = await r.json();
+            if (res.success) {
+                var circle = document.getElementById('avatarCircle');
+                var letter = '{{ user.name[0]|upper if user and user.name else "K" }}';
+                circle.innerHTML = '<span>' + letter + '</span>';
+                document.getElementById('btnDeleteAvatar').disabled = true;
+                showToast('✅ Фото удалено', 'success');
+            } else {
+                showToast('❌ Ошибка', 'error');
             }
-            var verifyPwd = document.getElementById('verifyPassword').value.trim();
-            if (!verifyPwd) {
-                showMessage('❌ Подтверди текущий пароль', 'error');
-                document.getElementById('verifyGroup').style.display = 'block';
-                return;
-            }
-            // Отправляем подтверждение пароля на сервер
-            verifyCurrentPassword(verifyPwd, function(verified) {
-                if (!verified) {
-                    showMessage('❌ Неверный пароль', 'error');
-                    return;
-                }
-                performUpdate(name, login, pwd);
-            });
-        } else {
-            performUpdate(name, login, pwd);
+        } catch(e) {
+            showToast('❌ Ошибка сети', 'error');
         }
     }
-
-    function verifyCurrentPassword(pwd, callback) {
-        fetch('/verify_password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: pwd })
-        })
-        .then(r => r.json())
-        .then(data => {
-            callback(data.valid);
-        })
-        .catch(e => {
-            console.error(e);
-            callback(false);
-        });
-    }
-
-    function performUpdate(name, login, pwd) {
-        var updates = [];
-
-        if (name !== '{{ user.name if user else "" }}') {
-            updates.push(updateField('name', name));
-        }
-        if (login !== '{{ user.login if user else "" }}') {
-            updates.push(updateField('login', login));
-        }
-        if (pwd) {
-            updates.push(updateField('password', pwd));
-        }
-
-        if (updates.length === 0) {
-            showMessage('ℹ️ Нет изменений', 'success');
-            return;
-        }
-
-        Promise.all(updates)
-            .then(() => {
-                showMessage('✅ Профиль обновлен', 'success');
-                setTimeout(() => {
-                    window.location.href = '/profile';
-                }, 1500);
-            })
-            .catch(() => {
-                showMessage('❌ Ошибка сохранения', 'error');
-            });
-    }
-
-    function updateField(field, value) {
-        return fetch('/update_profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ field: field, value: value })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
-                throw new Error(data.message || 'Ошибка');
-            }
-        });
-    }
-
-    // ✅ Показываем поле для подтверждения при вводе пароля
-    document.getElementById('passwordInput').addEventListener('input', function() {
-        if (this.value.trim()) {
-            document.getElementById('verifyGroup').style.display = 'block';
-        } else {
-            document.getElementById('verifyGroup').style.display = 'none';
-        }
-    });
 </script>
 </body>
 </html>
