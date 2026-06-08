@@ -231,13 +231,13 @@
 <div class="card">
     <div class="section-title">Имя</div>
     <div class="field-row">
-        <label class="field-label">Отображаемое имя</label>
+        <label class="field-label" style="color: var(--text2); font-weight: 500;">Текущее имя</label>
         <input type="text" id="inputName" class="field-input"
                placeholder="Введите имя"
                value="{{ user.name if user else '' }}"
                oninput="validateName()" maxlength="30">
         <div class="rules">
-            <div id="ruleNameLen" class="hint"><span class="dot"></span>От 2 до 30 символов</div>
+            <div id="ruleNameLen" class="hint"><span class="dot"></span> От 2 до 30 символов</div>
         </div>
     </div>
     <button class="save-btn" id="btnSaveName" onclick="saveName()" disabled>Сохранить имя</button>
@@ -247,14 +247,14 @@
 <div class="card">
     <div class="section-title">Логин</div>
     <div class="field-row">
-        <label class="field-label">Логин для входа</label>
+        <label class="field-label" style="color: var(--text2); font-weight: 500;">Текущий логин</label>
         <input type="text" id="inputLogin" class="field-input"
                placeholder="Введите логин"
                value="{{ user.login if user else '' }}"
                oninput="validateLogin()" maxlength="24">
         <div class="rules">
-            <div id="ruleLoginLen"   class="hint"><span class="dot"></span>От 3 до 24 символов</div>
-            <div id="ruleLoginChars" class="hint"><span class="dot"></span>Только буквы и цифры</div>
+            <div id="ruleLoginLen" class="hint"><span class="dot"></span> От 3 до 24 символов</div>
+            <div id="ruleLoginChars" class="hint"><span class="dot"></span> Только буквы и цифры</div>
         </div>
     </div>
     <button class="save-btn" id="btnSaveLogin" onclick="saveLogin()" disabled>Сохранить логин</button>
@@ -263,19 +263,27 @@
 <!-- ПАРОЛЬ -->
 <div class="card">
     <div class="section-title">Пароль</div>
-    <div class="field-row" style="position: relative;"> <!-- ДОБАВЛЕНО СТИЛЬ position: relative -->
-        <label class="field-label">Новый пароль</label>
-        
-        <!-- К инпуту добавляем padding-right: 85px, чтобы текст кнопки не перекрывал точки -->
+    <div class="field-row" style="position: relative; margin-bottom: 14px;">
+        <label class="field-label" style="color: var(--text2); font-weight: 500;">Новый пароль</label>
         <input type="password" id="inputPassword" class="field-input"
                placeholder="Введите новый пароль"
                oninput="validatePassword()" style="padding-right: 85px;">
-        
-        <!-- ДОБАВЛЕНА КНОПКА СТРОГО С ТЕКСТОМ "Показать" -->
         <button type="button" id="togglePasswordBtn" 
                 style="position: absolute; right: 16px; bottom: 12px; background: none; border: none; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 14px; font-family: inherit; z-index: 10; padding: 5px;">
             Показать
         </button>
+    </div>
+    
+    <!-- Синхронизированные условия валидации пароля -->
+    <div class="rules" style="margin-bottom: 16px;">
+        <div id="rulePassLen" class="hint"><span class="dot"></span> Минимум 8 символов</div>
+        <div id="rulePassUpper" class="hint"><span class="dot"></span> Минимум 1 заглавная буква</div>
+        <div id="rulePassLower" class="hint"><span class="dot"></span> "Минимум 1 строчная"</div>
+        <div id="rulePassNumber" class="hint"><span class="dot"></span> Минимум 1 цифра</div>
+        <div id="rulePassEng" class="hint"><span class="dot"></span> Только латиница</div>
+    </div>
+    
+    <button class="save-btn" id="btnSavePassword" onclick="savePassword()" disabled>Сохранить пароль</button>
 </div>
 
 <!-- Toast уведомление -->
@@ -425,7 +433,7 @@
             showToast('❌ Ошибка сети', 'error');
         }
     }
-    // Логика кнопки Показать/Скрыть пароль
+// 1. Новая логика для кнопки переключения текста "Показать/Скрыть"
 document.getElementById('togglePasswordBtn').addEventListener('click', function () {
     var passwordInput = document.getElementById('inputPassword');
     
@@ -437,6 +445,20 @@ document.getElementById('togglePasswordBtn').addEventListener('click', function 
         this.innerText = 'Показать';
     }
 });
+
+// 2. Исправленная функция валидации пароля (теперь с проверкой строчных букв как в регистрации!)
+function validatePassword() {
+    var v = document.getElementById('inputPassword').value;
+    var c = {
+        rulePassLen: v.length >= 8,
+        rulePassUpper: /[A-Z]/.test(v),
+        rulePassLower: /[a-z]/.test(v), // Проверка строчной буквы (маленькой)
+        rulePassNumber: /[0-9]/.test(v),
+        rulePassEng: /^[A-Za-z0-9!@#$%^&*()_+=\-]*$/.test(v)
+    };
+    Object.keys(c).forEach(function(k) { setHint(k, v.length > 0 ? c[k] : null); });
+    document.getElementById('btnSavePassword').disabled = !Object.values(c).every(Boolean);
+}
 </script>
 </body>
 </html>
