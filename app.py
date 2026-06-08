@@ -31,10 +31,15 @@ socketio = SocketIO(
     manage_session=False
 )
 
+CLOUD_NAME = str(os.environ.get("CLOUDINARY_CLOUD_NAME", "")).strip()
+API_KEY = str(os.environ.get("CLOUDINARY_API_KEY", "")).strip()
+API_SECRET = str(os.environ.get("CLOUDINARY_API_SECRET", "")).strip()
+
 cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+    cloud_name=CLOUD_NAME,
+    api_key=API_KEY,
+    api_secret=API_SECRET,
+    secure=True
 )
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
