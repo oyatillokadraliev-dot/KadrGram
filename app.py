@@ -1,8 +1,5 @@
 import eventlet
 eventlet.monkey_patch()
-
-
-
 import traceback
 import os
 import re
@@ -58,15 +55,25 @@ try:
     db = client["kadrgram"]
     users = db["users"]
     messages = db["messages"]
+    
+    # ИСПРАВЛЕННЫЕ ИНДЕКСЫ:
     users.create_index("login", unique=True)
-    messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING), ("_id", DESCENDING)])
+    
+    # 1. Из составного индекса убрали "_id", так как он мешал. Сортировка по sender/receiver осталась
+    messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING)])
+    
+    # 2. Индекс по получателю и статусу прочтения
     messages.create_index([("receiver", ASCENDING), ("read", ASCENDING)])
-    messages.create_index([("_id", DESCENDING)])
+    
+    # 3. Лишний индекс messages.create_index([("_id", DESCENDING)]) мы полностью удаляем,
+    # так как MongoDB сама автоматически всегда индексирует "_id" по возрастанию.
+    
     mongo_ok = True
     print("✅ Mongo connected")
 except Exception as e:
     print("❌ Mongo error:", e)
     logging.error(e)
+
 
 # =====================================================
 # HELPERS
