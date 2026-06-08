@@ -57,9 +57,9 @@ try:
     users = db["users"]
     messages = db["messages"]
     users.create_index("login", unique=True)
-    messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING), ("created_at", DESCENDING)])
+    messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING), ("_id", DESCENDING)])
     messages.create_index([("receiver", ASCENDING), ("read", ASCENDING)])
-    messages.create_index([("created_at", DESCENDING)])
+    messages.create_index([("_id", DESCENDING)])
     mongo_ok = True
     print("✅ Mongo connected")
 except Exception as e:
@@ -81,16 +81,21 @@ def oid(x):
 
 
 def allowed_file(filename):
+    if not filename:
+        return False
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_user():
-    if not mongo_ok or not users:
+    if not mongo_ok or users is None:
         return None
     uid = session.get("user_id")
     if not uid:
         return None
-    return users.find_one({"_id": oid(uid)})
+    try:
+        return users.find_one({"_id": oid(uid)})
+    except Exception:
+        return None
 
 
 def rate_limit(user_id):
@@ -103,7 +108,6 @@ def rate_limit(user_id):
 
 
 def format_last_seen(last_seen):
-    """Серверный расчёт для on_disconnect broadcast."""
     if not last_seen:
         return "не был(а) в сети"
     now = datetime.utcnow()
@@ -130,7 +134,7 @@ def serialize_user(u):
         "online": bool(u.get("online", False)),
         "last_seen_iso": last_seen_iso,
         "last_seen_str": format_last_seen(last_seen),
-        "pinned": False,  # будет перезаписано в home()
+        "pinned": False,
     }
 
 
@@ -139,8 +143,8 @@ def serialize_message(m):
     reaction_counts = Counter(reactions.values())
     return {
         "id": str(m["_id"]),
-        "sender": m["sender"],
-        "receiver": m["receiver"],
+        "sender": m.get("sender", ""),
+        "receiver": m.get("receiver", ""),
         "text": m.get("text", ""),
         "image": m.get("image"),
         "read": m.get("read", False),
@@ -150,7 +154,7 @@ def serialize_message(m):
         "reply_text": m.get("reply_text"),
         "reply_sender": m.get("reply_sender"),
         "reactions": dict(reaction_counts),
-        "time": m["created_at"].isoformat()
+        "time": m["created_at"].isoformat() if m.get("created_at") else datetime.utcnow().isoformat()
     }
 
 # =====================================================
@@ -159,9 +163,14 @@ def serialize_message(m):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if not mongo_ok or users is None:
+        return "База данных недоступна", 503
+
     if request.method == "POST":
         login_val = request.form.get("login", "").strip()
         pwd = request.form.get("pwd", "")
+        if not login_val or not pwd:
+            return render_template("login.html", error="wrong_pass")
         user = users.find_one({"login": login_val})
         if user and check_password_hash(user["password"], pwd):
             session["user_id"] = str(user["_id"])
@@ -172,6 +181,9 @@ def login():
 
 @app.route("/register", methods=["POST"])
 def register():
+    if not mongo_ok or users is None:
+        return "База данных недоступна", 503
+
     name = bleach.clean(request.form.get("name", "").strip())
     login_val = bleach.clean(request.form.get("login", "").strip())
     pwd = request.form.get("pwd", "")
@@ -202,11 +214,14 @@ def register():
 @app.route("/logout")
 def logout():
     uid = session.get("user_id")
-    if uid:
-        users.update_one(
-            {"_id": oid(uid)},
-            {"$set": {"online": False, "last_seen": datetime.utcnow()}}
-        )
+    if uid and mongo_ok and users is not None:
+        try:
+            users.update_one(
+                {"_id": oid(uid)},
+                {"$set": {"online": False, "last_seen": datetime.utcnow()}}
+            )
+        except Exception:
+            pass
     session.clear()
     return redirect("/login")
 
@@ -223,15 +238,16 @@ def home():
     my_id = str(user["_id"])
     pinned_ids = set(user.get("pinned_chats", []))
 
-    # Получаем unread-сообщения одним запросом вместо N count_documents
     unread_by_sender = {}
-    if mongo_ok and messages:
+    try:
         pipeline = [
             {"$match": {"receiver": my_id, "read": False}},
             {"$group": {"_id": "$sender", "unread": {"$sum": 1}}}
         ]
-        for row in messages.aggregate(pipeline, allowDiskUse=False):
+        for row in messages.aggregate(pipeline):
             unread_by_sender[str(row["_id"])] = int(row.get("unread", 0))
+    except Exception as e:
+        logging.error(f"Unread aggregate error: {e}")
 
     raw_users = list(users.find({"_id": {"$ne": user["_id"]}}))
     all_users = []
@@ -246,14 +262,17 @@ def home():
 
     target_user = None
     chat_with = request.args.get("chat_with")
-    if chat_with and mongo_ok and messages:
-        raw_target = users.find_one({"_id": oid(chat_with)})
-        if raw_target:
-            target_user = serialize_user(raw_target)
-            messages.update_many(
-                {"sender": chat_with, "receiver": my_id, "read": False},
-                {"$set": {"read": True}}
-            )
+    if chat_with and mongo_ok and messages is not None:
+        try:
+            raw_target = users.find_one({"_id": oid(chat_with)})
+            if raw_target:
+                target_user = serialize_user(raw_target)
+                messages.update_many(
+                    {"sender": chat_with, "receiver": my_id, "read": False},
+                    {"$set": {"read": True}}
+                )
+        except Exception as e:
+            logging.error(f"Chat open error: {e}")
 
     return render_template(
         "index.html",
@@ -274,17 +293,6 @@ def profile():
         return redirect("/login")
     return render_template("profile.html", user=serialize_user(user))
 
-@app.route("/verify_password", methods=["POST"])
-def verify_password():
-    user = get_user()
-    if not user:
-        return jsonify({"valid": False}), 401
-    
-    data = request.get_json()
-    pwd = data.get("password", "")
-    
-    valid = check_password_hash(user["password"], pwd)
-    return jsonify({"valid": valid})
 
 @app.route("/edit_profile")
 def edit_profile():
@@ -293,6 +301,7 @@ def edit_profile():
         return redirect("/login")
     return render_template("edit_profile.html", user=serialize_user(user))
 
+
 @app.route("/update_profile", methods=["POST"])
 def update_profile():
     user = get_user()
@@ -300,8 +309,13 @@ def update_profile():
         return jsonify({"success": False, "message": "Не авторизован"}), 401
 
     data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "Нет данных"}), 400
+
     field = data.get("field")
-    value = data.get("value", "").strip()
+    value = data.get("value", "")
+    if isinstance(value, str):
+        value = value.strip()
 
     if not value:
         return jsonify({"success": False, "message": "Поле пустое"})
@@ -333,6 +347,19 @@ def update_profile():
     users.update_one({"_id": user["_id"]}, {"$set": update_data})
     return jsonify({"success": True})
 
+
+@app.route("/verify_password", methods=["POST"])
+def verify_password():
+    user = get_user()
+    if not user:
+        return jsonify({"valid": False}), 401
+    data = request.get_json()
+    if not data:
+        return jsonify({"valid": False}), 400
+    pwd = data.get("password", "")
+    valid = check_password_hash(user["password"], pwd)
+    return jsonify({"valid": valid})
+
 # =====================================================
 # AVATAR
 # =====================================================
@@ -345,7 +372,7 @@ def upload_avatar():
         return jsonify({"success": False, "message": "Нет файла"}), 400
 
     f = request.files["image"]
-    if not f or not allowed_file(f.filename):
+    if not f or not f.filename or not allowed_file(f.filename):
         return jsonify({"success": False, "message": "Недопустимый файл"}), 400
 
     f.seek(0, 2)
@@ -372,8 +399,12 @@ def upload_avatar():
 def delete_avatar():
     if "user_id" not in session:
         return jsonify({"success": False, "message": "Не авторизован"}), 401
-    users.update_one({"_id": oid(session["user_id"])}, {"$set": {"avatar": ""}})
-    return jsonify({"success": True})
+    try:
+        users.update_one({"_id": oid(session["user_id"])}, {"$set": {"avatar": ""}})
+        return jsonify({"success": True})
+    except Exception as e:
+        logging.error(e)
+        return jsonify({"success": False, "message": "Ошибка"}), 500
 
 # =====================================================
 # MESSAGES
@@ -382,7 +413,7 @@ def delete_avatar():
 @app.route("/get_messages")
 def get_messages():
     user = get_user()
-    if not user or not mongo_ok or not messages:
+    if not user or not mongo_ok or messages is None:
         return jsonify([])
 
     other = request.args.get("with")
@@ -399,12 +430,17 @@ def get_messages():
         ]
     }
     if before_id:
-        query["_id"] = {"$lt": oid(before_id)}
+        b_oid = oid(before_id)
+        if b_oid:
+            query["_id"] = {"$lt": b_oid}
 
-    # Пагинация должна соответствовать курсору по _id, иначе выборки "плывут"
-    msgs = list(messages.find(query).sort("_id", DESCENDING).limit(50))
-    msgs.reverse()
-    return jsonify([serialize_message(m) for m in msgs])
+    try:
+        msgs = list(messages.find(query).sort("_id", DESCENDING).limit(50))
+        msgs.reverse()
+        return jsonify([serialize_message(m) for m in msgs])
+    except Exception as e:
+        logging.error(e)
+        return jsonify([])
 
 # =====================================================
 # IMAGE UPLOAD
@@ -419,7 +455,7 @@ def upload_image():
         return jsonify({"error": "no file"}), 400
 
     f = request.files["image"]
-    if not f or f.filename == "" or not allowed_file(f.filename):
+    if not f or not f.filename or not allowed_file(f.filename):
         return jsonify({"error": "invalid file"}), 400
 
     f.seek(0, 2)
@@ -448,16 +484,19 @@ def search():
     query = request.args.get("query", "").strip()
     results = []
 
-    if query:
-        safe_query = re.escape(query)
-        raw = list(users.find({
-            "_id": {"$ne": user["_id"]},
-            "$or": [
-                {"name":  {"$regex": safe_query, "$options": "i"}},
-                {"login": {"$regex": safe_query, "$options": "i"}}
-            ]
-        }).limit(20))
-        results = [serialize_user(u) for u in raw]
+    if query and mongo_ok and users is not None:
+        try:
+            safe_query = re.escape(query)
+            raw = list(users.find({
+                "_id": {"$ne": user["_id"]},
+                "$or": [
+                    {"name":  {"$regex": safe_query, "$options": "i"}},
+                    {"login": {"$regex": safe_query, "$options": "i"}}
+                ]
+            }).limit(20))
+            results = [serialize_user(u) for u in raw]
+        except Exception as e:
+            logging.error(e)
 
     return render_template("search.html", results=results)
 
@@ -472,18 +511,24 @@ def pin_chat():
         return jsonify({"error": "unauthorized"}), 401
 
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "no data"}), 400
+
     chat_id = data.get("chat_id")
     action = data.get("action")
 
     if not chat_id:
         return jsonify({"error": "no chat_id"}), 400
 
-    if action == "pin":
-        users.update_one({"_id": user["_id"]}, {"$addToSet": {"pinned_chats": chat_id}})
-    else:
-        users.update_one({"_id": user["_id"]}, {"$pull": {"pinned_chats": chat_id}})
-
-    return jsonify({"ok": True})
+    try:
+        if action == "pin":
+            users.update_one({"_id": user["_id"]}, {"$addToSet": {"pinned_chats": chat_id}})
+        else:
+            users.update_one({"_id": user["_id"]}, {"$pull": {"pinned_chats": chat_id}})
+        return jsonify({"ok": True})
+    except Exception as e:
+        logging.error(e)
+        return jsonify({"error": "db error"}), 500
 
 # =====================================================
 # FAVICON
@@ -500,35 +545,34 @@ def favicon():
 @socketio.on("connect")
 def on_connect():
     uid = session.get("user_id")
-    if not uid:
+    if not uid or not mongo_ok or users is None:
         disconnect()
         return
-    users.update_one(
-        {"_id": oid(uid)},
-        {"$set": {"online": True, "last_seen": None}}
-    )
-    join_room(uid)
-    emit("user_online", {"user_id": uid}, broadcast=True, include_self=False)
+    try:
+        users.update_one({"_id": oid(uid)}, {"$set": {"online": True, "last_seen": None}})
+        join_room(uid)
+        emit("user_online", {"user_id": uid}, broadcast=True, include_self=False)
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("disconnect")
 def on_disconnect():
     uid = session.get("user_id")
-    if not uid:
+    if not uid or not mongo_ok or users is None:
         return
-    now = datetime.utcnow()
-    users.update_one(
-        {"_id": oid(uid)},
-        {"$set": {"online": False, "last_seen": now}}
-    )
-    u = users.find_one({"_id": oid(uid)})
-    last_seen_iso = (now.isoformat() + "Z") if now else None
-    last_seen_str = format_last_seen(now)
-    emit("user_offline", {
-        "user_id": uid,
-        "last_seen_str": last_seen_str,
-        "last_seen_iso": last_seen_iso
-    }, broadcast=True, include_self=False)
+    try:
+        now = datetime.utcnow()
+        users.update_one({"_id": oid(uid)}, {"$set": {"online": False, "last_seen": now}})
+        last_seen_iso = now.isoformat() + "Z"
+        last_seen_str = format_last_seen(now)
+        emit("user_offline", {
+            "user_id": uid,
+            "last_seen_str": last_seen_str,
+            "last_seen_iso": last_seen_iso
+        }, broadcast=True, include_self=False)
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("typing")
@@ -539,16 +583,13 @@ def on_typing(data):
     receiver_id = data.get("receiver_id")
     if not receiver_id or receiver_id == uid:
         return
-    emit("typing", {
-        "sender_id": uid,
-        "typing": bool(data.get("typing"))
-    }, room=receiver_id)
+    emit("typing", {"sender_id": uid, "typing": bool(data.get("typing"))}, room=receiver_id)
 
 
 @socketio.on("new_message")
 def new_message(data):
     user = get_user()
-    if not user:
+    if not user or not mongo_ok or messages is None:
         return
 
     my_id = str(user["_id"])
@@ -578,78 +619,92 @@ def new_message(data):
     }
 
     if reply_to:
-        orig = messages.find_one({"_id": oid(reply_to)})
-        if orig and not orig.get("deleted"):
-            orig_sender = users.find_one({"_id": oid(orig["sender"])})
-            msg["reply_to"] = reply_to
-            msg["reply_text"] = orig.get("text", "📷 Фото")[:80]
-            msg["reply_sender"] = orig_sender.get("name", "") if orig_sender else ""
+        try:
+            orig = messages.find_one({"_id": oid(reply_to)})
+            if orig and not orig.get("deleted"):
+                orig_sender = users.find_one({"_id": oid(orig["sender"])})
+                msg["reply_to"] = reply_to
+                msg["reply_text"] = orig.get("text", "📷 Фото")[:80]
+                msg["reply_sender"] = orig_sender.get("name", "") if orig_sender else ""
+        except Exception:
+            pass
 
-    result = messages.insert_one(msg)
-    msg["_id"] = result.inserted_id
-
-    payload = serialize_message(msg)
-    emit("receive_message", payload, room=my_id)
-    emit("receive_message", payload, room=to_id)
-    emit("typing", {"sender_id": my_id, "typing": False}, room=to_id)
+    try:
+        result = messages.insert_one(msg)
+        msg["_id"] = result.inserted_id
+        payload = serialize_message(msg)
+        emit("receive_message", payload, room=my_id)
+        emit("receive_message", payload, room=to_id)
+        emit("typing", {"sender_id": my_id, "typing": False}, room=to_id)
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("edit_message")
 def edit_message(data):
     user = get_user()
-    if not user:
+    if not user or not mongo_ok or messages is None:
         return
     my_id = str(user["_id"])
     msg_id = data.get("msg_id")
     new_text = bleach.clean(data.get("text", "").strip())
     if not msg_id or not new_text:
         return
-    msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
-    if not msg or msg.get("deleted"):
-        return
-    messages.update_one({"_id": oid(msg_id)}, {"$set": {"text": new_text, "edited": True}})
-    payload = {"msg_id": msg_id, "text": new_text}
-    emit("message_edited", payload, room=my_id)
-    emit("message_edited", payload, room=msg["receiver"])
+    try:
+        msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
+        if not msg or msg.get("deleted"):
+            return
+        messages.update_one({"_id": oid(msg_id)}, {"$set": {"text": new_text, "edited": True}})
+        payload = {"msg_id": msg_id, "text": new_text}
+        emit("message_edited", payload, room=my_id)
+        emit("message_edited", payload, room=msg["receiver"])
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("delete_message")
 def delete_message(data):
     user = get_user()
-    if not user:
+    if not user or not mongo_ok or messages is None:
         return
     my_id = str(user["_id"])
     msg_id = data.get("msg_id")
     if not msg_id:
         return
-    msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
-    if not msg:
-        return
-    messages.update_one({"_id": oid(msg_id)}, {"$set": {"deleted": True, "text": ""}})
-    emit("message_deleted", {"msg_id": msg_id}, room=my_id)
-    emit("message_deleted", {"msg_id": msg_id}, room=msg["receiver"])
+    try:
+        msg = messages.find_one({"_id": oid(msg_id), "sender": my_id})
+        if not msg:
+            return
+        messages.update_one({"_id": oid(msg_id)}, {"$set": {"deleted": True, "text": ""}})
+        emit("message_deleted", {"msg_id": msg_id}, room=my_id)
+        emit("message_deleted", {"msg_id": msg_id}, room=msg["receiver"])
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("mark_read")
 def mark_read(data):
     user = get_user()
-    if not user:
+    if not user or not mongo_ok or messages is None:
         return
     my_id = str(user["_id"])
     sender_id = data.get("sender_id")
     if not sender_id:
         return
-    messages.update_many(
-        {"sender": sender_id, "receiver": my_id, "read": False},
-        {"$set": {"read": True}}
-    )
-    emit("messages_read", {"by": my_id}, room=sender_id)
+    try:
+        messages.update_many(
+            {"sender": sender_id, "receiver": my_id, "read": False},
+            {"$set": {"read": True}}
+        )
+        emit("messages_read", {"by": my_id}, room=sender_id)
+    except Exception as e:
+        logging.error(e)
 
 
 @socketio.on("toggle_reaction")
 def toggle_reaction(data):
     user_id = session.get("user_id")
-    if not user_id or not mongo_ok or not messages:
+    if not user_id or not mongo_ok or messages is None:
         return
 
     msg_id = data.get("message_id")
@@ -658,39 +713,43 @@ def toggle_reaction(data):
     if emoji not in allowed:
         return
 
-    message = messages.find_one({"_id": oid(msg_id)})
-    if not message:
-        return
+    try:
+        message = messages.find_one({"_id": oid(msg_id)})
+        if not message:
+            return
 
-    reactions = message.get("reactions", {})
-    if reactions.get(user_id) == emoji:
-        del reactions[user_id]
-    else:
-        reactions[user_id] = emoji
+        reactions = message.get("reactions", {})
+        if reactions.get(user_id) == emoji:
+            del reactions[user_id]
+        else:
+            reactions[user_id] = emoji
 
-    messages.update_one({"_id": oid(msg_id)}, {"$set": {"reactions": reactions}})
-    reaction_counts = Counter(reactions.values())
+        messages.update_one({"_id": oid(msg_id)}, {"$set": {"reactions": reactions}})
+        reaction_counts = Counter(reactions.values())
 
-    payload = {
-        "message_id": msg_id,
-        "reaction_counts": dict(reaction_counts)
-    }
+        payload = {"message_id": msg_id, "reaction_counts": dict(reaction_counts)}
 
-    # Меньше нагрузки: уведомляем только участников сообщения
-    sender_id = message.get("sender")
-    receiver_id = message.get("receiver")
-    if sender_id:
-        emit("update_reactions", payload, room=str(sender_id))
-    if receiver_id and receiver_id != sender_id:
-        emit("update_reactions", payload, room=str(receiver_id))
+        sender_id = message.get("sender")
+        receiver_id = message.get("receiver")
+        if sender_id:
+            emit("update_reactions", payload, room=str(sender_id))
+        if receiver_id and receiver_id != sender_id:
+            emit("update_reactions", payload, room=str(receiver_id))
+    except Exception as e:
+        logging.error(e)
 
 # =====================================================
-# ERRORS
+# ERROR HANDLER
 # =====================================================
+
+@app.errorhandler(404)
+def not_found(e):
+    return redirect("/")
+
 
 @app.errorhandler(Exception)
 def handle_error(e):
-    print(traceback.format_exc())
+    logging.error(traceback.format_exc())
     return "SERVER ERROR", 500
 
 
