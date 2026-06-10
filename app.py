@@ -766,6 +766,16 @@ def handle_error(e):
     logging.error(traceback.format_exc())
     return "SERVER ERROR", 500
 
+@app.route('/robots.txt')
+def robots_txt():
+    # Этот текст разрешает всем роботам (включая Google) индексировать сайт
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /chats",  # Безопасность: запрещаем сканировать внутренние страницы чатов
+        "Disallow: /profile" # Запрещаем сканировать личные профили
+    ]
+    return "\n".join(lines), 200, {'Content-Type': 'text/plain'}
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
