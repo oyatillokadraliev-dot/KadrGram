@@ -136,21 +136,26 @@ def format_last_seen(last_seen):
         return "был(а) вчера в " + last_seen.strftime("%H:%M")
     return "был(а) " + last_seen.strftime("%d.%m.%Y")
 
-
 def serialize_user(u):
     last_seen = u.get("last_seen")
     last_seen_iso = (last_seen.isoformat() + "Z") if last_seen else None
+    
+    # Форматируем дату регистрации (например: "10 июня 2026")
+    created_at = u.get("created_at")
+    created_str = created_at.strftime("%d.%m.%Y") if created_at else "Неизвестно"
+    
     return {
         "id": str(u["_id"]),
         "name": u.get("name", ""),
         "login": u.get("login", ""),
         "avatar": u.get("avatar", ""),
+        "bio": u.get("bio", ""),  # ДОБАВЛЕНО ПОЛЕ БИО
+        "created_str": created_str,  # ДОБАВЛЕНА ДАТА РЕГИСТРАЦИИ
         "online": bool(u.get("online", False)),
         "last_seen_iso": last_seen_iso,
         "last_seen_str": format_last_seen(last_seen),
         "pinned": False,
     }
-
 
 def serialize_message(m):
     reactions = m.get("reactions", {})
@@ -305,8 +310,12 @@ def profile():
     user = get_user()
     if not user:
         return redirect("/login")
-    return render_template("profile.html", user=serialize_user(user))
-
+    
+    my_id = str(user["_id"])
+    # Считаем количество отправленных пользователем сообщений
+    msg_count = messages.count_documents({"sender": my_id}) if messages is not None else 0
+    
+    return render_template("profile.html", user=serialize_user(user), msg_count=msg_count)
 
 @app.route("/edit_profile")
 def edit_profile():
@@ -354,6 +363,11 @@ def update_profile():
         if len(value) < 8:
             return jsonify({"success": False, "message": "Пароль минимум 8 символов"})
         update_data["password"] = generate_password_hash(value)
+
+    elif field == "bio":
+        if len(value) > 170:
+            return jsonify({"success": False, "message": "Статус не может быть длиннее 170 символов"})
+        update_data["bio"] = bleach.clean(value)  # Очищаем текст от HTML-тегов
 
     else:
         return jsonify({"success": False, "message": "Неверное поле"})
