@@ -260,6 +260,26 @@
 
     <a href="/edit_profile" class="profile-btn btn-blue">✏️ Редактировать профиль</a>
 </div>
+    
+<!-- О СЕБЕ -->
+<div class="profile-info-block" style="margin-top: 15px; text-align: center;">
+    <div style="color: var(--text2); font-size: 14px;">О себе</div>
+    <div style="color: var(--white); font-size: 16px; margin-top: 4px; font-style: italic;">
+        {{ user.bio if user.bio else 'Статус не установлен' }}
+    </div>
+</div>
+
+<!-- СТАТИСТИКА АККАУНТА -->
+<div class="stats-container" style="display: flex; justify-content: space-around; margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border);">
+    <div style="text-align: center;">
+        <div style="color: var(--text2); font-size: 13px;">На платформе с</div>
+        <div style="color: var(--primary); font-weight: bold; font-size: 15px; margin-top: 4px;">{{ user.created_str }}</div>
+    </div>
+    <div style="text-align: center;">
+        <div style="color: var(--text2); font-size: 13px;">Всего сообщений</div>
+        <div style="color: var(--primary); font-weight: bold; font-size: 15px; margin-top: 4px;">{{ msg_count }}</div>
+    </div>
+</div>
 
 <div class="settings-container">
     <h3 class="settings-title">⚙️ Настройки</h3>
