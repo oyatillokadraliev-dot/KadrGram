@@ -780,6 +780,29 @@ def handle_error(e):
     logging.error(traceback.format_exc())
     return "SERVER ERROR", 500
 
+@app.route("/api/user/<user_id>")
+def get_user_api(user_id):
+    current_user = get_user()
+    if not current_user:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    try:
+        target_user = users.find_one({"_id": ObjectId(user_id)})
+        if not target_user:
+            return jsonify({"success": False, "message": "User not found"}), 404
+            
+        msg_count = messages.count_documents({"sender": user_id}) if messages is not None else 0
+        s_user = serialize_user(target_user)
+        
+        return jsonify({
+            "success": True,
+            "bio": s_user.get("bio", ""),
+            "created_str": s_user.get("created_str", "Неизвестно"),
+            "msg_count": msg_count
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 @app.route('/robots.txt')
 def robots_txt():
     # Этот текст разрешает всем роботам (включая Google) индексировать сайт
