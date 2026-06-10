@@ -226,6 +226,21 @@
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
 </div>
+<!-- РЕДАКТИРОВАНИЕ БИО -->
+<div class="card">
+    <div class="section-title">О себе</div>
+    <div class="field-row">
+        <label class="field-label">Ваш статус</label>
+        <input type="text" id="inputBio" class="field-input"
+               placeholder="Расскажите немного о себе..."
+               value="{{ user.bio }}"
+               oninput="validateBio()" maxlength="150">
+        <div class="rules">
+            <div id="ruleBioLen" class="hint"><span class="dot"></span> Максимум 150 символов</div>
+        </div>
+    </div>
+    <button class="save-btn" id="btnSaveBio" onclick="saveBio()" disabled>Сохранить статус</button>
+</div>
 
 <!-- ИМЯ -->
 <div class="card">
@@ -459,6 +474,31 @@ function validatePassword() {
     Object.keys(c).forEach(function(k) { setHint(k, v.length > 0 ? c[k] : null); });
     document.getElementById('btnSavePassword').disabled = !Object.values(c).every(Boolean);
 }
+    function validateBio() {
+    var bioVal = document.getElementById('inputBio').value;
+    // Кнопка становится активной, если текст изменился и не превышает лимит
+    document.getElementById('btnSaveBio').disabled = (bioVal.length > 150);
+}
+
+function saveBio() {
+    var bioVal = document.getElementById('inputBio').value;
+    
+    fetch('/update_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'bio', value: bioVal })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast("Статус успешно обновлен!");
+            document.getElementById('btnSaveBio').disabled = true;
+        } else {
+            showToast(data.message || "Ошибка сохранения");
+        }
+    });
+}
+
 </script>
 </body>
 </html>
