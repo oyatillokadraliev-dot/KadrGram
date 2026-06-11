@@ -218,7 +218,9 @@
             pointer-events: none; z-index: 0;
         }
 
-        .chat-header {
+        .chat-header 
+        <div class="chat-header" onclick="openUserProfile('{{ target_user.id }}')">
+        {
             padding: 12px 16px;
             padding-top: max(12px, env(safe-area-inset-top));
             background: var(--white); border-bottom: 1px solid var(--border);
@@ -247,7 +249,9 @@
         .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
         .chat-header-info { flex: 1; min-width: 0; }
-        .chat-user-name { font-weight: 700; font-size: 16px; color: var(--text); }
+        .chat-user-name 
+        <div class="chat-user-name" style="cursor:pointer;">{{ target_user.name }}</div>
+        { font-weight: 700; font-size: 16px; color: var(--text); }
         .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
         .chat-status.online { color: var(--success); font-weight: 500; }
 
@@ -600,6 +604,11 @@
         display: flex !important;
     }
 }
+
+    @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
     </style>
 </head>
 <body>
@@ -743,6 +752,85 @@
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close">✕</span>
     <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
+</div>
+
+<!-- МОДАЛ: профиль собеседника -->
+<div id="userProfileModal" style="
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
+    z-index:3000; justify-content:center; align-items:flex-end;
+    padding: 0;
+" onclick="closeUserProfile(event)">
+    <div style="
+        background:var(--white); width:100%; max-width:480px;
+        border-radius:24px 24px 0 0; padding:24px 20px 32px;
+        animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        position:relative; margin:0 auto;
+    ">
+        <!-- Ручка -->
+        <div style="width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;"></div>
+
+        <!-- Загрузка -->
+        <div id="upm-loading" style="text-align:center;padding:32px 0;color:var(--text2);font-size:14px;">
+            Загружаем профиль...
+        </div>
+
+        <!-- Контент -->
+        <div id="upm-content" style="display:none;">
+            <!-- Аватар + имя -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                <div id="upm-avatar" style="
+                    width:70px;height:70px;border-radius:50%;flex-shrink:0;
+                    background:linear-gradient(135deg,var(--primary),var(--primary2));
+                    color:white;display:flex;align-items:center;justify-content:center;
+                    font-size:28px;font-weight:700;overflow:hidden;
+                    box-shadow:0 6px 20px rgba(0,136,204,0.3);
+                "></div>
+                <div style="min-width:0;">
+                    <div id="upm-name" style="font-size:20px;font-weight:700;color:var(--text);"></div>
+                    <div id="upm-login" style="font-size:14px;color:var(--text2);margin-top:2px;"></div>
+                    <div id="upm-status" style="font-size:13px;margin-top:4px;"></div>
+                </div>
+            </div>
+
+            <!-- О себе -->
+            <div id="upm-about-wrap" style="
+                background:linear-gradient(135deg,#f0f8ff,#e8f4ff);
+                border-left:3px solid var(--primary);
+                border-radius:12px; padding:12px 16px; margin-bottom:14px; display:none;
+            ">
+                <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">О себе</div>
+                <div id="upm-about" style="font-size:14px;color:var(--text);line-height:1.5;"></div>
+            </div>
+
+            <!-- Статистика -->
+            <div style="display:flex;gap:10px;margin-bottom:20px;">
+                <div style="
+                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
+                    border:1px solid var(--border);
+                ">
+                    <div id="upm-msgcount" style="font-size:22px;font-weight:700;color:var(--primary);"></div>
+                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">сообщений</div>
+                </div>
+                <div style="
+                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
+                    border:1px solid var(--border);
+                ">
+                    <div id="upm-regdate" style="font-size:15px;font-weight:700;color:var(--primary);"></div>
+                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">в KadrGram с</div>
+                </div>
+            </div>
+
+            <!-- Написать -->
+            <button id="upm-chat-btn" onclick="closeUserProfileAndChat()" style="
+                width:100%;padding:14px;border:none;border-radius:14px;
+                background:linear-gradient(135deg,var(--primary),var(--primary2));
+                color:white;font-size:15px;font-weight:700;cursor:pointer;
+                box-shadow:0 4px 14px rgba(0,136,204,0.35);
+                font-family:inherit;transition:all 0.2s;
+            ">💬 Написать сообщение</button>
+        </div>
+    </div>
 </div>
 
 <!-- BOTTOM NAV (только мобиле) -->
@@ -1183,6 +1271,72 @@
         totalUnread++; updateFavicon(totalUnread); updateTitle(totalUnread);
         playNotifSound(); showPushNotif(el?el.innerText:'Новое сообщение','');
     };
+
+    // ========== ПРОФИЛЬ СОБЕСЕДНИКА ==========
+    var upmUserId = null;
+
+    function openUserProfile(userId) {
+        upmUserId = userId;
+        var modal = document.getElementById('userProfileModal');
+        modal.style.display = 'flex';
+        document.getElementById('upm-loading').style.display = 'block';
+        document.getElementById('upm-content').style.display = 'none';
+
+        fetch('/api/user/' + userId)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) return;
+
+                // Аватар
+                var av = document.getElementById('upm-avatar');
+                if (data.avatar) {
+                    av.innerHTML = '<img src="' + data.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+                } else {
+                    av.innerText = data.name ? data.name[0].toUpperCase() : '?';
+                }
+
+                // Имя, логин, статус
+                document.getElementById('upm-name').innerText = data.name || '';
+                document.getElementById('upm-login').innerText = '@' + (data.login || '');
+
+                var statusEl = document.getElementById('upm-status');
+                if (data.online) {
+                    statusEl.innerHTML = '<span style="color:var(--success);font-weight:500;">● в сети</span>';
+                } else {
+                    statusEl.innerHTML = '<span style="color:var(--text2);">' + (data.last_seen_str || '') + '</span>';
+                }
+
+                // О себе
+                var aboutWrap = document.getElementById('upm-about-wrap');
+                if (data.about) {
+                    document.getElementById('upm-about').innerText = data.about;
+                    aboutWrap.style.display = 'block';
+                } else {
+                    aboutWrap.style.display = 'none';
+                }
+
+                // Статистика
+                document.getElementById('upm-msgcount').innerText = data.messages_count || 0;
+                document.getElementById('upm-regdate').innerText = data.registered_at || '—';
+
+                document.getElementById('upm-loading').style.display = 'none';
+                document.getElementById('upm-content').style.display = 'block';
+            })
+            .catch(function() {
+                document.getElementById('upm-loading').innerText = 'Не удалось загрузить';
+            });
+    }
+
+    function closeUserProfile(e) {
+        if (e && e.target !== document.getElementById('userProfileModal')) return;
+        document.getElementById('userProfileModal').style.display = 'none';
+        upmUserId = null;
+    }
+
+    function closeUserProfileAndChat() {
+        document.getElementById('userProfileModal').style.display = 'none';
+        upmUserId = null;
+    }
 </script>
 </body>
 </html>
