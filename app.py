@@ -781,38 +781,49 @@ def handle_error(e):
     return "SERVER ERROR", 500
 
 @app.route("/api/user/<user_id>")
-def get_user_api(user_id):
-    current_user = get_user()
-    if not current_user:
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
+def api_user(user_id):
+    user = get_user()
+    if not user:
+        return jsonify({"error": "unauthorized"}), 401
     try:
-        target_user = users.find_one({"_id": ObjectId(user_id)})
-        if not target_user:
-            return jsonify({"success": False, "message": "User not found"}), 404
-            
-        msg_count = messages.count_documents({"sender": user_id}) if messages is not None else 0
-        s_user = serialize_user(target_user)
-        
+        target = users.find_one({"_id": oid(user_id)})
+        if not target:
+            return jsonify({"error": "not found"}), 404
+        # Считаем отправленные сообщения
+        msg_count = 0
+        if mongo_ok and messages is not None:
+            msg_count = messages.count_documents({"sender": str(target["_id"])})
+        # Дата регистрации
+        reg_date = ""
+        if target.get("created_at"):
+            reg_date = target["created_at"].strftime("%d.%m.%Y")
         return jsonify({
-            "success": True,
-            "bio": s_user.get("bio", ""),
-            "created_str": s_user.get("created_str", "Неизвестно"),
-            "msg_count": msg_count
+            "id": str(target["_id"]),
+            "name": target.get("name", ""),
+            "login": target.get("login", ""),
+            "avatar": target.get("avatar", ""),
+            "about": target.get("about", ""),
+            "online": bool(target.get("online", False)),
+            "last_seen_str": format_last_seen(target.get("last_seen")),
+            "registered_at": reg_date,
+            "messages_count": msg_count,
         })
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+        logging.error(e)
+        return jsonify({"error": "server error"}), 500
 
 
-@app.route('/robots.txt')
-def robots_txt():
-    # Этот текст разрешает всем роботам (включая Google) индексировать сайт
-    lines = [
-        "User-agent: *",
-        "Allow: /",
-        "Disallow: /chats",  # Безопасность: запрещаем сканировать внутренние страницы чатов
-        "Disallow: /profile" # Запрещаем сканировать личные профили
-    ]
-    return "\n".join(lines), 200, {'Content-Type': 'text/plain'}
+@app.route("/update_about", methods=["POST"])
+def update_about():
+    user = get_user()
+    if not user:
+        return jsonify({"success": False}), 401
+    data = request.get_json()
+    about = bleach.clean(data.get("about", "").strip())
+    if len(about) > 200:
+        return jsonify({"success": False, "message": "Максимум 200 символов"})
+    users.update_one({"_id": user["_id"]}, {"$set": {"about": about}})
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
