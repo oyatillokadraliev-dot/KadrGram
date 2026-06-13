@@ -691,7 +691,7 @@
 <!-- CHAT -->
 <div class="chat-area">
     <div class="connection-status" id="connStatus">⚠ Нет соединения</div>
-<div style="display: flex !important; flex-direction: column !important; width: 100% !important; height: 100% !important; overflow: hidden !important; position: relative !important; background: var(--bg);">
+<div style="position: absolute !important; top: 0 !important; right: 0 !important; left: auto !important; width: calc(100% - 350px) !important; height: 100% !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; background: var(--bg); z-index: 5 !important;">
 
 {% if target_user %}
     <!-- Добавили клик по всей шапке и указатель курсора -->
@@ -746,8 +746,6 @@
     </div>
     {% endif %}
 </div>
-    </div>
-
 
 <!-- CTX MENU сообщения -->
 <div class="ctx-menu" id="ctxMenu">
