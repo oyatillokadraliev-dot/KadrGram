@@ -692,9 +692,11 @@
 <div class="chat-area">
     <div class="connection-status" id="connStatus">⚠ Нет соединения</div>
 
-    {% if target_user %}
-    <div class="chat-header">
-        <a href="/" class="back-btn">‹</a>
+{% if target_user %}
+    <!-- Добавили клик по всей шапке и указатель курсора -->
+    <div class="chat-header" style="cursor: pointer;" onclick="openUserProfileModal()">
+        <!-- Ссылку назад исключаем из клика по модалке с помощью stopPropagation, чтобы кнопка «Назад» работала штатно -->
+        <a href="/" class="back-btn" onclick="event.stopPropagation();">‹</a>
         <div class="chat-header-avatar">
             {% if target_user.avatar %}
                 <img src="{{ target_user.avatar }}" alt="">
@@ -707,6 +709,7 @@
             <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">
                 {{ 'в сети' if target_user.online else target_user.last_seen_str }}
             </div>
+
         </div>
     </div>
 
