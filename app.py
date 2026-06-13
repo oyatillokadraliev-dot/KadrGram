@@ -60,19 +60,11 @@ try:
     db = client["kadrgram"]
     users = db["users"]
     messages = db["messages"]
-    
-    # ИСПРАВЛЕННЫЕ ИНДЕКСЫ:
+
     users.create_index("login", unique=True)
-    
-    # 1. Из составного индекса убрали "_id", так как он мешал. Сортировка по sender/receiver осталась
     messages.create_index([("sender", ASCENDING), ("receiver", ASCENDING)])
-    
-    # 2. Индекс по получателю и статусу прочтения
     messages.create_index([("receiver", ASCENDING), ("read", ASCENDING)])
-    
-    # 3. Лишний индекс messages.create_index([("_id", DESCENDING)]) мы полностью удаляем,
-    # так как MongoDB сама автоматически всегда индексирует "_id" по возрастанию.
-    
+
     mongo_ok = True
     print("✅ Mongo connected")
 except Exception as e:
@@ -139,18 +131,17 @@ def format_last_seen(last_seen):
 def serialize_user(u):
     last_seen = u.get("last_seen")
     last_seen_iso = (last_seen.isoformat() + "Z") if last_seen else None
-    
-    # Форматируем дату регистрации (например: "10 июня 2026")
+
     created_at = u.get("created_at")
     created_str = created_at.strftime("%d.%m.%Y") if created_at else "Неизвестно"
-    
+
     return {
         "id": str(u["_id"]),
         "name": u.get("name", ""),
         "login": u.get("login", ""),
         "avatar": u.get("avatar", ""),
-        "bio": u.get("bio", ""),  # ДОБАВЛЕНО ПОЛЕ БИО
-        "created_str": created_str,  # ДОБАВЛЕНА ДАТА РЕГИСТРАЦИИ
+        "bio": u.get("bio", ""),
+        "created_str": created_str,
         "online": bool(u.get("online", False)),
         "last_seen_iso": last_seen_iso,
         "last_seen_str": format_last_seen(last_seen),
@@ -224,6 +215,7 @@ def register():
         "online": False,
         "last_seen": None,
         "avatar": "",
+        "bio": "",
         "pinned_chats": []
     })
     session["user_id"] = str(res.inserted_id)
@@ -310,11 +302,10 @@ def profile():
     user = get_user()
     if not user:
         return redirect("/login")
-    
+
     my_id = str(user["_id"])
-    # Считаем количество отправленных пользователем сообщений
     msg_count = messages.count_documents({"sender": my_id}) if messages is not None else 0
-    
+
     return render_template("profile.html", user=serialize_user(user), msg_count=msg_count)
 
 @app.route("/edit_profile")
@@ -367,7 +358,7 @@ def update_profile():
     elif field == "bio":
         if len(value) > 170:
             return jsonify({"success": False, "message": "Статус не может быть длиннее 170 символов"})
-        update_data["bio"] = bleach.clean(value)  # Очищаем текст от HTML-тегов
+        update_data["bio"] = bleach.clean(value)
 
     else:
         return jsonify({"success": False, "message": "Неверное поле"})
@@ -611,6 +602,16 @@ def on_typing(data):
     receiver_id = data.get("receiver_id")
     if not receiver_id or receiver_id == uid:
         return
+    # ✅ Обновляем онлайн-статус при печати — исправляет "не в сети" во время набора
+    if data.get("typing") and mongo_ok and users is not None:
+        try:
+            users.update_one(
+                {"_id": oid(uid)},
+                {"$set": {"online": True, "last_seen": None}}
+            )
+            emit("user_online", {"user_id": uid}, broadcast=True, include_self=False)
+        except Exception as e:
+            logging.error(e)
     emit("typing", {"sender_id": uid, "typing": bool(data.get("typing"))}, room=receiver_id)
 
 
@@ -780,6 +781,11 @@ def handle_error(e):
     logging.error(traceback.format_exc())
     return "SERVER ERROR", 500
 
+
+# =====================================================
+# API: USER PROFILE
+# =====================================================
+
 @app.route("/api/user/<user_id>")
 def api_user(user_id):
     user = get_user()
@@ -789,11 +795,9 @@ def api_user(user_id):
         target = users.find_one({"_id": oid(user_id)})
         if not target:
             return jsonify({"error": "not found"}), 404
-        # Считаем отправленные сообщения
         msg_count = 0
         if mongo_ok and messages is not None:
             msg_count = messages.count_documents({"sender": str(target["_id"])})
-        # Дата регистрации
         reg_date = ""
         if target.get("created_at"):
             reg_date = target["created_at"].strftime("%d.%m.%Y")
@@ -802,7 +806,7 @@ def api_user(user_id):
             "name": target.get("name", ""),
             "login": target.get("login", ""),
             "avatar": target.get("avatar", ""),
-            "about": target.get("bio", ""),
+            "about": target.get("bio", ""),   # ✅ ИСПРАВЛЕНО: было "about", теперь "bio"
             "online": bool(target.get("online", False)),
             "last_seen_str": format_last_seen(target.get("last_seen")),
             "registered_at": reg_date,
@@ -824,6 +828,7 @@ def update_about():
         return jsonify({"success": False, "message": "Максимум 200 символов"})
     users.update_one({"_id": user["_id"]}, {"$set": {"about": about}})
     return jsonify({"success": True})
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
