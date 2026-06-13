@@ -802,7 +802,7 @@ def api_user(user_id):
             "name": target.get("name", ""),
             "login": target.get("login", ""),
             "avatar": target.get("avatar", ""),
-            "about": target.get("about", ""),
+            "about": target.get("bio", ""),
             "online": bool(target.get("online", False)),
             "last_seen_str": format_last_seen(target.get("last_seen")),
             "registered_at": reg_date,
