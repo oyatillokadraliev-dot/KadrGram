@@ -218,19 +218,18 @@
             pointer-events: none; z-index: 0;
         }
 
-            .chat-header {
-                padding: 12px 16px;
-                padding-top: max(12px, env(safe-area-inset-top));
-                background: var(--white); 
-                border-bottom: 1px solid var(--border);
-                display: flex; 
-                align-items: center; 
-                gap: 12px;
-                flex-shrink: 0; 
-                box-shadow: 0 2px 12px rgba(0,136,204,0.08); 
-                z-index: 1;
-            }
-
+        .chat-header {
+            padding: 12px 16px;
+            padding-top: max(12px, env(safe-area-inset-top));
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,136,204,0.08);
+            z-index: 1;
+        }
 
         .back-btn {
             display: none; color: var(--primary); font-size: 26px;
@@ -248,17 +247,22 @@
             color: white; display: flex; align-items: center; justify-content: center;
             font-size: 17px; font-weight: 700; flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(0,136,204,0.3); overflow: hidden;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
         }
 
+        .chat-header-avatar:hover { transform: scale(1.07); box-shadow: 0 6px 18px rgba(0,136,204,0.4); }
         .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-        .chat-header-info { flex: 1; min-width: 0; }
-        
-        .chat-user-name { 
-            font-weight: 700; 
-            font-size: 16px; 
-            color: var(--text); 
+        .chat-header-info { flex: 1; min-width: 0; cursor: pointer; }
+
+        .chat-user-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text);
+            transition: color 0.2s;
         }
+
+        .chat-header-info:hover .chat-user-name { color: var(--primary); }
 
         .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
         .chat-status.online { color: var(--success); font-weight: 500; }
@@ -355,7 +359,6 @@
             border-top: 1px solid var(--border);
             display: flex; flex-direction: column;
             flex-shrink: 0;
-            /* Ключевое: padding для safe area + навигации на мобиле */
             padding-bottom: env(safe-area-inset-bottom);
             box-shadow: 0 -2px 12px rgba(0,136,204,0.06);
             position: relative;
@@ -528,95 +531,88 @@
             display: none; z-index: 10;
         }
 
-/* ========== BOTTOM NAV ========== */
-.bottom-nav {
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    height: 60px;
-    background: var(--white); 
-    border-top: 1px solid var(--border);
-    display: none; /* скрыт по умолчанию */
-    justify-content: space-around; 
-    align-items: center;
-    z-index: 50;
-    padding-bottom: env(safe-area-inset-bottom);
-}
+        /* ========== BOTTOM NAV ========== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            display: none;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
 
-.nav-item {
-    text-decoration: none; 
-    color: var(--text2);
-    display: flex; 
-    flex-direction: column; 
-    align-items: center;
-    gap: 3px; 
-    font-size: 11px; 
-    font-weight: 500; 
-    flex: 1;
-    transition: color 0.2s;
-}
+        .nav-item {
+            text-decoration: none;
+            color: var(--text2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            flex: 1;
+            transition: color 0.2s;
+        }
 
-.nav-item.active { 
-    color: var(--primary); 
-}
+        .nav-item.active { color: var(--primary); }
 
-/* ========== MOBILE ========== */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 100%; 
-        position: fixed; 
-        inset: 0;
-        display: {{ 'none' if target_user else 'flex' }};
-        z-index: 10;
-    }
+        /* ========== MOBILE ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                inset: 0;
+                display: {{ 'none' if target_user else 'flex' }};
+                z-index: 10;
+            }
 
-    .chat-area {
-        width: 100%;
-        display: {{ 'flex' if target_user else 'none' }};
-        padding-bottom: 60px;
-    }
+            .chat-area {
+                width: 100%;
+                display: {{ 'flex' if target_user else 'none' }};
+                padding-bottom: 60px;
+            }
 
-    .back-btn { 
-        display: flex !important; 
-    }
+            .back-btn { display: flex !important; }
 
-    .input-area {
-        position: fixed;
-        bottom: 60px;
-        left: 0; 
-        right: 0;
-        z-index: 20;
-        padding-bottom: 0 !important;
-    }
+            .input-area {
+                position: fixed;
+                bottom: 60px;
+                left: 0;
+                right: 0;
+                z-index: 20;
+                padding-bottom: 0 !important;
+            }
 
-    .messages {
-        padding-bottom: 80px;
-    }
+            .messages { padding-bottom: 80px; }
 
-    .bottom-nav { 
-        display: flex !important; /* ✅ Показываем на мобиле */
-    }
-}
+            .bottom-nav { display: flex !important; }
+        }
 
-@media (min-width: 769px) {
-    .sidebar { 
-        position: relative; 
-    }
-    
-    .chat-area { 
-        padding-bottom: 60px;
-    }
-    
-    .bottom-nav { 
-        display: flex !important;
-    }
-}
+        @media (min-width: 769px) {
+            .sidebar { position: relative; }
+            .chat-area { padding-bottom: 60px; }
+            .bottom-nav { display: flex !important; }
+        }
 
-    @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-}
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ========== PROFILE MODAL ========== */
+        .upm-stat-box {
+            flex: 1; background: var(--bg); border-radius: 14px; padding: 14px;
+            text-align: center; border: 1px solid var(--border);
+        }
+
+        .upm-stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .upm-stat-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -695,14 +691,18 @@
     {% if target_user %}
     <div class="chat-header">
         <a href="/" class="back-btn">‹</a>
-        <div class="chat-header-avatar">
+
+        <!-- ✅ Клик по аватару → открыть профиль -->
+        <div class="chat-header-avatar" onclick="openUserProfile('{{ target_user.id }}')">
             {% if target_user.avatar %}
                 <img src="{{ target_user.avatar }}" alt="">
             {% else %}
                 {{ target_user.name[0]|upper }}
             {% endif %}
         </div>
-        <div class="chat-header-info">
+
+        <!-- ✅ Клик по имени/статусу → открыть профиль -->
+        <div class="chat-header-info" onclick="openUserProfile('{{ target_user.id }}')">
             <div class="chat-user-name">{{ target_user.name }}</div>
             <div id="chatStatus" class="chat-status {{ 'online' if target_user.online else '' }}">
                 {{ 'в сети' if target_user.online else target_user.last_seen_str }}
@@ -762,19 +762,20 @@
     <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
 </div>
 
-<!-- МОДАЛ: профиль собеседника -->
+<!-- ========== МОДАЛ: профиль собеседника ========== -->
 <div id="userProfileModal" style="
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
     z-index:3000; justify-content:center; align-items:flex-end;
-    padding: 0;
+    padding:0;
 " onclick="closeUserProfile(event)">
     <div style="
         background:var(--white); width:100%; max-width:480px;
         border-radius:24px 24px 0 0; padding:24px 20px 32px;
         animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
         position:relative; margin:0 auto;
-    ">
+    " onclick="event.stopPropagation()">
+
         <!-- Ручка -->
         <div style="width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;"></div>
 
@@ -802,7 +803,6 @@
             </div>
 
             <!-- О себе -->
-            <div class="chat-user-name" style="cursor:pointer;" onclick="openUserProfileModal()">{{ target_user.name }}</div>
             <div id="upm-about-wrap" style="
                 background:linear-gradient(135deg,#f0f8ff,#e8f4ff);
                 border-left:3px solid var(--primary);
@@ -814,19 +814,13 @@
 
             <!-- Статистика -->
             <div style="display:flex;gap:10px;margin-bottom:20px;">
-                <div style="
-                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
-                    border:1px solid var(--border);
-                ">
-                    <div id="upm-msgcount" style="font-size:22px;font-weight:700;color:var(--primary);"></div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">сообщений</div>
+                <div class="upm-stat-box">
+                    <div id="upm-msgcount" class="upm-stat-value"></div>
+                    <div class="upm-stat-label">сообщений</div>
                 </div>
-                <div style="
-                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
-                    border:1px solid var(--border);
-                ">
+                <div class="upm-stat-box">
                     <div id="upm-regdate" style="font-size:15px;font-weight:700;color:var(--primary);"></div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">в KadrGram с</div>
+                    <div class="upm-stat-label">в KadrGram с</div>
                 </div>
             </div>
 
@@ -842,7 +836,7 @@
     </div>
 </div>
 
-<!-- BOTTOM NAV (только мобиле) -->
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
     <a href="/" class="nav-item active">💬<span>Чаты</span></a>
     <a href="/search" class="nav-item">🔍<span>Поиск</span></a>
@@ -1294,13 +1288,17 @@
         fetch('/api/user/' + userId)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.error) return;
+                if (data.error) {
+                    document.getElementById('upm-loading').innerText = 'Не удалось загрузить';
+                    return;
+                }
 
                 // Аватар
                 var av = document.getElementById('upm-avatar');
                 if (data.avatar) {
                     av.innerHTML = '<img src="' + data.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
                 } else {
+                    av.innerHTML = '';
                     av.innerText = data.name ? data.name[0].toUpperCase() : '?';
                 }
 
@@ -1337,7 +1335,7 @@
     }
 
     function closeUserProfile(e) {
-        if (e && e.target !== document.getElementById('userProfileModal')) return;
+        // Закрываем только по клику на фон (не на сам блок — stopPropagation в HTML)
         document.getElementById('userProfileModal').style.display = 'none';
         upmUserId = null;
     }
@@ -1345,7 +1343,20 @@
     function closeUserProfileAndChat() {
         document.getElementById('userProfileModal').style.display = 'none';
         upmUserId = null;
+        // Если это другой пользователь — уже в чате с ним, просто закрываем
     }
+
+    // Закрыть профиль по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var modal = document.getElementById('userProfileModal');
+            if (modal.style.display !== 'none') {
+                modal.style.display = 'none';
+                upmUserId = null;
+                return;
+            }
+        }
+    });
 </script>
 </body>
 </html>
