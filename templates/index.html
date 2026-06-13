@@ -1154,8 +1154,23 @@
         if(data.sender_id!==TARGET_ID) return;
         var ind=document.getElementById('typingIndicator'),box=document.getElementById('msgBox');
         if(!ind||!box) return;
-        if(data.typing){ind.style.display='block';box.scrollTop=box.scrollHeight;clearTimeout(typingTimer);typingTimer=setTimeout(function(){ind.style.display='none';},4000);}
-        else{clearTimeout(typingTimer);ind.style.display='none';}
+        if(data.typing){
+            ind.style.display='block';
+            box.scrollTop=box.scrollHeight;
+            clearTimeout(typingTimer);
+            typingTimer=setTimeout(function(){ind.style.display='none';},4000);
+            // ✅ Пока печатает — показываем "в сети" в шапке и в списке
+            var s=document.getElementById('chatStatus');
+            if(s){s.innerText='в сети';s.classList.add('online');}
+            var st=document.getElementById('status-'+TARGET_ID);
+            if(st) st.innerText='в сети';
+            var av=document.getElementById('avatar-'+TARGET_ID);
+            if(av&&!av.querySelector('.avatar-online')){var dot=document.createElement('div');dot.className='avatar-online';av.appendChild(dot);}
+        } else {
+            clearTimeout(typingTimer);
+            ind.style.display='none';
+            // Не сбрасываем статус здесь — он обновится когда придёт user_offline от сервера
+        }
     });
 
     var myTypingTimer=null, isTyping=false;
