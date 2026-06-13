@@ -810,21 +810,13 @@
             </div>
         </div>
 
-    </div>
-</div>
-
-
-            <!-- Написать -->
-            <button id="upm-chat-btn" onclick="closeUserProfileAndChat()" style="
-                width:100%;padding:14px;border:none;border-radius:14px;
-                background:linear-gradient(135deg,var(--primary),var(--primary2));
-                color:white;font-size:15px;font-weight:700;cursor:pointer;
-                box-shadow:0 4px 14px rgba(0,136,204,0.35);
-                font-family:inherit;transition:all 0.2s;
-            ">💬 Написать сообщение</button>
+        <!-- Кнопка «Написать сообщение» перенесена СЮДА (внутрь карточки профиля) -->
+        <div style="margin-top: 20px;">
+            <button id="upm-chat-btn" onclick="closeUserProfileModal()" style="width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary, #0088cc), #006699); color: white; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0,136,204,0.35); font-family: inherit; transition: all 0.2s;">💬 Написать сообщение</button>
         </div>
-    </div>
-</div>
+
+    </div> <!-- Закрывает белую карточку -->
+</div> <!-- Закрывает модальное окно -->
 
 <!-- BOTTOM NAV (только мобиле) -->
 <nav class="bottom-nav">
