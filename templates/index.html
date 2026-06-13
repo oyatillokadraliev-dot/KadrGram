@@ -765,73 +765,48 @@
     <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" />
 </div>
 
-<!-- МОДАЛ: профиль собеседника -->
-<div id="userProfileModal" style="
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,0.5); backdrop-filter:blur(6px);
-    z-index:3000; justify-content:center; align-items:flex-end;
-    padding: 0;
-" onclick="closeUserProfile(event)">
-    <div style="
-        background:var(--white); width:100%; max-width:480px;
-        border-radius:24px 24px 0 0; padding:24px 20px 32px;
-        animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
-        position:relative; margin:0 auto;
-    ">
-        <!-- Ручка -->
-        <div style="width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;"></div>
-
-        <!-- Загрузка -->
-        <div id="upm-loading" style="text-align:center;padding:32px 0;color:var(--text2);font-size:14px;">
-            Загружаем профиль...
+<div id="userProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+    <div style="background: var(--white, #fff); width: 100%; max-width: 360px; border-radius: 24px; padding: 20px; position: relative; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.15); box-sizing: border-box;">
+        
+        <!-- Круглая кнопка-крестик для закрытия окна -->
+        <button onclick="closeUserProfileModal()" style="position: absolute; top: 16px; right: 16px; background: var(--border, #f1f1f1); border: none; width: 28px; height: 28px; border-radius: 50%; color: var(--text, #000); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; z-index: 10; padding: 0;">×</button>
+        
+        <!-- Аватарка собеседника -->
+        <div style="width: 80px; height: 80px; margin: 10px auto 12px; border-radius: 50%; overflow: hidden;">
+            <img id="modalUserAvatar" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            <div id="modalUserAvatarPlaceholder" style="width: 100%; height: 100%; background: var(--primary, #0088cc); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold;">?</div>
         </div>
 
-        <!-- Контент -->
-        <div id="upm-content" style="display:none;">
-            <!-- Аватар + имя -->
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
-                <div id="upm-avatar" style="
-                    width:70px;height:70px;border-radius:50%;flex-shrink:0;
-                    background:linear-gradient(135deg,var(--primary),var(--primary2));
-                    color:white;display:flex;align-items:center;justify-content:center;
-                    font-size:28px;font-weight:700;overflow:hidden;
-                    box-shadow:0 6px 20px rgba(0,136,204,0.3);
-                "></div>
-                <div style="min-width:0;">
-                    <div id="upm-name" style="font-size:20px;font-weight:700;color:var(--text);"></div>
-                    <div id="upm-login" style="font-size:14px;color:var(--text2);margin-top:2px;"></div>
-                    <div id="upm-status" style="font-size:13px;margin-top:4px;"></div>
-                </div>
-            </div>
+        <!-- Имя и Логин -->
+        <div id="modalUserName" style="font-size: 18px; font-weight: 700; color: var(--text, #000); margin-bottom: 2px; word-break: break-word;">...</div>
+        <div id="modalUserLogin" style="font-size: 13px; color: var(--text2, #888); margin-bottom: 6px;">...</div>
+        <div id="modalUserStatus" style="font-size: 13px; font-weight: 500; margin-bottom: 16px;">Загрузка...</div>
 
-            <!-- О себе -->
-            <div class="chat-user-name" style="cursor:pointer;" onclick="openUserProfileModal()">{{ target_user.name }}</div>
-            <div id="upm-about-wrap" style="
-                background:linear-gradient(135deg,#f0f8ff,#e8f4ff);
-                border-left:3px solid var(--primary);
-                border-radius:12px; padding:12px 16px; margin-bottom:14px; display:none;
-            ">
-                <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">О себе</div>
-                <div id="upm-about" style="font-size:14px;color:var(--text);line-height:1.5;"></div>
-            </div>
+        <!-- Окошко: О себе -->
+        <div style="background: var(--bg, #f9f9f9); border-radius: 16px; padding: 14px; margin-top: 16px; text-align: left; border: 1px solid var(--border, #eee);">
+            <div style="color: var(--text2, #888); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">О себе</div>
+            <div id="modalUserBio" style="color: var(--text, #000); font-size: 14px; font-style: italic; word-break: break-word;">Загрузка...</div>
+        </div>
 
-            <!-- Статистика -->
-            <div style="display:flex;gap:10px;margin-bottom:20px;">
-                <div style="
-                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
-                    border:1px solid var(--border);
-                ">
-                    <div id="upm-msgcount" style="font-size:22px;font-weight:700;color:var(--primary);"></div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">сообщений</div>
+        <!-- Окошко: Статистика -->
+        <div style="background: var(--bg, #f9f9f9); border-radius: 16px; padding: 14px; margin-top: 12px; border: 1px solid var(--border, #eee);">
+            <div style="color: var(--text2, #888); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; margin-bottom: 10px;">Статистика профиля</div>
+            <div style="display: flex; justify-content: space-around; align-items: center; text-align: center;">
+                <div>
+                    <div style="color: var(--text2, #888); font-size: 11px;">В KadrGram с</div>
+                    <div id="modalUserCreated" style="color: var(--primary, #0088cc); font-weight: 700; font-size: 14px; margin-top: 4px;">...</div>
                 </div>
-                <div style="
-                    flex:1;background:var(--bg);border-radius:14px;padding:14px;text-align:center;
-                    border:1px solid var(--border);
-                ">
-                    <div id="upm-regdate" style="font-size:15px;font-weight:700;color:var(--primary);"></div>
-                    <div style="font-size:11px;color:var(--text2);margin-top:2px;">в KadrGram с</div>
+                <div style="width: 1px; height: 25px; background: var(--border, #eee); margin: 0 10px;"></div>
+                <div>
+                    <div style="color: var(--text2, #888); font-size: 11px;">Сообщений</div>
+                    <div id="modalUserMsgCount" style="color: var(--primary, #0088cc); font-weight: 700; font-size: 14px; margin-top: 4px;">...</div>
                 </div>
             </div>
+        </div>
+
+    </div>
+</div>
+
 
             <!-- Написать -->
             <button id="upm-chat-btn" onclick="closeUserProfileAndChat()" style="
@@ -1349,6 +1324,108 @@
         document.getElementById('userProfileModal').style.display = 'none';
         upmUserId = null;
     }
+
+    <script>
+// Глобальный объект пользователя, с которым открыт чат. 
+// Убедитесь, что при переключении чатов в вашем основном скрипте он обновляется, например:
+// currentChatUser = { id: "{{ target_user.id if target_user else '' }}", name: "{{ target_user.name if target_user else '' }}", login: "{{ target_user.username if target_user else '' }}", avatar: "{{ target_user.avatar if target_user else '' }}", online: {{ 'true' if target_user and target_user.online else 'false' }} };
+
+function openUserProfileModal() {
+    // Если пользователь не выбран, пытаемся собрать данные прямо из разметки шапки чата
+    if (!window.currentChatUser) {
+        var nameEl = document.querySelector('.chat-user-name');
+        if (!nameEl) return;
+        
+        window.currentChatUser = {
+            id: "{{ target_user.id if target_user else '' }}",
+            name: nameEl.innerText,
+            login: "{{ target_user.username if target_user else '' }}",
+            avatar: document.querySelector('.chat-header-avatar img') ? document.querySelector('.chat-header-avatar img').src : '',
+            online: document.querySelector('.chat-status').classList.contains('online')
+        };
+    }
+
+    if (!window.currentChatUser.id) {
+        alert('Ошибка: Не удалось определить ID пользователя');
+        return;
+    }
+    
+    // Заполняем базовые текстовые поля в модалке
+    if (document.getElementById('modalUserName')) document.getElementById('modalUserName').innerText = window.currentChatUser.name;
+    if (document.getElementById('modalUserLogin')) document.getElementById('modalUserLogin').innerText = window.currentChatUser.login ? '@' + window.currentChatUser.login : '';
+    
+    // Обрабатываем аватарку в модалке
+    var avatarImg = document.getElementById('modalUserAvatar');
+    var placeholder = document.getElementById('modalUserAvatarPlaceholder');
+    
+    if (avatarImg && placeholder) {
+        if (window.currentChatUser.avatar) {
+            avatarImg.src = window.currentChatUser.avatar;
+            avatarImg.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            avatarImg.style.display = 'none';
+            placeholder.style.display = 'flex';
+            placeholder.innerText = window.currentChatUser.name ? window.currentChatUser.name.charAt(0).toUpperCase() : '?';
+        }
+    }
+    
+    // Обрабатываем статус сети
+    var statusDiv = document.getElementById('modalUserStatus');
+    if (statusDiv) {
+        if (window.currentChatUser.online) {
+            statusDiv.innerText = '● В сети';
+            statusDiv.style.color = '#25d366';
+        } else {
+            statusDiv.innerText = 'был(а) недавно';
+            statusDiv.style.color = 'var(--text2)';
+        }
+    }
+
+    // Ставим индикатор загрузки для новых полей
+    if (document.getElementById('modalUserBio')) document.getElementById('modalUserBio').innerText = 'Загрузка...';
+    if (document.getElementById('modalUserCreated')) document.getElementById('modalUserCreated').innerText = '...';
+    if (document.getElementById('modalUserMsgCount')) document.getElementById('modalUserMsgCount').innerText = '...';
+
+    // Делаем запрос к созданному бэкенд-роуту во Flask
+    fetch('/api/user/' + window.currentChatUser.id)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (document.getElementById('modalUserBio')) document.getElementById('modalUserBio').innerText = data.bio ? data.bio : 'Статус не установлен';
+                if (document.getElementById('modalUserCreated')) document.getElementById('modalUserCreated').innerText = data.created_str;
+                if (document.getElementById('modalUserMsgCount')) document.getElementById('modalUserMsgCount').innerText = data.msg_count;
+            } else {
+                if (document.getElementById('modalUserBio')) document.getElementById('modalUserBio').innerText = 'Не удалось загрузить данные';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (document.getElementById('modalUserBio')) document.getElementById('modalUserBio').innerText = 'Ошибка сети';
+        });
+    
+    // Показываем само всплывающее окно
+    var modal = document.getElementById('userProfileModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        alert('Клик сработал, но блок окна с id="userProfileModal" не найден в HTML!');
+    }
+}
+
+// Функция для закрытия модального окна профиля
+function closeUserProfileModal() {
+    var modal = document.getElementById('userProfileModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Закрытие окна при клике на серую область вокруг карточки
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('userProfileModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
 </script>
 </body>
 </html>
