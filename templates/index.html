@@ -218,15 +218,19 @@
             pointer-events: none; z-index: 0;
         }
 
-        .chat-header 
-        <div class="chat-header" onclick="openUserProfile('{{ target_user.id }}')">
-        {
-            padding: 12px 16px;
-            padding-top: max(12px, env(safe-area-inset-top));
-            background: var(--white); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px;
-            flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,136,204,0.08); z-index: 1;
-        }
+            .chat-header {
+                padding: 12px 16px;
+                padding-top: max(12px, env(safe-area-inset-top));
+                background: var(--white); 
+                border-bottom: 1px solid var(--border);
+                display: flex; 
+                align-items: center; 
+                gap: 12px;
+                flex-shrink: 0; 
+                box-shadow: 0 2px 12px rgba(0,136,204,0.08); 
+                z-index: 1;
+            }
+
 
         .back-btn {
             display: none; color: var(--primary); font-size: 26px;
@@ -249,9 +253,13 @@
         .chat-header-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
         .chat-header-info { flex: 1; min-width: 0; }
-        .chat-user-name 
-        <div class="chat-user-name" style="cursor:pointer;">{{ target_user.name }}</div>
-        { font-weight: 700; font-size: 16px; color: var(--text); }
+        
+        .chat-user-name { 
+            font-weight: 700; 
+            font-size: 16px; 
+            color: var(--text); 
+        }
+
         .chat-status { font-size: 12px; color: var(--text2); margin-top: 1px; transition: color 0.3s; }
         .chat-status.online { color: var(--success); font-weight: 500; }
 
@@ -794,6 +802,7 @@
             </div>
 
             <!-- О себе -->
+            <div class="chat-user-name" style="cursor:pointer;" onclick="openUserProfileModal()">{{ target_user.name }}</div>
             <div id="upm-about-wrap" style="
                 background:linear-gradient(135deg,#f0f8ff,#e8f4ff);
                 border-left:3px solid var(--primary);
