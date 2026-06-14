@@ -148,10 +148,10 @@ def serialize_user(u):
         "pinned": False,
     }
 
-def serialize_message(m):
+def serialize_message(m, my_id=None):
     reactions = m.get("reactions", {})
     reaction_counts = Counter(reactions.values())
-    return {
+    data = {
         "id": str(m["_id"]),
         "sender": m.get("sender", ""),
         "receiver": m.get("receiver", ""),
@@ -163,9 +163,13 @@ def serialize_message(m):
         "reply_to": m.get("reply_to"),
         "reply_text": m.get("reply_text"),
         "reply_sender": m.get("reply_sender"),
+        "forwarded_from": m.get("forwarded_from"),
         "reactions": dict(reaction_counts),
         "time": m["created_at"].isoformat() if m.get("created_at") else datetime.utcnow().isoformat()
     }
+    if my_id is not None:
+        data["my_reaction"] = reactions.get(my_id)
+    return data
 
 # =====================================================
 # AUTH
@@ -456,7 +460,44 @@ def get_messages():
     try:
         msgs = list(messages.find(query).sort("_id", DESCENDING).limit(50))
         msgs.reverse()
-        return jsonify([serialize_message(m) for m in msgs])
+        return jsonify([serialize_message(m, my_id) for m in msgs])
+    except Exception as e:
+        logging.error(e)
+        return jsonify([])
+
+
+# =====================================================
+# SEARCH WITHIN A CHAT
+# =====================================================
+
+@app.route("/search_messages")
+def search_messages():
+    user = get_user()
+    if not user or not mongo_ok or messages is None:
+        return jsonify([])
+
+    other = request.args.get("with", "")
+    query_text = request.args.get("q", "").strip()
+    if not other or not query_text:
+        return jsonify([])
+
+    my_id = str(user["_id"])
+
+    try:
+        safe_query = re.escape(query_text)
+        q = {
+            "$or": [
+                {"sender": my_id, "receiver": other},
+                {"sender": other, "receiver": my_id}
+            ],
+            "deleted": {"$ne": True},
+            "text": {"$regex": safe_query, "$options": "i"}
+        }
+        msgs = list(messages.find(q).sort("_id", ASCENDING).limit(100))
+        return jsonify([
+            {"id": str(m["_id"]), "text": m.get("text", ""), "sender": m.get("sender", "")}
+            for m in msgs
+        ])
     except Exception as e:
         logging.error(e)
         return jsonify([])
@@ -491,7 +532,7 @@ def upload_image():
         return jsonify({"error": "upload failed"}), 500
 
 # =====================================================
-# SEARCH
+# SEARCH (users)
 # =====================================================
 
 @app.route("/search")
@@ -518,6 +559,20 @@ def search():
             logging.error(e)
 
     return render_template("search.html", results=results)
+
+
+@app.route("/api/contacts")
+def api_contacts():
+    """Список собеседников — используется для модалки 'Переслать сообщение'."""
+    user = get_user()
+    if not user:
+        return jsonify([])
+    try:
+        raw_users = list(users.find({"_id": {"$ne": user["_id"]}}))
+        return jsonify([serialize_user(u) for u in raw_users])
+    except Exception as e:
+        logging.error(e)
+        return jsonify([])
 
 # =====================================================
 # PIN CHAT
@@ -661,10 +716,56 @@ def new_message(data):
     try:
         result = messages.insert_one(msg)
         msg["_id"] = result.inserted_id
-        payload = serialize_message(msg)
-        emit("receive_message", payload, room=my_id)
-        emit("receive_message", payload, room=to_id)
+        emit("receive_message", serialize_message(msg, my_id), room=my_id)
+        emit("receive_message", serialize_message(msg, to_id), room=to_id)
         emit("typing", {"sender_id": my_id, "typing": False}, room=to_id)
+    except Exception as e:
+        logging.error(e)
+
+
+@socketio.on("forward_message")
+def forward_message(data):
+    """Пересылка существующего сообщения одному или нескольким пользователям."""
+    user = get_user()
+    if not user or not mongo_ok or messages is None:
+        return
+
+    my_id = str(user["_id"])
+    msg_id = data.get("msg_id")
+    to_ids = data.get("to_ids") or []
+    if isinstance(to_ids, str):
+        to_ids = [to_ids]
+    to_ids = [t for t in to_ids if t]
+
+    if not msg_id or not to_ids:
+        return
+
+    try:
+        orig = messages.find_one({"_id": oid(msg_id)})
+        if not orig or orig.get("deleted"):
+            return
+
+        orig_sender = users.find_one({"_id": oid(orig.get("sender", ""))})
+        forwarded_from_name = orig_sender.get("name", "Пользователь") if orig_sender else "Пользователь"
+
+        for to_id in to_ids:
+            now = datetime.utcnow()
+            new_msg = {
+                "sender": my_id,
+                "receiver": to_id,
+                "text": orig.get("text", ""),
+                "image": orig.get("image"),
+                "read": False,
+                "edited": False,
+                "deleted": False,
+                "created_at": now,
+                "reactions": {},
+                "forwarded_from": forwarded_from_name
+            }
+            result = messages.insert_one(new_msg)
+            new_msg["_id"] = result.inserted_id
+            emit("receive_message", serialize_message(new_msg, my_id), room=my_id)
+            emit("receive_message", serialize_message(new_msg, to_id), room=to_id)
     except Exception as e:
         logging.error(e)
 
@@ -756,14 +857,22 @@ def toggle_reaction(data):
         messages.update_one({"_id": oid(msg_id)}, {"$set": {"reactions": reactions}})
         reaction_counts = Counter(reactions.values())
 
-        payload = {"message_id": msg_id, "reaction_counts": dict(reaction_counts)}
-
         sender_id = message.get("sender")
         receiver_id = message.get("receiver")
+
+        # Каждому участнику диалога отдельно отправляем счётчики + ЕГО собственную реакцию
         if sender_id:
-            emit("update_reactions", payload, room=str(sender_id))
+            emit("update_reactions", {
+                "message_id": msg_id,
+                "reaction_counts": dict(reaction_counts),
+                "my_reaction": reactions.get(str(sender_id))
+            }, room=str(sender_id))
         if receiver_id and receiver_id != sender_id:
-            emit("update_reactions", payload, room=str(receiver_id))
+            emit("update_reactions", {
+                "message_id": msg_id,
+                "reaction_counts": dict(reaction_counts),
+                "my_reaction": reactions.get(str(receiver_id))
+            }, room=str(receiver_id))
     except Exception as e:
         logging.error(e)
 
@@ -806,7 +915,7 @@ def api_user(user_id):
             "name": target.get("name", ""),
             "login": target.get("login", ""),
             "avatar": target.get("avatar", ""),
-            "about": target.get("bio", ""),   # ✅ ИСПРАВЛЕНО: было "about", теперь "bio"
+            "about": target.get("bio", ""),
             "online": bool(target.get("online", False)),
             "last_seen_str": format_last_seen(target.get("last_seen")),
             "registered_at": reg_date,
